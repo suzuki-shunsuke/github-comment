@@ -107,7 +107,7 @@ func complementOptsOfCircleCI(opts *Options) error {
 	if a == -1 {
 		return nil
 	}
-	prNum := pr[len(pr)-a:]
+	prNum := pr[a+1:]
 	if b, err := strconv.Atoi(prNum); err == nil {
 		opts.PRNumber = b
 	} else {
