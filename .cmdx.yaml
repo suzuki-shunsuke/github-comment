@@ -1,0 +1,59 @@
+---
+tasks:
+  - name: init
+    short: i
+    script: bash scripts/githook.sh
+    description: setup git hooks
+    usage: setup git hooks
+  - name: coverage
+    short: c
+    description: test a package (fzf is required)
+    usage: test a package (fzf is required)
+    script: "bash scripts/coverage.sh {{.path}}"
+    args:
+      - name: path
+  - name: test
+    short: t
+    description: test
+    usage: test
+    script: go test ./... -covermode=atomic
+  - name: fmt
+    description: format the go code
+    usage: format the go code
+    script: bash scripts/fmt.sh
+  - name: vet
+    short: v
+    description: go vet
+    usage: go vet
+    script: go vet ./...
+  - name: lint
+    short: l
+    description: lint the go code
+    usage: lint the go code
+    script: golangci-lint run
+  - name: release
+    short: r
+    description: release the new version
+    usage: release the new version
+    script: "bash scripts/release.sh {{.version}}"
+    args:
+      - name: version
+        required: true
+  - name: ci-local
+    description: run the Drone pipeline at localhost (drone-cli is required)
+    usage: run the Drone pipeline at localhost (drone-cli is required)
+    script: time drone exec --pipeline build --event pull_request
+    environment:
+      LOCAL: "true"
+  - name: shellcheck
+    description: shellcheck
+    usage: shellcheck
+    script: shellcheck scripts/* githooks/*
+  - name: shfmt
+    description: shfmt
+    usage: shfmt
+    script: shfmt -l -w scripts/* githooks/*
+  - name: yamllint
+    description: yamllint
+    usage: yamllint
+    script: 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'

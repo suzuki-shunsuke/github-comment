@@ -1,0 +1,106 @@
+---
+kind: pipeline
+name: shell scripts
+clone:
+  depth: 1
+steps:
+  - name: shellcheck
+    image: koalaman/shellcheck-alpine:v0.7.0
+    commands:
+      - shellcheck scripts/* githooks/*
+  - name: shfmt
+    image: mvdan/shfmt:v3.0.2
+    commands:
+      - shfmt -d .
+---
+kind: pipeline
+name: yamllint
+clone:
+  depth: 1
+steps:
+  - name: yamllint
+    image: quay.io/suzuki_shunsuke/yamllint:1.20.0__1
+    commands:
+      - 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'
+---
+kind: pipeline
+name: build
+clone:
+  depth: 1
+volumes:
+  - name: gopath
+    temp: {}
+steps:
+  - name: download go modules
+    image: &image_go golang:1.14.0
+    commands:
+      - go mod download
+    volumes: &volumes
+      - name: gopath
+        path: /go
+    environment:
+      GOPATH: /go
+  - name: golangci-lint
+    image: golangci/golangci-lint:v1.23.8-alpine
+    commands:
+      - golangci-lint run
+    environment:
+      GOPATH: /go
+    volumes: *volumes
+  - name: codecov
+    image: *image_go
+    commands:
+      # bash and cgo seem to be required
+      - bash scripts/codecov_test.sh
+      - curl -s https://codecov.io/bash > /tmp/codecov.sh
+      - test "$LOCAL" = "true" -o "$DRONE_BUILD_EVENT" = "pull_request" || bash /tmp/codecov.sh
+    environment:
+      GOPATH: /go
+      CODECOV_TOKEN:
+        from_secret: codecov_token
+    volumes: *volumes
+  - name: remove changes
+    image: &image_git plugins/git
+    commands:
+      # Sometimes it is failed to release by goreleaser due to changes of go.sum
+      - git checkout -- .
+
+  - name: fetch tags to release
+    image: *image_git
+    commands:
+      - git fetch --tags
+    when:
+      event:
+        - tag
+  - name: release
+    image: &goreleaser goreleaser/goreleaser:v0.128.0
+    commands:
+      - goreleaser release
+    environment:
+      GOPATH: /go
+      GITHUB_TOKEN:
+        from_secret: github_token
+    volumes: *volumes
+    when:
+      event:
+        - tag
+
+  - name: create a dummy tag to test releasing
+    image: *image_git
+    commands:
+      - git tag v0.1.0-alpha
+    when:
+      event:
+        - pull_request
+        - push
+  - name: release (skip publish)
+    image: *goreleaser
+    commands:
+      - goreleaser release --skip-publish
+    environment:
+      GOPATH: /go
+    volumes: *volumes
+    when:
+      event:
+        - pull_request
+        - push
