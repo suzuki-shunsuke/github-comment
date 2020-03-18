@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/suzuki-shunsuke/github-comment-cli/pkg/constant"
+	"github.com/suzuki-shunsuke/github-comment/pkg/constant"
 )
 
 var Help = `
