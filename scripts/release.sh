@@ -5,7 +5,7 @@
 set -eu
 set -o pipefail
 
-REMOTE=https://github.com/suzuki-shunsuke/github-comment-cli
+REMOTE=https://github.com/suzuki-shunsuke/github-comment
 
 ee() {
   echo "+ $*"

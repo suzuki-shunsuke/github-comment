@@ -1,4 +1,4 @@
-module github.com/suzuki-shunsuke/github-comment-cli
+module github.com/suzuki-shunsuke/github-comment
 
 go 1.14
 
