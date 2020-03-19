@@ -93,16 +93,17 @@ func Exec(
 	for {
 		select {
 		case err := <-exitChan:
-			if err != nil {
-				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-			}
-			return execPost(c, opts, execConfigs, &Env{
+			execPost(c, opts, execConfigs, &Env{
 				ExitCode:       cmd.ProcessState.ExitCode(),
 				Command:        cmd.String(),
 				Stdout:         stdout.String(),
 				Stderr:         stderr.String(),
 				CombinedOutput: combinedOutput.String(),
 			})
+			if err != nil {
+				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+			}
+			return nil
 		case sig := <-signalChan:
 			if _, ok := sentSignals[sig]; ok {
 				continue
