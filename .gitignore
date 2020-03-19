@@ -3,3 +3,5 @@
 coverage.txt
 dist
 .git-rm-branch.yml
+.github-comment.yml
+.envrc
