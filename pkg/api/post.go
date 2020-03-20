@@ -67,24 +67,24 @@ func Post(
 		} else {
 			return errors.New("the template " + opts.TemplateKey + " isn't found")
 		}
-		tmpl, err := template.New("comment").Funcs(template.FuncMap{
-			"Env": os.Getenv,
-		}).Parse(opts.Template)
-		if err != nil {
-			return err
-		}
-		buf := &bytes.Buffer{}
-		if err := tmpl.Execute(buf, &PostTemplateParams{
-			PRNumber:    opts.PRNumber,
-			Org:         opts.Org,
-			Repo:        opts.Repo,
-			SHA1:        opts.SHA1,
-			TemplateKey: opts.TemplateKey,
-		}); err != nil {
-			return err
-		}
-		opts.Template = buf.String()
 	}
+	tmpl, err := template.New("comment").Funcs(template.FuncMap{
+		"Env": os.Getenv,
+	}).Parse(opts.Template)
+	if err != nil {
+		return err
+	}
+	buf := &bytes.Buffer{}
+	if err := tmpl.Execute(buf, &PostTemplateParams{
+		PRNumber:    opts.PRNumber,
+		Org:         opts.Org,
+		Repo:        opts.Repo,
+		SHA1:        opts.SHA1,
+		TemplateKey: opts.TemplateKey,
+	}); err != nil {
+		return err
+	}
+	opts.Template = buf.String()
 
 	cmt := &comment.Comment{
 		PRNumber: opts.PRNumber,
