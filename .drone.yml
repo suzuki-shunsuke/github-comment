@@ -9,7 +9,7 @@ steps:
     commands:
       - shellcheck scripts/* githooks/*
   - name: shfmt
-    image: mvdan/shfmt:v3.0.2
+    image: mvdan/shfmt:v3.1.1-alpine
     commands:
       - shfmt -d .
 ---
@@ -32,7 +32,7 @@ volumes:
     temp: {}
 steps:
   - name: download go modules
-    image: &image_go golang:1.14.0
+    image: golang:1.14.2
     commands:
       - go mod download
     volumes: &volumes
@@ -48,7 +48,7 @@ steps:
       GOPATH: /go
     volumes: *volumes
   - name: codecov
-    image: *image_go
+    image: golang:1.14.2
     commands:
       # bash and cgo seem to be required
       - bash scripts/codecov_test.sh
@@ -73,7 +73,7 @@ steps:
       event:
         - tag
   - name: release
-    image: &goreleaser goreleaser/goreleaser:v0.128.0
+    image: goreleaser/goreleaser:v0.126.0
     commands:
       - goreleaser release
     environment:
@@ -94,7 +94,7 @@ steps:
         - pull_request
         - push
   - name: release (skip publish)
-    image: *goreleaser
+    image: goreleaser/goreleaser:v0.126.0
     commands:
       - goreleaser release --skip-publish
     environment:
