@@ -18,10 +18,14 @@ name: yamllint
 clone:
   depth: 1
 steps:
+  - name: output target files to the file
+    image: plugins/git
+    commands:
+      - 'git ls-files | grep -E ".*\.ya?ml$" > yaml.txt'
   - name: yamllint
     image: quay.io/suzuki_shunsuke/yamllint:1.23.0
     commands:
-      - 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'
+      - 'cat yaml.txt | xargs yamllint -c .yamllint.yml'
 ---
 kind: pipeline
 name: build
