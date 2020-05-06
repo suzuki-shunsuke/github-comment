@@ -19,7 +19,7 @@ clone:
   depth: 1
 steps:
   - name: yamllint
-    image: quay.io/suzuki_shunsuke/yamllint:1.20.0__1
+    image: quay.io/suzuki_shunsuke/yamllint:1.20.0
     commands:
       - 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'
 ---
