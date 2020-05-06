@@ -18,10 +18,14 @@ name: yamllint
 clone:
   depth: 1
 steps:
+  - name: output target files to the file
+    image: plugins/git
+    commands:
+      - 'git ls-files | grep -E ".*\.ya?ml$" > yaml.txt'
   - name: yamllint
     image: quay.io/suzuki_shunsuke/yamllint:1.23.0
     commands:
-      - 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'
+      - 'cat yaml.txt | xargs yamllint -c .yamllint.yml'
 ---
 kind: pipeline
 name: build
@@ -38,14 +42,10 @@ steps:
     volumes: &volumes
       - name: gopath
         path: /go
-    environment:
-      GOPATH: /go
   - name: golangci-lint
     image: golangci/golangci-lint:v1.26.0-alpine
     commands:
       - golangci-lint run
-    environment:
-      GOPATH: /go
     volumes: *volumes
   - name: codecov
     image: golang:1.14.2
@@ -55,7 +55,6 @@ steps:
       - curl -s https://codecov.io/bash > /tmp/codecov.sh
       - test "$LOCAL" = "true" -o "$DRONE_BUILD_EVENT" = "pull_request" || bash /tmp/codecov.sh
     environment:
-      GOPATH: /go
       CODECOV_TOKEN:
         from_secret: codecov_token
     volumes: *volumes
@@ -77,7 +76,6 @@ steps:
     commands:
       - goreleaser release
     environment:
-      GOPATH: /go
       GITHUB_TOKEN:
         from_secret: github_token
     volumes: *volumes
@@ -85,20 +83,10 @@ steps:
       event:
         - tag
 
-  - name: create a dummy tag to test releasing
-    image: *image_git
-    commands:
-      - git tag v0.1.0-alpha
-    when:
-      event:
-        - pull_request
-        - push
   - name: release (skip publish)
     image: goreleaser/goreleaser:v0.133.0
     commands:
-      - goreleaser release --skip-publish
-    environment:
-      GOPATH: /go
+      - goreleaser release --snapshot
     volumes: *volumes
     when:
       event:
