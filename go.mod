@@ -3,7 +3,7 @@ module github.com/suzuki-shunsuke/github-comment
 go 1.14
 
 require (
-	github.com/antonmedv/expr v1.8.4
+	github.com/antonmedv/expr v1.8.5
 	github.com/stretchr/testify v1.5.1
 	github.com/suzuki-shunsuke/go-error-with-exit-code v0.2.1
 	github.com/suzuki-shunsuke/go-timeout v0.2.1
