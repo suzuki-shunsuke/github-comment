@@ -9,5 +9,5 @@ require (
 	github.com/suzuki-shunsuke/go-timeout v0.2.1
 	github.com/urfave/cli/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 )
