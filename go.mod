@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/antonmedv/expr v1.8.8
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v0.2.1
 	github.com/suzuki-shunsuke/go-timeout v0.2.1
 	github.com/urfave/cli/v2 v2.2.0
