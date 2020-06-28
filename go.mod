@@ -8,6 +8,6 @@ require (
 	github.com/suzuki-shunsuke/go-error-with-exit-code v0.2.1
 	github.com/suzuki-shunsuke/go-timeout v0.2.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/yaml.v2 v2.3.0
 )
