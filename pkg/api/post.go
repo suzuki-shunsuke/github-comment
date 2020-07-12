@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"text/template"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
@@ -34,49 +33,45 @@ type PostController struct {
 	ReadConfig func(string, *config.Config) error
 }
 
-func (ctrl PostController) Post(
-	ctx context.Context, opts *option.PostOptions,
-) error {
-	if option.IsCircleCI(ctrl.Getenv) {
-		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
-		}
+func (ctrl PostController) readTemplateFromStdin(opts *option.PostOptions) error {
+	if opts.Template != "" || ctrl.IsTerminal() {
+		return nil
 	}
-	if opts.Template == "" && !ctrl.IsTerminal() {
-		if b, err := ioutil.ReadAll(ctrl.Stdin); err == nil {
-			opts.Template = string(b)
-		} else {
-			return fmt.Errorf("failed to read standard input: %w", err)
-		}
+	b, err := ioutil.ReadAll(ctrl.Stdin)
+	if err != nil {
+		return fmt.Errorf("failed to read standard input: %w", err)
 	}
+	opts.Template = string(b)
+	return nil
+}
 
-	if err := option.ValidatePost(opts); err != nil {
-		return fmt.Errorf("opts is invalid: %w", err)
-	}
-
-	if opts.Template == "" {
-		cfg := &config.Config{}
-		if opts.ConfigPath == "" {
-			p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
-			if err != nil {
-				return err
-			}
-			if !b {
-				return errors.New("configuration file isn't found")
-			}
-			opts.ConfigPath = p
-		}
-		if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
+func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) error {
+	cfg := &config.Config{}
+	if opts.ConfigPath == "" {
+		p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
+		if err != nil {
 			return err
 		}
-		if t, ok := cfg.Post[opts.TemplateKey]; ok {
-			opts.Template = t
-		} else {
-			return errors.New("the template " + opts.TemplateKey + " isn't found")
+		if !b {
+			return errors.New("configuration file isn't found")
 		}
+		opts.ConfigPath = p
 	}
+	if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
+		return err
+	}
+	if t, ok := cfg.Post[opts.TemplateKey]; ok {
+		opts.Template = t
+		return nil
+	}
+	return errors.New("the template " + opts.TemplateKey + " isn't found")
+}
+
+func (ctrl PostController) render(
+	opts *option.PostOptions,
+) error {
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env": os.Getenv,
+		"Env": ctrl.Getenv,
 	}).Parse(opts.Template)
 	if err != nil {
 		return err
@@ -92,6 +87,34 @@ func (ctrl PostController) Post(
 		return err
 	}
 	opts.Template = buf.String()
+	return nil
+}
+
+func (ctrl PostController) Post(
+	ctx context.Context, opts *option.PostOptions,
+) error {
+	if option.IsCircleCI(ctrl.Getenv) {
+		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
+			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+		}
+	}
+	if err := ctrl.readTemplateFromStdin(opts); err != nil {
+		return err
+	}
+
+	if err := option.ValidatePost(opts); err != nil {
+		return fmt.Errorf("opts is invalid: %w", err)
+	}
+
+	if opts.Template == "" {
+		if err := ctrl.readTemplateFromConfig(opts); err != nil {
+			return err
+		}
+	}
+
+	if err := ctrl.render(opts); err != nil {
+		return err
+	}
 
 	cmt := &comment.Comment{
 		PRNumber: opts.PRNumber,
