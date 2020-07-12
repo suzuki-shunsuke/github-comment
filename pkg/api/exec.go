@@ -35,10 +35,8 @@ func Exec(
 	getEnv func(string) string, existFile func(string) bool,
 	readConfig func(string, *config.Config) error,
 ) error {
-	if option.IsCircleCI(getEnv) {
-		if err := option.ComplementExec(opts, getEnv); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
-		}
+	if err := option.ComplementExec(opts, getEnv); err != nil {
+		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 	}
 	if err := option.ValidateExec(opts); err != nil {
 		return err

@@ -10,43 +10,45 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var execCommand = &cli.Command{
-	Name:   "exec",
-	Usage:  "post a command result as a comment",
-	Action: execAction,
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "org",
-			Usage: "GitHub organization name",
+func (runner Runner) execCommand() cli.Command {
+	return cli.Command{
+		Name:   "exec",
+		Usage:  "post a command result as a comment",
+		Action: runner.execAction,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "org",
+				Usage: "GitHub organization name",
+			},
+			&cli.StringFlag{
+				Name:  "repo",
+				Usage: "GitHub repository name",
+			},
+			&cli.StringFlag{
+				Name:    "token",
+				Usage:   "GitHub API token",
+				EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
+			},
+			&cli.StringFlag{
+				Name:  "sha1",
+				Usage: "commit sha1",
+			},
+			&cli.StringFlag{
+				Name:    "template-key",
+				Aliases: []string{"k"},
+				Usage:   "comment template key",
+				Value:   "default",
+			},
+			&cli.StringFlag{
+				Name:  "config",
+				Usage: "configuration file path",
+			},
+			&cli.IntFlag{
+				Name:  "pr",
+				Usage: "GitHub pull request number",
+			},
 		},
-		&cli.StringFlag{
-			Name:  "repo",
-			Usage: "GitHub repository name",
-		},
-		&cli.StringFlag{
-			Name:    "token",
-			Usage:   "GitHub API token",
-			EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-		},
-		&cli.StringFlag{
-			Name:  "sha1",
-			Usage: "commit sha1",
-		},
-		&cli.StringFlag{
-			Name:    "template-key",
-			Aliases: []string{"k"},
-			Usage:   "comment template key",
-			Value:   "default",
-		},
-		&cli.StringFlag{
-			Name:  "config",
-			Usage: "configuration file path",
-		},
-		&cli.IntFlag{
-			Name:  "pr",
-			Usage: "GitHub pull request number",
-		},
-	},
+	}
 }
 
 func parseExecOptions(opts *option.ExecOptions, c *cli.Context) {
@@ -65,7 +67,7 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func execAction(c *cli.Context) error {
+func (runner Runner) execAction(c *cli.Context) error {
 	opts := &option.ExecOptions{}
 	parseExecOptions(opts, c)
 	wd, err := os.Getwd()

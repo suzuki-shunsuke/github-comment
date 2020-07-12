@@ -13,47 +13,49 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var postCommand = &cli.Command{
-	Name:   "post",
-	Usage:  "post a comment",
-	Action: postAction,
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "org",
-			Usage: "GitHub organization name",
+func (runner Runner) postCommand() cli.Command {
+	return cli.Command{
+		Name:   "post",
+		Usage:  "post a comment",
+		Action: runner.postAction,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "org",
+				Usage: "GitHub organization name",
+			},
+			&cli.StringFlag{
+				Name:  "repo",
+				Usage: "GitHub repository name",
+			},
+			&cli.StringFlag{
+				Name:    "token",
+				Usage:   "GitHub API token",
+				EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
+			},
+			&cli.StringFlag{
+				Name:  "sha1",
+				Usage: "commit sha1",
+			},
+			&cli.StringFlag{
+				Name:  "template",
+				Usage: "comment template",
+			},
+			&cli.StringFlag{
+				Name:    "template-key",
+				Aliases: []string{"k"},
+				Usage:   "comment template key",
+				Value:   "default",
+			},
+			&cli.StringFlag{
+				Name:  "config",
+				Usage: "configuration file path",
+			},
+			&cli.IntFlag{
+				Name:  "pr",
+				Usage: "GitHub pull request number",
+			},
 		},
-		&cli.StringFlag{
-			Name:  "repo",
-			Usage: "GitHub repository name",
-		},
-		&cli.StringFlag{
-			Name:    "token",
-			Usage:   "GitHub API token",
-			EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-		},
-		&cli.StringFlag{
-			Name:  "sha1",
-			Usage: "commit sha1",
-		},
-		&cli.StringFlag{
-			Name:  "template",
-			Usage: "comment template",
-		},
-		&cli.StringFlag{
-			Name:    "template-key",
-			Aliases: []string{"k"},
-			Usage:   "comment template key",
-			Value:   "default",
-		},
-		&cli.StringFlag{
-			Name:  "config",
-			Usage: "configuration file path",
-		},
-		&cli.IntFlag{
-			Name:  "pr",
-			Usage: "GitHub pull request number",
-		},
-	},
+	}
 }
 
 func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
@@ -67,7 +69,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
 	opts.PRNumber = c.Int("pr")
 }
 
-func postAction(c *cli.Context) error {
+func (runner Runner) postAction(c *cli.Context) error {
 	opts := &option.PostOptions{}
 	parsePostOptions(opts, c)
 	ctx := context.Background()
@@ -77,5 +79,5 @@ func postAction(c *cli.Context) error {
 	}
 	return api.Post(ctx, wd, opts, os.Getenv, func() bool {
 		return terminal.IsTerminal(0)
-	}, os.Stdin, &http.Client{}, existFile, config.Read)
+	}, runner.Stdin, &http.Client{}, existFile, config.Read)
 }

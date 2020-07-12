@@ -42,6 +42,9 @@ func ValidateExec(opts *ExecOptions) error {
 }
 
 func ComplementExec(opts *ExecOptions, getEnv func(string) string) error {
+	if !IsCircleCI(getEnv) {
+		return nil
+	}
 	if opts.Org == "" {
 		opts.Org = getEnv("CIRCLE_PROJECT_USERNAME")
 	}
