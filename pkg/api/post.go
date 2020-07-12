@@ -24,19 +24,26 @@ type PostTemplateParams struct {
 	TemplateKey string
 }
 
-func Post(
-	ctx context.Context, wd string, opts *option.PostOptions,
-	getEnv func(string) string, isTerminal func() bool, stdin io.Reader,
-	httpClient *http.Client, existFile func(string) bool,
-	readConfig func(string, *config.Config) error,
+type PostController struct {
+	Wd         string
+	Getenv     func(string) string
+	IsTerminal func() bool
+	Stdin      io.Reader
+	HTTPClient *http.Client
+	ExistFile  func(string) bool
+	ReadConfig func(string, *config.Config) error
+}
+
+func (ctrl PostController) Post(
+	ctx context.Context, opts *option.PostOptions,
 ) error {
-	if option.IsCircleCI(getEnv) {
-		if err := option.ComplementPost(opts, getEnv); err != nil {
+	if option.IsCircleCI(ctrl.Getenv) {
+		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
 			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 		}
 	}
-	if opts.Template == "" && !isTerminal() {
-		if b, err := ioutil.ReadAll(stdin); err == nil {
+	if opts.Template == "" && !ctrl.IsTerminal() {
+		if b, err := ioutil.ReadAll(ctrl.Stdin); err == nil {
 			opts.Template = string(b)
 		} else {
 			return fmt.Errorf("failed to read standard input: %w", err)
@@ -50,7 +57,7 @@ func Post(
 	if opts.Template == "" {
 		cfg := &config.Config{}
 		if opts.ConfigPath == "" {
-			p, b, err := config.Find(wd, existFile)
+			p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
 			if err != nil {
 				return err
 			}
@@ -59,7 +66,7 @@ func Post(
 			}
 			opts.ConfigPath = p
 		}
-		if err := readConfig(opts.ConfigPath, cfg); err != nil {
+		if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
 			return err
 		}
 		if t, ok := cfg.Post[opts.TemplateKey]; ok {
@@ -93,7 +100,7 @@ func Post(
 		Body:     opts.Template,
 		SHA1:     opts.SHA1,
 	}
-	if err := comment.Create(ctx, httpClient, opts.Token, cmt); err != nil {
+	if err := comment.Create(ctx, ctrl.HTTPClient, opts.Token, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	return nil

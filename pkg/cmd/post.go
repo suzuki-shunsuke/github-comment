@@ -77,7 +77,17 @@ func (runner Runner) postAction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	return api.Post(ctx, wd, opts, os.Getenv, func() bool {
-		return terminal.IsTerminal(0)
-	}, runner.Stdin, &http.Client{}, existFile, config.Read)
+
+	ctrl := api.PostController{
+		Wd:     wd,
+		Getenv: os.Getenv,
+		IsTerminal: func() bool {
+			return terminal.IsTerminal(0)
+		},
+		Stdin:      runner.Stdin,
+		HTTPClient: http.DefaultClient,
+		ExistFile:  existFile,
+		ReadConfig: config.Read,
+	}
+	return ctrl.Post(ctx, opts)
 }
