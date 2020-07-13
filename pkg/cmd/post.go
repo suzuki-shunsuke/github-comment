@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"context"
-	"net/http"
 	"os"
 
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
 )
 
@@ -85,9 +86,14 @@ func (runner Runner) postAction(c *cli.Context) error {
 			return terminal.IsTerminal(0)
 		},
 		Stdin:      runner.Stdin,
-		HTTPClient: http.DefaultClient,
 		ExistFile:  existFile,
 		ReadConfig: config.Read,
+		Commenter: comment.Commenter{
+			Token: opts.Token,
+			HTTPClient: &httpclient.Client{
+				Endpoint: "https://api.github.com",
+			},
+		},
 	}
 	return ctrl.Post(ctx, opts)
 }

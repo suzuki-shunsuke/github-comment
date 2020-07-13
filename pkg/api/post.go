@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"text/template"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
@@ -23,14 +22,18 @@ type PostTemplateParams struct {
 	TemplateKey string
 }
 
+type Commenter interface {
+	Create(ctx context.Context, cmt comment.Comment) error
+}
+
 type PostController struct {
 	Wd         string
 	Getenv     func(string) string
 	IsTerminal func() bool
 	Stdin      io.Reader
-	HTTPClient *http.Client
 	ExistFile  func(string) bool
 	ReadConfig func(string, *config.Config) error
+	Commenter  Commenter
 }
 
 func (ctrl PostController) readTemplateFromStdin(opts *option.PostOptions) error {
@@ -67,9 +70,7 @@ func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) erro
 	return errors.New("the template " + opts.TemplateKey + " isn't found")
 }
 
-func (ctrl PostController) render(
-	opts *option.PostOptions,
-) error {
+func (ctrl PostController) render(opts *option.PostOptions) error {
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env": ctrl.Getenv,
 	}).Parse(opts.Template)
@@ -90,9 +91,7 @@ func (ctrl PostController) render(
 	return nil
 }
 
-func (ctrl PostController) Post(
-	ctx context.Context, opts *option.PostOptions,
-) error {
+func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) error {
 	if option.IsCircleCI(ctrl.Getenv) {
 		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
 			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
@@ -116,14 +115,14 @@ func (ctrl PostController) Post(
 		return err
 	}
 
-	cmt := &comment.Comment{
+	cmt := comment.Comment{
 		PRNumber: opts.PRNumber,
 		Org:      opts.Org,
 		Repo:     opts.Repo,
 		Body:     opts.Template,
 		SHA1:     opts.SHA1,
 	}
-	if err := comment.Create(ctx, ctrl.HTTPClient, opts.Token, cmt); err != nil {
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	return nil

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -30,12 +29,20 @@ type Env struct {
 	Env            func(string) string
 }
 
-func Exec(
-	ctx context.Context, wd string, opts *option.ExecOptions,
-	getEnv func(string) string, existFile func(string) bool,
-	readConfig func(string, *config.Config) error,
-) error {
-	if err := option.ComplementExec(opts, getEnv); err != nil {
+type ExecController struct {
+	Wd         string
+	Stdin      io.Reader
+	Stdout     io.Writer
+	Stderr     io.Writer
+	Getenv     func(string) string
+	ExistFile  func(string) bool
+	ReadConfig func(string, *config.Config) error
+	Commenter  Commenter
+	Env        []string
+}
+
+func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error {
+	if err := option.ComplementExec(opts, ctrl.Getenv); err != nil {
 		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 	}
 	if err := option.ValidateExec(opts); err != nil {
@@ -44,7 +51,7 @@ func Exec(
 
 	cfg := &config.Config{}
 	if opts.ConfigPath == "" {
-		p, b, err := config.Find(wd, existFile)
+		p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
 		if err != nil {
 			return err
 		}
@@ -54,7 +61,7 @@ func Exec(
 		opts.ConfigPath = p
 	}
 
-	if err := readConfig(opts.ConfigPath, cfg); err != nil {
+	if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
 		return err
 	}
 
@@ -64,13 +71,13 @@ func Exec(
 	}
 
 	cmd := exec.Command(opts.Args[0], opts.Args[1:]...)
-	cmd.Stdin = os.Stdin
+	cmd.Stdin = ctrl.Stdin
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	combinedOutput := &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(os.Stdout, stdout, combinedOutput)
-	cmd.Stderr = io.MultiWriter(os.Stderr, stderr, combinedOutput)
-	cmd.Env = os.Environ()
+	cmd.Stdout = io.MultiWriter(ctrl.Stdout, stdout, combinedOutput)
+	cmd.Stderr = io.MultiWriter(ctrl.Stderr, stderr, combinedOutput)
+	cmd.Env = ctrl.Env
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(
@@ -91,7 +98,7 @@ func Exec(
 	for {
 		select {
 		case err := <-exitChan:
-			execPost(c, opts, execConfigs, &Env{
+			ctrl.execPost(c, opts, execConfigs, &Env{
 				ExitCode:       cmd.ProcessState.ExitCode(),
 				Command:        cmd.String(),
 				Stdout:         stdout.String(),
@@ -112,7 +119,7 @@ func Exec(
 	}
 }
 
-func execPostConfig(
+func (ctrl ExecController) execPostConfig(
 	ctx context.Context, opts *option.ExecOptions, execConfig *config.ExecConfig, env *Env,
 ) (bool, error) {
 	e := expr.Env(env)
@@ -129,7 +136,7 @@ func execPostConfig(
 			return true, nil
 		}
 		tmpl, err := template.New("comment").Funcs(template.FuncMap{
-			"Env": os.Getenv,
+			"Env": ctrl.Getenv,
 		}).Parse(execConfig.Template)
 		if err != nil {
 			return true, err
@@ -138,15 +145,14 @@ func execPostConfig(
 		if err := tmpl.Execute(buf, env); err != nil {
 			return true, err
 		}
-		client := &http.Client{}
-		cmt := &comment.Comment{
+		cmt := comment.Comment{
 			PRNumber: opts.PRNumber,
 			Org:      opts.Org,
 			Repo:     opts.Repo,
 			Body:     buf.String(),
 			SHA1:     opts.SHA1,
 		}
-		if err := comment.Create(ctx, client, opts.Token, cmt); err != nil {
+		if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 			return true, fmt.Errorf("failed to create an issue comment: %w", err)
 		}
 		return true, nil
@@ -154,9 +160,9 @@ func execPostConfig(
 	return false, nil
 }
 
-func execPost(ctx context.Context, opts *option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
+func (ctrl ExecController) execPost(ctx context.Context, opts *option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
 	for _, execConfig := range execConfigs {
-		f, err := execPostConfig(ctx, opts, &execConfig, env)
+		f, err := ctrl.execPostConfig(ctx, opts, &execConfig, env)
 		if err != nil {
 			return err
 		}

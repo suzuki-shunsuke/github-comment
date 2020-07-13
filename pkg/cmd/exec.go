@@ -5,8 +5,10 @@ import (
 	"os"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
 )
 
@@ -75,5 +77,21 @@ func (runner Runner) execAction(c *cli.Context) error {
 		return err
 	}
 	ctx := context.Background()
-	return api.Exec(ctx, wd, opts, os.Getenv, existFile, config.Read)
+	ctrl := api.ExecController{
+		Wd:         wd,
+		Getenv:     os.Getenv,
+		ExistFile:  existFile,
+		ReadConfig: config.Read,
+		Stdin:      runner.Stdin,
+		Stdout:     runner.Stdout,
+		Stderr:     runner.Stderr,
+		Env:        os.Environ(),
+		Commenter: comment.Commenter{
+			Token: opts.Token,
+			HTTPClient: &httpclient.Client{
+				Endpoint: "https://api.github.com",
+			},
+		},
+	}
+	return ctrl.Exec(ctx, opts)
 }
