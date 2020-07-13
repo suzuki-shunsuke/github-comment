@@ -36,6 +36,51 @@ type PostController struct {
 	Commenter  Commenter
 }
 
+func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) error {
+	cmt, err := ctrl.getCommentParams(ctx, opts)
+	if err != nil {
+		return err
+	}
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
+	}
+	return nil
+}
+
+func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (comment.Comment, error) {
+	cmt := comment.Comment{}
+	if option.IsCircleCI(ctrl.Getenv) {
+		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
+			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+		}
+	}
+	if err := ctrl.readTemplateFromStdin(opts); err != nil {
+		return cmt, err
+	}
+
+	if err := option.ValidatePost(opts); err != nil {
+		return cmt, fmt.Errorf("opts is invalid: %w", err)
+	}
+
+	if opts.Template == "" {
+		if err := ctrl.readTemplateFromConfig(opts); err != nil {
+			return cmt, err
+		}
+	}
+
+	if err := ctrl.render(opts); err != nil {
+		return cmt, err
+	}
+
+	return comment.Comment{
+		PRNumber: opts.PRNumber,
+		Org:      opts.Org,
+		Repo:     opts.Repo,
+		Body:     opts.Template,
+		SHA1:     opts.SHA1,
+	}, nil
+}
+
 func (ctrl PostController) readTemplateFromStdin(opts *option.PostOptions) error {
 	if opts.Template != "" || ctrl.IsTerminal() {
 		return nil
@@ -88,42 +133,5 @@ func (ctrl PostController) render(opts *option.PostOptions) error {
 		return err
 	}
 	opts.Template = buf.String()
-	return nil
-}
-
-func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) error {
-	if option.IsCircleCI(ctrl.Getenv) {
-		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
-		}
-	}
-	if err := ctrl.readTemplateFromStdin(opts); err != nil {
-		return err
-	}
-
-	if err := option.ValidatePost(opts); err != nil {
-		return fmt.Errorf("opts is invalid: %w", err)
-	}
-
-	if opts.Template == "" {
-		if err := ctrl.readTemplateFromConfig(opts); err != nil {
-			return err
-		}
-	}
-
-	if err := ctrl.render(opts); err != nil {
-		return err
-	}
-
-	cmt := comment.Comment{
-		PRNumber: opts.PRNumber,
-		Org:      opts.Org,
-		Repo:     opts.Repo,
-		Body:     opts.Template,
-		SHA1:     opts.SHA1,
-	}
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
-	}
 	return nil
 }
