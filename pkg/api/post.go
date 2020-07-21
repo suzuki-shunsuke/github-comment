@@ -29,7 +29,7 @@ type Commenter interface {
 type PostController struct {
 	Wd         string
 	Getenv     func(string) string
-	IsTerminal func() bool
+	HasStdin   func() bool
 	Stdin      io.Reader
 	ExistFile  func(string) bool
 	ReadConfig func(string, *config.Config) error
@@ -54,8 +54,12 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.Po
 			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 		}
 	}
-	if err := ctrl.readTemplateFromStdin(opts); err != nil {
-		return cmt, err
+	if opts.Template == "" {
+		tpl, err := ctrl.readTemplateFromStdin()
+		if err != nil {
+			return cmt, err
+		}
+		opts.Template = tpl
 	}
 
 	if err := option.ValidatePost(opts); err != nil {
@@ -81,16 +85,15 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.Po
 	}, nil
 }
 
-func (ctrl PostController) readTemplateFromStdin(opts *option.PostOptions) error {
-	if opts.Template != "" || ctrl.IsTerminal() {
-		return nil
+func (ctrl PostController) readTemplateFromStdin() (string, error) {
+	if !ctrl.HasStdin() {
+		return "", nil
 	}
 	b, err := ioutil.ReadAll(ctrl.Stdin)
 	if err != nil {
-		return fmt.Errorf("failed to read standard input: %w", err)
+		return "", fmt.Errorf("failed to read standard input: %w", err)
 	}
-	opts.Template = string(b)
-	return nil
+	return string(b), nil
 }
 
 func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) error {

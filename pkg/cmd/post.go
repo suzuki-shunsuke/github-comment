@@ -82,8 +82,8 @@ func (runner Runner) postAction(c *cli.Context) error {
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
-		IsTerminal: func() bool {
-			return terminal.IsTerminal(0)
+		HasStdin: func() bool {
+			return !terminal.IsTerminal(0)
 		},
 		Stdin:      runner.Stdin,
 		ExistFile:  existFile,
