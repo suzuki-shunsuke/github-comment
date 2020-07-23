@@ -1,30 +1,17 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"text/template"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
-
-type PostTemplateParams struct {
-	// PRNumber is the pull request number where the comment is posted
-	PRNumber int
-	// Org is the GitHub Organization or User name
-	Org string
-	// Repo is the GitHub Repository name
-	Repo string
-	// SHA1 is the commit SHA1
-	SHA1        string
-	TemplateKey string
-}
 
 // Commenter is API to post a comment to GitHub
 type Commenter interface {
@@ -35,6 +22,10 @@ type Commenter interface {
 type Reader interface {
 	Find(wd string) (string, bool, error)
 	Read(p string, cfg *config.Config) error
+}
+
+type Renderer interface {
+	Render(tpl string, params template.Params) (string, error)
 }
 
 type PostController struct {
@@ -48,6 +39,7 @@ type PostController struct {
 	Stdin     io.Reader
 	Reader    Reader
 	Commenter Commenter
+	Renderer  Renderer
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
@@ -88,7 +80,13 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts option.Pos
 		opts.Template = tpl
 	}
 
-	tpl, err := ctrl.render(opts)
+	tpl, err := ctrl.Renderer.Render(opts.Template, template.Params{
+		PRNumber:    opts.PRNumber,
+		Org:         opts.Org,
+		Repo:        opts.Repo,
+		SHA1:        opts.SHA1,
+		TemplateKey: opts.TemplateKey,
+	})
 	if err != nil {
 		return cmt, err
 	}
@@ -132,24 +130,4 @@ func (ctrl PostController) readTemplateFromConfig(opts option.PostOptions) (stri
 		return t, nil
 	}
 	return "", errors.New("the template " + opts.TemplateKey + " isn't found")
-}
-
-func (ctrl PostController) render(opts option.PostOptions) (string, error) {
-	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env": ctrl.Getenv,
-	}).Parse(opts.Template)
-	if err != nil {
-		return "", err
-	}
-	buf := &bytes.Buffer{}
-	if err := tmpl.Execute(buf, &PostTemplateParams{
-		PRNumber:    opts.PRNumber,
-		Org:         opts.Org,
-		Repo:        opts.Repo,
-		SHA1:        opts.SHA1,
-		TemplateKey: opts.TemplateKey,
-	}); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
 }
