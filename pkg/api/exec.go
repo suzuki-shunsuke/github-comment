@@ -79,7 +79,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Stdin: ctrl.Stdin,
 	})
 
-	ctrl.execPost(ctx, opts, execConfigs, &Env{
+	ctrl.execPost(ctx, opts, execConfigs, Env{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		Stdout:         result.Stdout,
@@ -93,7 +93,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 }
 
 func (ctrl ExecController) execPostConfig(
-	ctx context.Context, opts option.ExecOptions, execConfig config.ExecConfig, env *Env,
+	ctx context.Context, opts option.ExecOptions, execConfig config.ExecConfig, env Env,
 ) (bool, error) {
 	f, err := ctrl.Expr.Match(execConfig.When, env)
 	if err != nil {
@@ -123,7 +123,7 @@ func (ctrl ExecController) execPostConfig(
 }
 
 func (ctrl ExecController) execPost(
-	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env *Env,
+	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
 ) error {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.execPostConfig(ctx, opts, execConfig, env)
