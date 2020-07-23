@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"os"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
@@ -76,7 +75,6 @@ func (runner Runner) execAction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()
 	ctrl := api.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -92,5 +90,5 @@ func (runner Runner) execAction(c *cli.Context) error {
 			HTTPClient: httpclient.New("https://api.github.com"),
 		},
 	}
-	return ctrl.Exec(ctx, opts)
+	return ctrl.Exec(c.Context, opts)
 }
