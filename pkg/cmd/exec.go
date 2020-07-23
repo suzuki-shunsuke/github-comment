@@ -6,6 +6,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
@@ -92,6 +93,11 @@ func (runner Runner) execAction(c *cli.Context) error {
 		},
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
+		},
+		Executor: execute.Executor{
+			Stdout: runner.Stdout,
+			Stderr: runner.Stderr,
+			Env:    os.Environ(),
 		},
 	}
 	return ctrl.Exec(c.Context, opts)

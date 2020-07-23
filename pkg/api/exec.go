@@ -1,19 +1,17 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"os/exec"
 
 	"github.com/antonmedv/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
-	"github.com/suzuki-shunsuke/go-timeout/timeout"
 )
 
 type Env struct {
@@ -25,6 +23,10 @@ type Env struct {
 	Env            func(string) string
 }
 
+type Executor interface {
+	Run(ctx context.Context, params execute.Params) (execute.Result, error)
+}
+
 type ExecController struct {
 	Wd        string
 	Stdin     io.Reader
@@ -34,6 +36,7 @@ type ExecController struct {
 	Reader    Reader
 	Commenter Commenter
 	Renderer  Renderer
+	Executor  Executor
 	Env       []string
 }
 
@@ -66,27 +69,21 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		return errors.New("template isn't found: " + opts.TemplateKey)
 	}
 
-	cmd := exec.Command(opts.Args[0], opts.Args[1:]...)
-	cmd.Stdin = ctrl.Stdin
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	combinedOutput := &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(ctrl.Stdout, stdout, combinedOutput)
-	cmd.Stderr = io.MultiWriter(ctrl.Stderr, stderr, combinedOutput)
-	cmd.Env = ctrl.Env
+	result, err := ctrl.Executor.Run(ctx, execute.Params{
+		Cmd:   opts.Args[0],
+		Args:  opts.Args[1:],
+		Stdin: ctrl.Stdin,
+	})
 
-	runner := timeout.NewRunner(0)
-	err := runner.Run(ctx, cmd)
-	ec := cmd.ProcessState.ExitCode()
 	ctrl.execPost(ctx, opts, execConfigs, &Env{
-		ExitCode:       ec,
-		Command:        cmd.String(),
-		Stdout:         stdout.String(),
-		Stderr:         stderr.String(),
-		CombinedOutput: combinedOutput.String(),
+		ExitCode:       result.ExitCode,
+		Command:        result.Cmd,
+		Stdout:         result.Stdout,
+		Stderr:         result.Stderr,
+		CombinedOutput: result.CombinedOutput,
 	})
 	if err != nil {
-		return ecerror.Wrap(err, ec)
+		return ecerror.Wrap(err, result.ExitCode)
 	}
 	return nil
 }
