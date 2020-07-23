@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"os"
 
 	"golang.org/x/crypto/ssh/terminal"
@@ -71,9 +70,8 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
 }
 
 func (runner Runner) postAction(c *cli.Context) error {
-	opts := &option.PostOptions{}
-	parsePostOptions(opts, c)
-	ctx := context.Background()
+	opts := option.PostOptions{}
+	parsePostOptions(&opts, c)
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -95,5 +93,5 @@ func (runner Runner) postAction(c *cli.Context) error {
 			},
 		},
 	}
-	return ctrl.Post(ctx, opts)
+	return ctrl.Post(c.Context, &opts)
 }
