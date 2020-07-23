@@ -13,13 +13,22 @@ import (
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
-type Env struct {
+type ExecCommentParams struct {
 	Stdout         string
 	Stderr         string
 	CombinedOutput string
 	Command        string
 	ExitCode       int
 	Env            func(string) string
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
+	SHA1        string
+	TemplateKey string
 }
 
 type Executor interface {
@@ -67,12 +76,17 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Stdin: ctrl.Stdin,
 	})
 
-	ctrl.post(ctx, opts, execConfigs, Env{
+	ctrl.post(ctx, opts, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		Stdout:         result.Stdout,
 		Stderr:         result.Stderr,
 		CombinedOutput: result.CombinedOutput,
+		PRNumber:       opts.PRNumber,
+		Org:            opts.Org,
+		Repo:           opts.Repo,
+		SHA1:           opts.SHA1,
+		TemplateKey:    opts.TemplateKey,
 	})
 	if err != nil {
 		return ecerror.Wrap(err, result.ExitCode)
@@ -83,10 +97,10 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
 func (ctrl ExecController) getExecConfig(
-	opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+	opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
-		f, err := ctrl.Expr.Match(execConfig.When, env)
+		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
 		if err != nil {
 			return execConfig, false, err
 		}
@@ -101,10 +115,10 @@ func (ctrl ExecController) getExecConfig(
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
 func (ctrl ExecController) getComment(
-	opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+	opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
-	execConfig, f, err := ctrl.getExecConfig(opts, execConfigs, env)
+	execConfig, f, err := ctrl.getExecConfig(opts, execConfigs, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
@@ -115,7 +129,7 @@ func (ctrl ExecController) getComment(
 		return cmt, false, nil
 	}
 
-	tpl, err := ctrl.Renderer.Render(execConfig.Template, env)
+	tpl, err := ctrl.Renderer.Render(execConfig.Template, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
@@ -129,9 +143,9 @@ func (ctrl ExecController) getComment(
 }
 
 func (ctrl ExecController) post(
-	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) error {
-	cmt, f, err := ctrl.getComment(opts, execConfigs, env)
+	cmt, f, err := ctrl.getComment(opts, execConfigs, cmtParams)
 	if err != nil {
 		return err
 	}

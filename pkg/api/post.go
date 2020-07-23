@@ -10,7 +10,6 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
 // Commenter is API to post a comment to GitHub
@@ -25,6 +24,18 @@ type Reader interface {
 
 type Renderer interface {
 	Render(tpl string, params interface{}) (string, error)
+}
+
+type PostTemplateParams struct {
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
+	SHA1        string
+	TemplateKey string
 }
 
 type PostController struct {
@@ -79,7 +90,7 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts option.Pos
 		opts.Template = tpl
 	}
 
-	tpl, err := ctrl.Renderer.Render(opts.Template, template.Params{
+	tpl, err := ctrl.Renderer.Render(opts.Template, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,

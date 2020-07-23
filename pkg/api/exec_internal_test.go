@@ -15,7 +15,7 @@ func TestExecController_getExecConfig(t *testing.T) {
 		ctrl        ExecController
 		opts        option.ExecOptions
 		execConfigs []config.ExecConfig
-		env         Env
+		cmtParams   ExecCommentParams
 		exp         config.ExecConfig
 		f           bool
 		isErr       bool
@@ -83,7 +83,7 @@ func TestExecController_getExecConfig(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
-			execConfig, f, err := d.ctrl.getExecConfig(d.opts, d.execConfigs, d.env)
+			execConfig, f, err := d.ctrl.getExecConfig(d.opts, d.execConfigs, d.cmtParams)
 			if d.isErr {
 				require.NotNil(t, err)
 				return
