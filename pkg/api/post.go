@@ -25,7 +25,7 @@ type Reader interface {
 }
 
 type Renderer interface {
-	Render(tpl string, params template.Params) (string, error)
+	Render(tpl string, params interface{}) (string, error)
 }
 
 type PostController struct {

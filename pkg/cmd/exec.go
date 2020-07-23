@@ -7,6 +7,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
 )
@@ -88,6 +89,9 @@ func (runner Runner) execAction(c *cli.Context) error {
 		Commenter: comment.Commenter{
 			Token:      opts.Token,
 			HTTPClient: httpclient.New("https://api.github.com"),
+		},
+		Renderer: template.Renderer{
+			Getenv: os.Getenv,
 		},
 	}
 	return ctrl.Exec(c.Context, opts)

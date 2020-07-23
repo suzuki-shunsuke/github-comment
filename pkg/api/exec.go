@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"text/template"
 
 	"github.com/antonmedv/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
@@ -34,6 +33,7 @@ type ExecController struct {
 	Getenv    func(string) string
 	Reader    Reader
 	Commenter Commenter
+	Renderer  Renderer
 	Env       []string
 }
 
@@ -103,33 +103,27 @@ func (ctrl ExecController) execPostConfig(
 	if err != nil {
 		return false, err
 	}
-	if f, ok := output.(bool); ok && f {
-		if execConfig.DontComment {
-			return true, nil
-		}
-		tmpl, err := template.New("comment").Funcs(template.FuncMap{
-			"Env": ctrl.Getenv,
-		}).Parse(execConfig.Template)
-		if err != nil {
-			return true, err
-		}
-		buf := &bytes.Buffer{}
-		if err := tmpl.Execute(buf, env); err != nil {
-			return true, err
-		}
-		cmt := comment.Comment{
-			PRNumber: opts.PRNumber,
-			Org:      opts.Org,
-			Repo:     opts.Repo,
-			Body:     buf.String(),
-			SHA1:     opts.SHA1,
-		}
-		if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-			return true, fmt.Errorf("failed to create an issue comment: %w", err)
-		}
+	if f, ok := output.(bool); !ok || !f {
+		return false, nil
+	}
+	if execConfig.DontComment {
 		return true, nil
 	}
-	return false, nil
+	tpl, err := ctrl.Renderer.Render(execConfig.Template, env)
+	if err != nil {
+		return true, err
+	}
+	cmt := comment.Comment{
+		PRNumber: opts.PRNumber,
+		Org:      opts.Org,
+		Repo:     opts.Repo,
+		Body:     tpl,
+		SHA1:     opts.SHA1,
+	}
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return true, fmt.Errorf("failed to create an issue comment: %w", err)
+	}
+	return true, nil
 }
 
 func (ctrl ExecController) execPost(ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {

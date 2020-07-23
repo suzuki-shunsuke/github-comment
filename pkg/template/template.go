@@ -21,7 +21,7 @@ type Params struct {
 	TemplateKey string
 }
 
-func (renderer Renderer) Render(tpl string, params Params) (string, error) {
+func (renderer Renderer) Render(tpl string, params interface{}) (string, error) {
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env": renderer.Getenv,
 	}).Parse(tpl)
