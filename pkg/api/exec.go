@@ -6,10 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
-	"os/signal"
-	"syscall"
 	"text/template"
 
 	"github.com/antonmedv/expr"
@@ -79,44 +76,20 @@ func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) e
 	cmd.Stderr = io.MultiWriter(ctrl.Stderr, stderr, combinedOutput)
 	cmd.Env = ctrl.Env
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(
-		signalChan, syscall.SIGHUP, syscall.SIGINT,
-		syscall.SIGTERM, syscall.SIGQUIT)
-
 	runner := timeout.NewRunner(0)
-	c, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	sentSignals := map[os.Signal]struct{}{}
-	exitChan := make(chan error, 1)
-
-	go func() {
-		exitChan <- runner.Run(c, cmd)
-	}()
-
-	for {
-		select {
-		case err := <-exitChan:
-			ctrl.execPost(c, opts, execConfigs, &Env{
-				ExitCode:       cmd.ProcessState.ExitCode(),
-				Command:        cmd.String(),
-				Stdout:         stdout.String(),
-				Stderr:         stderr.String(),
-				CombinedOutput: combinedOutput.String(),
-			})
-			if err != nil {
-				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-			}
-			return nil
-		case sig := <-signalChan:
-			if _, ok := sentSignals[sig]; ok {
-				continue
-			}
-			sentSignals[sig] = struct{}{}
-			runner.SendSignal(sig.(syscall.Signal))
-		}
+	err := runner.Run(ctx, cmd)
+	ec := cmd.ProcessState.ExitCode()
+	ctrl.execPost(ctx, opts, execConfigs, &Env{
+		ExitCode:       ec,
+		Command:        cmd.String(),
+		Stdout:         stdout.String(),
+		Stderr:         stderr.String(),
+		CombinedOutput: combinedOutput.String(),
+	})
+	if err != nil {
+		return ecerror.Wrap(err, ec)
 	}
+	return nil
 }
 
 func (ctrl ExecController) execPostConfig(

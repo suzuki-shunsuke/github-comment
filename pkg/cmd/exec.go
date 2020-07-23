@@ -87,10 +87,8 @@ func (runner Runner) execAction(c *cli.Context) error {
 		Stderr:     runner.Stderr,
 		Env:        os.Environ(),
 		Commenter: comment.Commenter{
-			Token: opts.Token,
-			HTTPClient: &httpclient.Client{
-				Endpoint: "https://api.github.com",
-			},
+			Token:      opts.Token,
+			HTTPClient: httpclient.New("https://api.github.com"),
 		},
 	}
 	return ctrl.Exec(ctx, opts)

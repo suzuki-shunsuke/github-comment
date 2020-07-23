@@ -17,7 +17,7 @@ type Comment struct {
 }
 
 type Commenter struct {
-	HTTPClient *httpclient.Client
+	HTTPClient httpclient.Client
 	Token      string
 }
 

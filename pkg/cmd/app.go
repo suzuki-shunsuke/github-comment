@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"io"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/constant"
@@ -13,7 +14,7 @@ type Runner struct {
 	Stderr io.Writer
 }
 
-func (runner Runner) Run(args []string) error {
+func (runner Runner) Run(ctx context.Context, args []string) error {
 	postCommand := runner.postCommand()
 	execCommand := runner.execCommand()
 	app := cli.App{
@@ -23,5 +24,5 @@ func (runner Runner) Run(args []string) error {
 			&execCommand,
 		},
 	}
-	return app.Run(args)
+	return app.RunContext(ctx, args)
 }

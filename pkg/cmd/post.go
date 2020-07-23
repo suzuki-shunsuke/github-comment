@@ -87,10 +87,8 @@ func (runner Runner) postAction(c *cli.Context) error {
 		ExistFile:  existFile,
 		ReadConfig: config.Read,
 		Commenter: comment.Commenter{
-			Token: opts.Token,
-			HTTPClient: &httpclient.Client{
-				Endpoint: "https://api.github.com",
-			},
+			Token:      opts.Token,
+			HTTPClient: httpclient.New("https://api.github.com"),
 		},
 	}
 	return ctrl.Post(c.Context, &opts)
