@@ -58,6 +58,7 @@ func (runner Runner) postCommand() cli.Command {
 	}
 }
 
+// parsePostOptions parses the command line arguments of the subcommand "post".
 func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
@@ -69,6 +70,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
 	opts.PRNumber = c.Int("pr")
 }
 
+// postAction is an entrypoint of the subcommand "post".
 func (runner Runner) postAction(c *cli.Context) error {
 	opts := option.PostOptions{}
 	parsePostOptions(&opts, c)

@@ -15,25 +15,35 @@ import (
 )
 
 type PostTemplateParams struct {
-	PRNumber    int
-	Org         string
-	Repo        string
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
 }
 
+// Commenter is API to post a comment to GitHub
 type Commenter interface {
 	Create(ctx context.Context, cmt comment.Comment) error
 }
 
+// Reader is API to find and read the configuration file of github-comment
 type Reader interface {
 	Find(wd string) (string, bool, error)
 	Read(p string, cfg *config.Config) error
 }
 
 type PostController struct {
-	Wd        string
-	Getenv    func(string) string
+	// Wd is a path to the working directory
+	Wd string
+	// Getenv returns the environment variable. os.Getenv
+	Getenv func(string) string
+	// HasStdin returns true if there is the standard input
+	// If thre is the standard input, it is treated as the comment template
 	HasStdin  func() bool
 	Stdin     io.Reader
 	Reader    Reader
