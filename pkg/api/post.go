@@ -101,7 +101,7 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 }
 
 func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) error {
-	cfg := &config.Config{}
+	cfg := config.Config{}
 	if opts.ConfigPath == "" {
 		p, b, err := ctrl.Reader.Find(ctrl.Wd)
 		if err != nil {
@@ -112,7 +112,7 @@ func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) erro
 		}
 		opts.ConfigPath = p
 	}
-	if err := ctrl.Reader.Read(opts.ConfigPath, cfg); err != nil {
+	if err := ctrl.Reader.Read(opts.ConfigPath, &cfg); err != nil {
 		return err
 	}
 	if t, ok := cfg.Post[opts.TemplateKey]; ok {

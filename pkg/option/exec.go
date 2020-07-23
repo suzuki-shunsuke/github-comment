@@ -19,7 +19,7 @@ type ExecOptions struct {
 	Args        []string
 }
 
-func ValidateExec(opts *ExecOptions) error {
+func ValidateExec(opts ExecOptions) error {
 	if opts.Org == "" {
 		return errors.New("org is required")
 	}

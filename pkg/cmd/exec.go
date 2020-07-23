@@ -70,8 +70,8 @@ func existFile(p string) bool {
 }
 
 func (runner Runner) execAction(c *cli.Context) error {
-	opts := &option.ExecOptions{}
-	parseExecOptions(opts, c)
+	opts := option.ExecOptions{}
+	parseExecOptions(&opts, c)
 	wd, err := os.Getwd()
 	if err != nil {
 		return err

@@ -37,15 +37,15 @@ type ExecController struct {
 	Env       []string
 }
 
-func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error {
-	if err := option.ComplementExec(opts, ctrl.Getenv); err != nil {
+func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error {
+	if err := option.ComplementExec(&opts, ctrl.Getenv); err != nil {
 		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 	}
 	if err := option.ValidateExec(opts); err != nil {
 		return err
 	}
 
-	cfg := &config.Config{}
+	cfg := config.Config{}
 	if opts.ConfigPath == "" {
 		p, b, err := ctrl.Reader.Find(ctrl.Wd)
 		if err != nil {
@@ -57,7 +57,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) e
 		opts.ConfigPath = p
 	}
 
-	if err := ctrl.Reader.Read(opts.ConfigPath, cfg); err != nil {
+	if err := ctrl.Reader.Read(opts.ConfigPath, &cfg); err != nil {
 		return err
 	}
 
@@ -92,7 +92,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) e
 }
 
 func (ctrl ExecController) execPostConfig(
-	ctx context.Context, opts *option.ExecOptions, execConfig *config.ExecConfig, env *Env,
+	ctx context.Context, opts option.ExecOptions, execConfig config.ExecConfig, env *Env,
 ) (bool, error) {
 	e := expr.Env(env)
 	prog, err := expr.Compile(execConfig.When, e, expr.AsBool())
@@ -132,9 +132,9 @@ func (ctrl ExecController) execPostConfig(
 	return false, nil
 }
 
-func (ctrl ExecController) execPost(ctx context.Context, opts *option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
+func (ctrl ExecController) execPost(ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
 	for _, execConfig := range execConfigs {
-		f, err := ctrl.execPostConfig(ctx, opts, &execConfig, env)
+		f, err := ctrl.execPostConfig(ctx, opts, execConfig, env)
 		if err != nil {
 			return err
 		}
