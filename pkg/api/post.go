@@ -20,8 +20,7 @@ type Commenter interface {
 
 // Reader is API to find and read the configuration file of github-comment
 type Reader interface {
-	Find(wd string) (string, bool, error)
-	Read(p string, cfg *config.Config) error
+	FindAndRead(cfgPath, wd string) (config.Config, error)
 }
 
 type Renderer interface {
@@ -112,18 +111,8 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 }
 
 func (ctrl PostController) readTemplateFromConfig(opts option.PostOptions) (string, error) {
-	cfg := config.Config{}
-	if opts.ConfigPath == "" {
-		p, b, err := ctrl.Reader.Find(ctrl.Wd)
-		if err != nil {
-			return "", err
-		}
-		if !b {
-			return "", errors.New("configuration file isn't found")
-		}
-		opts.ConfigPath = p
-	}
-	if err := ctrl.Reader.Read(opts.ConfigPath, &cfg); err != nil {
+	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
+	if err != nil {
 		return "", err
 	}
 	if t, ok := cfg.Post[opts.TemplateKey]; ok {

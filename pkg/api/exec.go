@@ -51,19 +51,8 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		return err
 	}
 
-	cfg := config.Config{}
-	if opts.ConfigPath == "" {
-		p, b, err := ctrl.Reader.Find(ctrl.Wd)
-		if err != nil {
-			return err
-		}
-		if !b {
-			return errors.New("configuration file isn't found")
-		}
-		opts.ConfigPath = p
-	}
-
-	if err := ctrl.Reader.Read(opts.ConfigPath, &cfg); err != nil {
+	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
+	if err != nil {
 		return err
 	}
 
