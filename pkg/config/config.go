@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -20,12 +21,16 @@ type ExecConfig struct {
 
 type ExistFile func(string) bool
 
-func Find(wd string, existFile ExistFile) (string, bool, error) {
+type Reader struct {
+	ExistFile ExistFile
+}
+
+func (reader Reader) find(wd string) (string, bool, error) {
 	names := []string{".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
 			p := filepath.Join(wd, name)
-			if existFile(p) {
+			if reader.ExistFile(p) {
 				return p, true, nil
 			}
 		}
@@ -36,11 +41,30 @@ func Find(wd string, existFile ExistFile) (string, bool, error) {
 	}
 }
 
-func Read(p string, cfg *Config) error {
+func (reader Reader) read(p string) (Config, error) {
+	cfg := Config{}
 	f, err := os.Open(p)
 	if err != nil {
-		return err
+		return cfg, err
 	}
 	defer f.Close()
-	return yaml.NewDecoder(f).Decode(cfg)
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		return cfg, err
+	}
+	return cfg, nil
+}
+
+func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
+	cfg := Config{}
+	if cfgPath == "" {
+		p, b, err := reader.find(wd)
+		if err != nil {
+			return cfg, err
+		}
+		if !b {
+			return cfg, errors.New("configuration file isn't found")
+		}
+		cfgPath = p
+	}
+	return reader.read(cfgPath)
 }

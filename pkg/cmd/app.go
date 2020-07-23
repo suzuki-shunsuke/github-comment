@@ -1,17 +1,28 @@
 package cmd
 
 import (
+	"context"
+	"io"
+
 	"github.com/suzuki-shunsuke/github-comment/pkg/constant"
 	"github.com/urfave/cli/v2"
 )
 
-func Run(args []string) error {
-	app := &cli.App{
+type Runner struct {
+	Stdin  io.Reader
+	Stdout io.Writer
+	Stderr io.Writer
+}
+
+func (runner Runner) Run(ctx context.Context, args []string) error {
+	postCommand := runner.postCommand()
+	execCommand := runner.execCommand()
+	app := cli.App{
 		Version: constant.Version,
 		Commands: []*cli.Command{
-			postCommand,
-			execCommand,
+			&postCommand,
+			&execCommand,
 		},
 	}
-	return app.Run(args)
+	return app.RunContext(ctx, args)
 }

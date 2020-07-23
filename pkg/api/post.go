@@ -1,100 +1,133 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
-	"os"
-	"text/template"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 )
 
+// Commenter is API to post a comment to GitHub
+type Commenter interface {
+	Create(ctx context.Context, cmt comment.Comment) error
+}
+
+// Reader is API to find and read the configuration file of github-comment
+type Reader interface {
+	FindAndRead(cfgPath, wd string) (config.Config, error)
+}
+
+type Renderer interface {
+	Render(tpl string, params interface{}) (string, error)
+}
+
 type PostTemplateParams struct {
-	PRNumber    int
-	Org         string
-	Repo        string
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
 }
 
-func Post(
-	ctx context.Context, wd string, opts *option.PostOptions,
-	getEnv func(string) string, isTerminal func() bool, stdin io.Reader,
-	httpClient *http.Client, existFile func(string) bool,
-	readConfig func(string, *config.Config) error,
-) error {
-	if option.IsCircleCI(getEnv) {
-		if err := option.ComplementPost(opts, getEnv); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
-		}
-	}
-	if opts.Template == "" && !isTerminal() {
-		if b, err := ioutil.ReadAll(stdin); err == nil {
-			opts.Template = string(b)
-		} else {
-			return fmt.Errorf("failed to read standard input: %w", err)
-		}
-	}
+type PostController struct {
+	// Wd is a path to the working directory
+	Wd string
+	// Getenv returns the environment variable. os.Getenv
+	Getenv func(string) string
+	// HasStdin returns true if there is the standard input
+	// If thre is the standard input, it is treated as the comment template
+	HasStdin  func() bool
+	Stdin     io.Reader
+	Reader    Reader
+	Commenter Commenter
+	Renderer  Renderer
+}
 
-	if err := option.ValidatePost(opts); err != nil {
-		return fmt.Errorf("opts is invalid: %w", err)
-	}
-
-	if opts.Template == "" {
-		cfg := &config.Config{}
-		if opts.ConfigPath == "" {
-			p, b, err := config.Find(wd, existFile)
-			if err != nil {
-				return err
-			}
-			if !b {
-				return errors.New("configuration file isn't found")
-			}
-			opts.ConfigPath = p
-		}
-		if err := readConfig(opts.ConfigPath, cfg); err != nil {
-			return err
-		}
-		if t, ok := cfg.Post[opts.TemplateKey]; ok {
-			opts.Template = t
-		} else {
-			return errors.New("the template " + opts.TemplateKey + " isn't found")
-		}
-	}
-	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env": os.Getenv,
-	}).Parse(opts.Template)
+func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
+	cmt, err := ctrl.getCommentParams(ctx, opts)
 	if err != nil {
 		return err
 	}
-	buf := &bytes.Buffer{}
-	if err := tmpl.Execute(buf, &PostTemplateParams{
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
+	}
+	return nil
+}
+
+func (ctrl PostController) getCommentParams(ctx context.Context, opts option.PostOptions) (comment.Comment, error) {
+	cmt := comment.Comment{}
+	if option.IsCircleCI(ctrl.Getenv) {
+		if err := option.ComplementPost(&opts, ctrl.Getenv); err != nil {
+			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+		}
+	}
+	if opts.Template == "" {
+		tpl, err := ctrl.readTemplateFromStdin()
+		if err != nil {
+			return cmt, err
+		}
+		opts.Template = tpl
+	}
+
+	if err := option.ValidatePost(opts); err != nil {
+		return cmt, fmt.Errorf("opts is invalid: %w", err)
+	}
+
+	if opts.Template == "" {
+		tpl, err := ctrl.readTemplateFromConfig(opts)
+		if err != nil {
+			return cmt, err
+		}
+		opts.Template = tpl
+	}
+
+	tpl, err := ctrl.Renderer.Render(opts.Template, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
 		SHA1:        opts.SHA1,
 		TemplateKey: opts.TemplateKey,
-	}); err != nil {
-		return err
+	})
+	if err != nil {
+		return cmt, err
 	}
-	opts.Template = buf.String()
 
-	cmt := &comment.Comment{
+	return comment.Comment{
 		PRNumber: opts.PRNumber,
 		Org:      opts.Org,
 		Repo:     opts.Repo,
-		Body:     opts.Template,
+		Body:     tpl,
 		SHA1:     opts.SHA1,
+	}, nil
+}
+
+func (ctrl PostController) readTemplateFromStdin() (string, error) {
+	if !ctrl.HasStdin() {
+		return "", nil
 	}
-	if err := comment.Create(ctx, httpClient, opts.Token, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
+	b, err := ioutil.ReadAll(ctrl.Stdin)
+	if err != nil {
+		return "", fmt.Errorf("failed to read standard input: %w", err)
 	}
-	return nil
+	return string(b), nil
+}
+
+func (ctrl PostController) readTemplateFromConfig(opts option.PostOptions) (string, error) {
+	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
+	if err != nil {
+		return "", err
+	}
+	if t, ok := cfg.Post[opts.TemplateKey]; ok {
+		return t, nil
+	}
+	return "", errors.New("the template " + opts.TemplateKey + " isn't found")
 }

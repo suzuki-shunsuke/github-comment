@@ -1,62 +1,67 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
-	"os"
-	"os/exec"
-	"os/signal"
-	"syscall"
-	"text/template"
 
-	"github.com/antonmedv/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
-	"github.com/suzuki-shunsuke/go-timeout/timeout"
 )
 
-type Env struct {
+type ExecCommentParams struct {
 	Stdout         string
 	Stderr         string
 	CombinedOutput string
 	Command        string
 	ExitCode       int
 	Env            func(string) string
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
+	SHA1        string
+	TemplateKey string
 }
 
-func Exec(
-	ctx context.Context, wd string, opts *option.ExecOptions,
-	getEnv func(string) string, existFile func(string) bool,
-	readConfig func(string, *config.Config) error,
-) error {
-	if option.IsCircleCI(getEnv) {
-		if err := option.ComplementExec(opts, getEnv); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
-		}
+type Executor interface {
+	Run(ctx context.Context, params execute.Params) (execute.Result, error)
+}
+
+type Expr interface {
+	Match(expression string, params interface{}) (bool, error)
+}
+
+type ExecController struct {
+	Wd        string
+	Stdin     io.Reader
+	Stdout    io.Writer
+	Stderr    io.Writer
+	Getenv    func(string) string
+	Reader    Reader
+	Commenter Commenter
+	Renderer  Renderer
+	Executor  Executor
+	Expr      Expr
+}
+
+func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error {
+	if err := option.ComplementExec(&opts, ctrl.Getenv); err != nil {
+		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 	}
 	if err := option.ValidateExec(opts); err != nil {
 		return err
 	}
 
-	cfg := &config.Config{}
-	if opts.ConfigPath == "" {
-		p, b, err := config.Find(wd, existFile)
-		if err != nil {
-			return err
-		}
-		if !b {
-			return errors.New("configuration file isn't found")
-		}
-		opts.ConfigPath = p
-	}
-
-	if err := readConfig(opts.ConfigPath, cfg); err != nil {
+	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
+	if err != nil {
 		return err
 	}
 
@@ -65,106 +70,91 @@ func Exec(
 		return errors.New("template isn't found: " + opts.TemplateKey)
 	}
 
-	cmd := exec.Command(opts.Args[0], opts.Args[1:]...)
-	cmd.Stdin = os.Stdin
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	combinedOutput := &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(os.Stdout, stdout, combinedOutput)
-	cmd.Stderr = io.MultiWriter(os.Stderr, stderr, combinedOutput)
-	cmd.Env = os.Environ()
+	result, err := ctrl.Executor.Run(ctx, execute.Params{
+		Cmd:   opts.Args[0],
+		Args:  opts.Args[1:],
+		Stdin: ctrl.Stdin,
+	})
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(
-		signalChan, syscall.SIGHUP, syscall.SIGINT,
-		syscall.SIGTERM, syscall.SIGQUIT)
-
-	runner := timeout.NewRunner(0)
-	c, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	sentSignals := map[os.Signal]struct{}{}
-	exitChan := make(chan error, 1)
-
-	go func() {
-		exitChan <- runner.Run(c, cmd)
-	}()
-
-	for {
-		select {
-		case err := <-exitChan:
-			execPost(c, opts, execConfigs, &Env{
-				ExitCode:       cmd.ProcessState.ExitCode(),
-				Command:        cmd.String(),
-				Stdout:         stdout.String(),
-				Stderr:         stderr.String(),
-				CombinedOutput: combinedOutput.String(),
-			})
-			if err != nil {
-				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-			}
-			return nil
-		case sig := <-signalChan:
-			if _, ok := sentSignals[sig]; ok {
-				continue
-			}
-			sentSignals[sig] = struct{}{}
-			runner.SendSignal(sig.(syscall.Signal))
-		}
+	ctrl.post(ctx, execConfigs, ExecCommentParams{
+		ExitCode:       result.ExitCode,
+		Command:        result.Cmd,
+		Stdout:         result.Stdout,
+		Stderr:         result.Stderr,
+		CombinedOutput: result.CombinedOutput,
+		PRNumber:       opts.PRNumber,
+		Org:            opts.Org,
+		Repo:           opts.Repo,
+		SHA1:           opts.SHA1,
+		TemplateKey:    opts.TemplateKey,
+	})
+	if err != nil {
+		return ecerror.Wrap(err, result.ExitCode)
 	}
+	return nil
 }
 
-func execPostConfig(
-	ctx context.Context, opts *option.ExecOptions, execConfig *config.ExecConfig, env *Env,
-) (bool, error) {
-	e := expr.Env(env)
-	prog, err := expr.Compile(execConfig.When, e, expr.AsBool())
-	if err != nil {
-		return false, err
-	}
-	output, err := expr.Run(prog, env)
-	if err != nil {
-		return false, err
-	}
-	if f, ok := output.(bool); ok && f {
-		if execConfig.DontComment {
-			return true, nil
-		}
-		tmpl, err := template.New("comment").Funcs(template.FuncMap{
-			"Env": os.Getenv,
-		}).Parse(execConfig.Template)
-		if err != nil {
-			return true, err
-		}
-		buf := &bytes.Buffer{}
-		if err := tmpl.Execute(buf, env); err != nil {
-			return true, err
-		}
-		client := &http.Client{}
-		cmt := &comment.Comment{
-			PRNumber: opts.PRNumber,
-			Org:      opts.Org,
-			Repo:     opts.Repo,
-			Body:     buf.String(),
-			SHA1:     opts.SHA1,
-		}
-		if err := comment.Create(ctx, client, opts.Token, cmt); err != nil {
-			return true, fmt.Errorf("failed to create an issue comment: %w", err)
-		}
-		return true, nil
-	}
-	return false, nil
-}
-
-func execPost(ctx context.Context, opts *option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
+// getExecConfig returns matched ExecConfig.
+// If no ExecConfig matches, the second returned value is false.
+func (ctrl ExecController) getExecConfig(
+	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+) (config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
-		f, err := execPostConfig(ctx, opts, &execConfig, env)
+		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
 		if err != nil {
-			return err
+			return execConfig, false, err
 		}
-		if f {
-			return nil
+		if !f {
+			continue
 		}
+		return execConfig, true, nil
+	}
+	return config.ExecConfig{}, false, nil
+}
+
+// getComment returns Comment.
+// If the second returned value is false, no comment is posted.
+func (ctrl ExecController) getComment(
+	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+) (comment.Comment, bool, error) {
+	cmt := comment.Comment{}
+	execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
+	if err != nil {
+		return cmt, false, err
+	}
+	if !f {
+		return cmt, false, nil
+	}
+	if execConfig.DontComment {
+		return cmt, false, nil
+	}
+
+	tpl, err := ctrl.Renderer.Render(execConfig.Template, cmtParams)
+	if err != nil {
+		return cmt, false, err
+	}
+	return comment.Comment{
+		PRNumber: cmtParams.PRNumber,
+		Org:      cmtParams.Org,
+		Repo:     cmtParams.Repo,
+		Body:     tpl,
+		SHA1:     cmtParams.SHA1,
+	}, true, nil
+}
+
+func (ctrl ExecController) post(
+	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+) error {
+	cmt, f, err := ctrl.getComment(execConfigs, cmtParams)
+	if err != nil {
+		return err
+	}
+	if !f {
+		return nil
+	}
+
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	return nil
 }

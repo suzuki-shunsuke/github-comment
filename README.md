@@ -225,6 +225,11 @@ The following variables can be used in `when` and `template`
 * Command: https://golang.org/pkg/os/exec/#Cmd.String
 * ExitCode: the command exit code
 * Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
+* Org
+* Repo
+* PRNumber
+* SHA1
+* TemplateKey
 
 ## Options
 
