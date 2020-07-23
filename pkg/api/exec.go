@@ -83,7 +83,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
 func (ctrl ExecController) getExecConfig(
-	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+	opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
 ) (config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.Expr.Match(execConfig.When, env)
@@ -101,10 +101,10 @@ func (ctrl ExecController) getExecConfig(
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
 func (ctrl ExecController) getComment(
-	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+	opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
-	execConfig, f, err := ctrl.getExecConfig(ctx, opts, execConfigs, env)
+	execConfig, f, err := ctrl.getExecConfig(opts, execConfigs, env)
 	if err != nil {
 		return cmt, false, err
 	}
@@ -131,7 +131,7 @@ func (ctrl ExecController) getComment(
 func (ctrl ExecController) post(
 	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
 ) error {
-	cmt, f, err := ctrl.getComment(ctx, opts, execConfigs, env)
+	cmt, f, err := ctrl.getComment(opts, execConfigs, env)
 	if err != nil {
 		return err
 	}
