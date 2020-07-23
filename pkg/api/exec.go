@@ -76,7 +76,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Stdin: ctrl.Stdin,
 	})
 
-	ctrl.post(ctx, opts, execConfigs, ExecCommentParams{
+	ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		Stdout:         result.Stdout,
@@ -143,7 +143,7 @@ func (ctrl ExecController) getComment(
 }
 
 func (ctrl ExecController) post(
-	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) error {
 	cmt, f, err := ctrl.getComment(execConfigs, cmtParams)
 	if err != nil {
