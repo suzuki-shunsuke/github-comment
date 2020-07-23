@@ -7,9 +7,19 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
+	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
+
+type mockReader struct {
+	cfg config.Config
+	err error
+}
+
+func (m mockReader) FindAndRead(cfgPath, wd string) (config.Config, error) {
+	return m.cfg, m.err
+}
 
 func TestPostController_getCommentParams(t *testing.T) {
 	data := []struct {
@@ -68,6 +78,42 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Repo:     "github-comment",
 				PRNumber: 1,
 				Body:     "foo",
+			},
+		},
+		{
+			title: "read template from config",
+			ctrl: PostController{
+				HasStdin: func() bool {
+					return false
+				},
+				Getenv: func(k string) string {
+					return ""
+				},
+				Reader: mockReader{
+					cfg: config.Config{
+						Post: map[string]string{
+							"default": "hello",
+						},
+					},
+				},
+				Renderer: template.Renderer{
+					Getenv: func(k string) string {
+						return ""
+					},
+				},
+			},
+			opts: option.PostOptions{
+				Org:         "suzuki-shunsuke",
+				Repo:        "github-comment",
+				Token:       "xxx",
+				TemplateKey: "default",
+				PRNumber:    1,
+			},
+			exp: comment.Comment{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				PRNumber: 1,
+				Body:     "hello",
 			},
 		},
 		{
