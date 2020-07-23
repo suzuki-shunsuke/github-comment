@@ -44,6 +44,32 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Body:     "hello",
 			},
 		},
+		{
+			title: "if template is passed as argument, standard input is ignored",
+			ctrl: PostController{
+				HasStdin: func() bool {
+					return true
+				},
+				Stdin: strings.NewReader("hello"),
+				Getenv: func(k string) string {
+					return ""
+				},
+				Renderer: template.Renderer{},
+			},
+			opts: option.PostOptions{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				Token:    "xxx",
+				PRNumber: 1,
+				Template: "foo",
+			},
+			exp: comment.Comment{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				PRNumber: 1,
+				Body:     "foo",
+			},
+		},
 	}
 	ctx := context.Background()
 	for _, d := range data {
