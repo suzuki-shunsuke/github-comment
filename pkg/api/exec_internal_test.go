@@ -6,14 +6,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 )
 
 func TestExecController_getExecConfig(t *testing.T) {
 	data := []struct {
 		title       string
 		ctrl        ExecController
-		opts        option.ExecOptions
 		execConfigs []config.ExecConfig
 		cmtParams   ExecCommentParams
 		exp         config.ExecConfig
@@ -21,14 +19,8 @@ func TestExecController_getExecConfig(t *testing.T) {
 		isErr       bool
 	}{
 		{
-			title: "no exec configs",
-			ctrl:  ExecController{},
-			opts: option.ExecOptions{
-				Org:      "suzuki-shunsuke",
-				Repo:     "github-comment",
-				Token:    "xxx",
-				PRNumber: 1,
-			},
+			title:       "no exec configs",
+			ctrl:        ExecController{},
 			execConfigs: []config.ExecConfig{},
 			exp:         config.ExecConfig{},
 		},
@@ -36,12 +28,6 @@ func TestExecController_getExecConfig(t *testing.T) {
 			title: "no exec config matches",
 			ctrl: ExecController{
 				Expr: expr.Expr{},
-			},
-			opts: option.ExecOptions{
-				Org:      "suzuki-shunsuke",
-				Repo:     "github-comment",
-				Token:    "xxx",
-				PRNumber: 1,
 			},
 			execConfigs: []config.ExecConfig{
 				{
@@ -54,12 +40,6 @@ func TestExecController_getExecConfig(t *testing.T) {
 			title: "first matched config is returned",
 			ctrl: ExecController{
 				Expr: expr.Expr{},
-			},
-			opts: option.ExecOptions{
-				Org:      "suzuki-shunsuke",
-				Repo:     "github-comment",
-				Token:    "xxx",
-				PRNumber: 1,
 			},
 			execConfigs: []config.ExecConfig{
 				{
@@ -83,7 +63,7 @@ func TestExecController_getExecConfig(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
-			execConfig, f, err := d.ctrl.getExecConfig(d.opts, d.execConfigs, d.cmtParams)
+			execConfig, f, err := d.ctrl.getExecConfig(d.execConfigs, d.cmtParams)
 			if d.isErr {
 				require.NotNil(t, err)
 				return

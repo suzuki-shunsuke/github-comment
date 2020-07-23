@@ -97,7 +97,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
 func (ctrl ExecController) getExecConfig(
-	opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
@@ -118,7 +118,7 @@ func (ctrl ExecController) getComment(
 	opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
-	execConfig, f, err := ctrl.getExecConfig(opts, execConfigs, cmtParams)
+	execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
