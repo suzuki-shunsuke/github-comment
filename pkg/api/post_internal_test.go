@@ -70,17 +70,51 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Body:     "foo",
 			},
 		},
+		{
+			title: "template is rendered properly",
+			ctrl: PostController{
+				HasStdin: func() bool {
+					return false
+				},
+				Getenv: func(k string) string {
+					return ""
+				},
+				Renderer: template.Renderer{
+					Getenv: func(k string) string {
+						if k == "FOO" {
+							return "BAR"
+						}
+						return ""
+					},
+				},
+			},
+			opts: option.PostOptions{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				Token:    "xxx",
+				PRNumber: 1,
+				Template: `{{Env "FOO"}} {{.Org}} {{.Repo}} {{.PRNumber}}`,
+			},
+			exp: comment.Comment{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				PRNumber: 1,
+				Body:     "BAR suzuki-shunsuke github-comment 1",
+			},
+		},
 	}
 	ctx := context.Background()
 	for _, d := range data {
 		d := d
-		cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
-		if d.isErr {
-			require.NotNil(t, err)
-			return
-		}
-		require.Nil(t, err)
-		require.Equal(t, d.exp, cmt)
+		t.Run(d.title, func(t *testing.T) {
+			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
+			if d.isErr {
+				require.NotNil(t, err)
+				return
+			}
+			require.Nil(t, err)
+			require.Equal(t, d.exp, cmt)
+		})
 	}
 }
 
@@ -112,12 +146,14 @@ func TestPostController_readTemplateFromStdin(t *testing.T) {
 	}
 	for _, d := range data {
 		d := d
-		tpl, err := d.ctrl.readTemplateFromStdin()
-		if d.isErr {
-			require.NotNil(t, err)
-			return
-		}
-		require.Nil(t, err)
-		require.Equal(t, d.exp, tpl)
+		t.Run(d.title, func(t *testing.T) {
+			tpl, err := d.ctrl.readTemplateFromStdin()
+			if d.isErr {
+				require.NotNil(t, err)
+				return
+			}
+			require.Nil(t, err)
+			require.Equal(t, d.exp, tpl)
+		})
 	}
 }
