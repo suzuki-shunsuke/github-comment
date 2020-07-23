@@ -50,7 +50,7 @@ type PostController struct {
 	Commenter Commenter
 }
 
-func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) error {
+func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
 	cmt, err := ctrl.getCommentParams(ctx, opts)
 	if err != nil {
 		return err
@@ -61,10 +61,10 @@ func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) e
 	return nil
 }
 
-func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (comment.Comment, error) {
+func (ctrl PostController) getCommentParams(ctx context.Context, opts option.PostOptions) (comment.Comment, error) {
 	cmt := comment.Comment{}
 	if option.IsCircleCI(ctrl.Getenv) {
-		if err := option.ComplementPost(opts, ctrl.Getenv); err != nil {
+		if err := option.ComplementPost(&opts, ctrl.Getenv); err != nil {
 			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 		}
 	}
@@ -81,12 +81,15 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.Po
 	}
 
 	if opts.Template == "" {
-		if err := ctrl.readTemplateFromConfig(opts); err != nil {
+		tpl, err := ctrl.readTemplateFromConfig(opts)
+		if err != nil {
 			return cmt, err
 		}
+		opts.Template = tpl
 	}
 
-	if err := ctrl.render(opts); err != nil {
+	tpl, err := ctrl.render(opts)
+	if err != nil {
 		return cmt, err
 	}
 
@@ -94,7 +97,7 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts *option.Po
 		PRNumber: opts.PRNumber,
 		Org:      opts.Org,
 		Repo:     opts.Repo,
-		Body:     opts.Template,
+		Body:     tpl,
 		SHA1:     opts.SHA1,
 	}, nil
 }
@@ -110,34 +113,33 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) error {
+func (ctrl PostController) readTemplateFromConfig(opts option.PostOptions) (string, error) {
 	cfg := config.Config{}
 	if opts.ConfigPath == "" {
 		p, b, err := ctrl.Reader.Find(ctrl.Wd)
 		if err != nil {
-			return err
+			return "", err
 		}
 		if !b {
-			return errors.New("configuration file isn't found")
+			return "", errors.New("configuration file isn't found")
 		}
 		opts.ConfigPath = p
 	}
 	if err := ctrl.Reader.Read(opts.ConfigPath, &cfg); err != nil {
-		return err
+		return "", err
 	}
 	if t, ok := cfg.Post[opts.TemplateKey]; ok {
-		opts.Template = t
-		return nil
+		return t, nil
 	}
-	return errors.New("the template " + opts.TemplateKey + " isn't found")
+	return "", errors.New("the template " + opts.TemplateKey + " isn't found")
 }
 
-func (ctrl PostController) render(opts *option.PostOptions) error {
+func (ctrl PostController) render(opts option.PostOptions) (string, error) {
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env": ctrl.Getenv,
 	}).Parse(opts.Template)
 	if err != nil {
-		return err
+		return "", err
 	}
 	buf := &bytes.Buffer{}
 	if err := tmpl.Execute(buf, &PostTemplateParams{
@@ -147,8 +149,7 @@ func (ctrl PostController) render(opts *option.PostOptions) error {
 		SHA1:        opts.SHA1,
 		TemplateKey: opts.TemplateKey,
 	}); err != nil {
-		return err
+		return "", err
 	}
-	opts.Template = buf.String()
-	return nil
+	return buf.String(), nil
 }

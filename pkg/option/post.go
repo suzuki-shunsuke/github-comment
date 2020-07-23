@@ -18,7 +18,7 @@ type PostOptions struct {
 	ConfigPath  string
 }
 
-func ValidatePost(opts *PostOptions) error {
+func ValidatePost(opts PostOptions) error {
 	if opts.Org == "" {
 		return errors.New("org is required")
 	}

@@ -94,5 +94,5 @@ func (runner Runner) postAction(c *cli.Context) error {
 			HTTPClient: httpclient.New("https://api.github.com"),
 		},
 	}
-	return ctrl.Post(c.Context, &opts)
+	return ctrl.Post(c.Context, opts)
 }
