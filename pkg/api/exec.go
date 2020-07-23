@@ -41,7 +41,6 @@ type ExecController struct {
 	Renderer  Renderer
 	Executor  Executor
 	Expr      Expr
-	Env       []string
 }
 
 func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error {
