@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/antonmedv/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
@@ -27,6 +26,10 @@ type Executor interface {
 	Run(ctx context.Context, params execute.Params) (execute.Result, error)
 }
 
+type Expr interface {
+	Match(expression string, params interface{}) (bool, error)
+}
+
 type ExecController struct {
 	Wd        string
 	Stdin     io.Reader
@@ -37,6 +40,7 @@ type ExecController struct {
 	Commenter Commenter
 	Renderer  Renderer
 	Executor  Executor
+	Expr      Expr
 	Env       []string
 }
 
@@ -91,16 +95,11 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 func (ctrl ExecController) execPostConfig(
 	ctx context.Context, opts option.ExecOptions, execConfig config.ExecConfig, env *Env,
 ) (bool, error) {
-	e := expr.Env(env)
-	prog, err := expr.Compile(execConfig.When, e, expr.AsBool())
+	f, err := ctrl.Expr.Match(execConfig.When, env)
 	if err != nil {
 		return false, err
 	}
-	output, err := expr.Run(prog, env)
-	if err != nil {
-		return false, err
-	}
-	if f, ok := output.(bool); !ok || !f {
+	if !f {
 		return false, nil
 	}
 	if execConfig.DontComment {
@@ -123,7 +122,9 @@ func (ctrl ExecController) execPostConfig(
 	return true, nil
 }
 
-func (ctrl ExecController) execPost(ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env *Env) error {
+func (ctrl ExecController) execPost(
+	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env *Env,
+) error {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.execPostConfig(ctx, opts, execConfig, env)
 		if err != nil {
