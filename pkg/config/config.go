@@ -20,12 +20,16 @@ type ExecConfig struct {
 
 type ExistFile func(string) bool
 
-func Find(wd string, existFile ExistFile) (string, bool, error) {
+type Reader struct {
+	ExistFile ExistFile
+}
+
+func (reader Reader) Find(wd string) (string, bool, error) {
 	names := []string{".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
 			p := filepath.Join(wd, name)
-			if existFile(p) {
+			if reader.ExistFile(p) {
 				return p, true, nil
 			}
 		}
@@ -36,7 +40,7 @@ func Find(wd string, existFile ExistFile) (string, bool, error) {
 	}
 }
 
-func Read(p string, cfg *Config) error {
+func (reader Reader) Read(p string, cfg *Config) error {
 	f, err := os.Open(p)
 	if err != nil {
 		return err

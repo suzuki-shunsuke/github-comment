@@ -27,15 +27,14 @@ type Env struct {
 }
 
 type ExecController struct {
-	Wd         string
-	Stdin      io.Reader
-	Stdout     io.Writer
-	Stderr     io.Writer
-	Getenv     func(string) string
-	ExistFile  func(string) bool
-	ReadConfig func(string, *config.Config) error
-	Commenter  Commenter
-	Env        []string
+	Wd        string
+	Stdin     io.Reader
+	Stdout    io.Writer
+	Stderr    io.Writer
+	Getenv    func(string) string
+	Reader    Reader
+	Commenter Commenter
+	Env       []string
 }
 
 func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error {
@@ -48,7 +47,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) e
 
 	cfg := &config.Config{}
 	if opts.ConfigPath == "" {
-		p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
+		p, b, err := ctrl.Reader.Find(ctrl.Wd)
 		if err != nil {
 			return err
 		}
@@ -58,7 +57,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts *option.ExecOptions) e
 		opts.ConfigPath = p
 	}
 
-	if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
+	if err := ctrl.Reader.Read(opts.ConfigPath, cfg); err != nil {
 		return err
 	}
 

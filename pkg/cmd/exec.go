@@ -78,14 +78,15 @@ func (runner Runner) execAction(c *cli.Context) error {
 	}
 	ctx := context.Background()
 	ctrl := api.ExecController{
-		Wd:         wd,
-		Getenv:     os.Getenv,
-		ExistFile:  existFile,
-		ReadConfig: config.Read,
-		Stdin:      runner.Stdin,
-		Stdout:     runner.Stdout,
-		Stderr:     runner.Stderr,
-		Env:        os.Environ(),
+		Wd:     wd,
+		Getenv: os.Getenv,
+		Reader: config.Reader{
+			ExistFile: existFile,
+		},
+		Stdin:  runner.Stdin,
+		Stdout: runner.Stdout,
+		Stderr: runner.Stderr,
+		Env:    os.Environ(),
 		Commenter: comment.Commenter{
 			Token:      opts.Token,
 			HTTPClient: httpclient.New("https://api.github.com"),

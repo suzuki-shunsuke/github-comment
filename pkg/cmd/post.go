@@ -83,9 +83,10 @@ func (runner Runner) postAction(c *cli.Context) error {
 		HasStdin: func() bool {
 			return !terminal.IsTerminal(0)
 		},
-		Stdin:      runner.Stdin,
-		ExistFile:  existFile,
-		ReadConfig: config.Read,
+		Stdin: runner.Stdin,
+		Reader: config.Reader{
+			ExistFile: existFile,
+		},
 		Commenter: comment.Commenter{
 			Token:      opts.Token,
 			HTTPClient: httpclient.New("https://api.github.com"),

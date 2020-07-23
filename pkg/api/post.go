@@ -26,14 +26,18 @@ type Commenter interface {
 	Create(ctx context.Context, cmt comment.Comment) error
 }
 
+type Reader interface {
+	Find(wd string) (string, bool, error)
+	Read(p string, cfg *config.Config) error
+}
+
 type PostController struct {
-	Wd         string
-	Getenv     func(string) string
-	HasStdin   func() bool
-	Stdin      io.Reader
-	ExistFile  func(string) bool
-	ReadConfig func(string, *config.Config) error
-	Commenter  Commenter
+	Wd        string
+	Getenv    func(string) string
+	HasStdin  func() bool
+	Stdin     io.Reader
+	Reader    Reader
+	Commenter Commenter
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts *option.PostOptions) error {
@@ -99,7 +103,7 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) error {
 	cfg := &config.Config{}
 	if opts.ConfigPath == "" {
-		p, b, err := config.Find(ctrl.Wd, ctrl.ExistFile)
+		p, b, err := ctrl.Reader.Find(ctrl.Wd)
 		if err != nil {
 			return err
 		}
@@ -108,7 +112,7 @@ func (ctrl PostController) readTemplateFromConfig(opts *option.PostOptions) erro
 		}
 		opts.ConfigPath = p
 	}
-	if err := ctrl.ReadConfig(opts.ConfigPath, cfg); err != nil {
+	if err := ctrl.Reader.Read(opts.ConfigPath, cfg); err != nil {
 		return err
 	}
 	if t, ok := cfg.Post[opts.TemplateKey]; ok {
