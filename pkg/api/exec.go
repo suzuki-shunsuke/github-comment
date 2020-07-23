@@ -115,7 +115,7 @@ func (ctrl ExecController) getExecConfig(
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
 func (ctrl ExecController) getComment(
-	opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
 	execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
@@ -134,18 +134,18 @@ func (ctrl ExecController) getComment(
 		return cmt, false, err
 	}
 	return comment.Comment{
-		PRNumber: opts.PRNumber,
-		Org:      opts.Org,
-		Repo:     opts.Repo,
+		PRNumber: cmtParams.PRNumber,
+		Org:      cmtParams.Org,
+		Repo:     cmtParams.Repo,
 		Body:     tpl,
-		SHA1:     opts.SHA1,
+		SHA1:     cmtParams.SHA1,
 	}, true, nil
 }
 
 func (ctrl ExecController) post(
 	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) error {
-	cmt, f, err := ctrl.getComment(opts, execConfigs, cmtParams)
+	cmt, f, err := ctrl.getComment(execConfigs, cmtParams)
 	if err != nil {
 		return err
 	}
