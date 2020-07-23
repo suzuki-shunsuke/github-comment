@@ -50,6 +50,35 @@ func TestExecController_getExecConfig(t *testing.T) {
 			},
 			exp: config.ExecConfig{},
 		},
+		{
+			title: "first matched config is returned",
+			ctrl: ExecController{
+				Expr: expr.Expr{},
+			},
+			opts: option.ExecOptions{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				Token:    "xxx",
+				PRNumber: 1,
+			},
+			execConfigs: []config.ExecConfig{
+				{
+					When:        "true",
+					Template:    "foo",
+					DontComment: true,
+				},
+				{
+					When:     "true",
+					Template: "bar",
+				},
+			},
+			exp: config.ExecConfig{
+				When:        "true",
+				Template:    "foo",
+				DontComment: true,
+			},
+			f: true,
+		},
 	}
 	for _, d := range data {
 		d := d
