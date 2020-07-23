@@ -80,47 +80,67 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	return nil
 }
 
-func (ctrl ExecController) postConfig(
-	ctx context.Context, opts option.ExecOptions, execConfig config.ExecConfig, env Env,
-) (bool, error) {
-	f, err := ctrl.Expr.Match(execConfig.When, env)
+// getExecConfig returns matched ExecConfig.
+// If no ExecConfig matches, the second returned value is false.
+func (ctrl ExecController) getExecConfig(
+	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+) (config.ExecConfig, bool, error) {
+	for _, execConfig := range execConfigs {
+		f, err := ctrl.Expr.Match(execConfig.When, env)
+		if err != nil {
+			return execConfig, false, err
+		}
+		if !f {
+			continue
+		}
+		return execConfig, true, nil
+	}
+	return config.ExecConfig{}, false, nil
+}
+
+// getComment returns Comment.
+// If the second returned value is false, no comment is posted.
+func (ctrl ExecController) getComment(
+	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
+) (comment.Comment, bool, error) {
+	cmt := comment.Comment{}
+	execConfig, f, err := ctrl.getExecConfig(ctx, opts, execConfigs, env)
 	if err != nil {
-		return false, err
+		return cmt, false, err
 	}
 	if !f {
-		return false, nil
+		return cmt, false, nil
 	}
 	if execConfig.DontComment {
-		return true, nil
+		return cmt, false, nil
 	}
+
 	tpl, err := ctrl.Renderer.Render(execConfig.Template, env)
 	if err != nil {
-		return true, err
+		return cmt, false, err
 	}
-	cmt := comment.Comment{
+	return comment.Comment{
 		PRNumber: opts.PRNumber,
 		Org:      opts.Org,
 		Repo:     opts.Repo,
 		Body:     tpl,
 		SHA1:     opts.SHA1,
-	}
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return true, fmt.Errorf("failed to create an issue comment: %w", err)
-	}
-	return true, nil
+	}, true, nil
 }
 
 func (ctrl ExecController) post(
 	ctx context.Context, opts option.ExecOptions, execConfigs []config.ExecConfig, env Env,
 ) error {
-	for _, execConfig := range execConfigs {
-		f, err := ctrl.postConfig(ctx, opts, execConfig, env)
-		if err != nil {
-			return err
-		}
-		if f {
-			return nil
-		}
+	cmt, f, err := ctrl.getComment(ctx, opts, execConfigs, env)
+	if err != nil {
+		return err
+	}
+	if !f {
+		return nil
+	}
+
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	return nil
 }
