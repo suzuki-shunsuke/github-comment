@@ -75,7 +75,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	}
 
 	var execConfigs []config.ExecConfig
-	if opts.TemplateKey != "" {
+	if opts.Template == "" && opts.TemplateKey != "" {
 		a, ok := cfg.Exec[opts.TemplateKey]
 		if !ok {
 			return errors.New("template isn't found: " + opts.TemplateKey)

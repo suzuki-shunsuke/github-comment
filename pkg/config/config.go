@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -69,7 +68,7 @@ func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
 			return cfg, err
 		}
 		if !b {
-			return cfg, errors.New("configuration file isn't found")
+			return cfg, nil
 		}
 		cfgPath = p
 	}
