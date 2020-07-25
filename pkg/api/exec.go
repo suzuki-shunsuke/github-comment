@@ -57,12 +57,19 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	if err := option.ComplementExec(&opts, ctrl.Getenv); err != nil {
 		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 	}
-	if err := option.ValidateExec(opts); err != nil {
-		return err
-	}
 
 	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
 	if err != nil {
+		return err
+	}
+	if opts.Org == "" {
+		opts.Org = cfg.Base.Org
+	}
+	if opts.Repo == "" {
+		opts.Repo = cfg.Base.Repo
+	}
+
+	if err := option.ValidateExec(opts); err != nil {
 		return err
 	}
 
