@@ -29,6 +29,7 @@ type ExecCommentParams struct {
 	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
+	Template    string
 	Vars        map[string]string
 }
 
@@ -73,9 +74,13 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		return err
 	}
 
-	execConfigs, ok := cfg.Exec[opts.TemplateKey]
-	if !ok {
-		return errors.New("template isn't found: " + opts.TemplateKey)
+	var execConfigs []config.ExecConfig
+	if opts.TemplateKey != "" {
+		a, ok := cfg.Exec[opts.TemplateKey]
+		if !ok {
+			return errors.New("template isn't found: " + opts.TemplateKey)
+		}
+		execConfigs = a
 	}
 
 	result, err := ctrl.Executor.Run(ctx, execute.Params{
@@ -95,6 +100,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Repo:           opts.Repo,
 		SHA1:           opts.SHA1,
 		TemplateKey:    opts.TemplateKey,
+		Template:       opts.Template,
 		Vars:           opts.Vars,
 	})
 	if err != nil {
@@ -127,18 +133,22 @@ func (ctrl ExecController) getComment(
 	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
-	execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
-	if err != nil {
-		return cmt, false, err
-	}
-	if !f {
-		return cmt, false, nil
-	}
-	if execConfig.DontComment {
-		return cmt, false, nil
+	tpl := cmtParams.Template
+	if tpl == "" {
+		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
+		if err != nil {
+			return cmt, false, err
+		}
+		if !f {
+			return cmt, false, nil
+		}
+		if execConfig.DontComment {
+			return cmt, false, nil
+		}
+		tpl = execConfig.Template
 	}
 
-	tpl, err := ctrl.Renderer.Render(execConfig.Template, cmtParams)
+	body, err := ctrl.Renderer.Render(tpl, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
@@ -146,7 +156,7 @@ func (ctrl ExecController) getComment(
 		PRNumber: cmtParams.PRNumber,
 		Org:      cmtParams.Org,
 		Repo:     cmtParams.Repo,
-		Body:     tpl,
+		Body:     body,
 		SHA1:     cmtParams.SHA1,
 	}, true, nil
 }
