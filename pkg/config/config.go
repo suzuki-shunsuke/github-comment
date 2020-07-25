@@ -9,8 +9,14 @@ import (
 )
 
 type Config struct {
+	Base Base
 	Post map[string]string
 	Exec map[string][]ExecConfig
+}
+
+type Base struct {
+	Org  string
+	Repo string
 }
 
 type ExecConfig struct {

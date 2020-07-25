@@ -39,6 +39,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -64,6 +65,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -125,6 +127,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader: mockReader{},
 				Renderer: template.Renderer{
 					Getenv: func(k string) string {
 						if k == "FOO" {
@@ -146,6 +149,37 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Repo:     "github-comment",
 				PRNumber: 1,
 				Body:     "BAR suzuki-shunsuke github-comment 1",
+			},
+		},
+		{
+			title: "config.base",
+			ctrl: PostController{
+				HasStdin: func() bool {
+					return true
+				},
+				Stdin: strings.NewReader("hello"),
+				Getenv: func(k string) string {
+					return ""
+				},
+				Reader: mockReader{
+					cfg: config.Config{
+						Base: config.Base{
+							Org:  "suzuki-shunsuke",
+							Repo: "github-comment",
+						},
+					},
+				},
+				Renderer: template.Renderer{},
+			},
+			opts: option.PostOptions{
+				Token:    "xxx",
+				PRNumber: 1,
+			},
+			exp: comment.Comment{
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				PRNumber: 1,
+				Body:     "hello",
 			},
 		},
 	}

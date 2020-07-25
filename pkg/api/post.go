@@ -79,12 +79,23 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts option.Pos
 		opts.Template = tpl
 	}
 
+	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
+	if err != nil {
+		return cmt, err
+	}
+	if opts.Org == "" {
+		opts.Org = cfg.Base.Org
+	}
+	if opts.Repo == "" {
+		opts.Repo = cfg.Base.Repo
+	}
+
 	if err := option.ValidatePost(opts); err != nil {
 		return cmt, fmt.Errorf("opts is invalid: %w", err)
 	}
 
 	if opts.Template == "" {
-		tpl, err := ctrl.readTemplateFromConfig(opts)
+		tpl, err := ctrl.readTemplateFromConfig(cfg, opts.TemplateKey)
 		if err != nil {
 			return cmt, err
 		}
@@ -123,13 +134,9 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl PostController) readTemplateFromConfig(opts option.PostOptions) (string, error) {
-	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
-	if err != nil {
-		return "", err
-	}
-	if t, ok := cfg.Post[opts.TemplateKey]; ok {
+func (ctrl PostController) readTemplateFromConfig(cfg config.Config, key string) (string, error) {
+	if t, ok := cfg.Post[key]; ok {
 		return t, nil
 	}
-	return "", errors.New("the template " + opts.TemplateKey + " isn't found")
+	return "", errors.New("the template " + key + " isn't found")
 }
