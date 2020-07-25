@@ -39,6 +39,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -64,6 +65,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -125,6 +127,7 @@ func TestPostController_getCommentParams(t *testing.T) {
 				Getenv: func(k string) string {
 					return ""
 				},
+				Reader: mockReader{},
 				Renderer: template.Renderer{
 					Getenv: func(k string) string {
 						if k == "FOO" {
