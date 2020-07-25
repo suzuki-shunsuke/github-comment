@@ -38,6 +38,10 @@ func (runner Runner) execCommand() cli.Command {
 				Usage: "commit sha1",
 			},
 			&cli.StringFlag{
+				Name:  "template",
+				Usage: "comment template",
+			},
+			&cli.StringFlag{
 				Name:    "template-key",
 				Aliases: []string{"k"},
 				Usage:   "comment template key",
@@ -64,6 +68,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
 	opts.SHA1 = c.String("sha1")
+	opts.Template = c.String("template")
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
