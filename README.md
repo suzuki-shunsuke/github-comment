@@ -12,17 +12,13 @@ CLI to create a GitHub comment with GitHub REST API
 $ github-comment post -template test
 ```
 
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/post-test.png">
-</p>
+![post-test](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/post-test.png)
 
 ```
 $ github-comment exec -- go test ./...
 ```
 
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/exec-go-test.png">
-</p>
+![exec-go-test](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/exec-go-test.png)
 
 ## Note
 
@@ -56,9 +52,7 @@ $ github-comment post -token <your GitHub personal access token> -org suzuki-shu
 
 https://github.com/suzuki-shunsuke/github-comment/pull/1#issuecomment-601501451
 
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/post-test.png">
-</p>
+![post-test](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/post-test.png)
 
 You can pass the API token from the environment variable `GITHUB_TOKEN` or `GITHUB_ACCESS_TOKEN` too.
 Then we sent a comment `test` to the pull request https://github.com/suzuki-shunsuke/github-comment/pull/1 .
@@ -70,9 +64,7 @@ $ github-comment post -org suzuki-shunsuke -repo github-comment -sha1 36b1ade974
 
 https://github.com/suzuki-shunsuke/github-comment/commit/36b1ade9740768f3645c240d487b53bee9e42702#commitcomment-37933181
 
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/comment-to-commit.png">
-</p>
+![comment-to-commit](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/comment-to-commit.png)
 
 The template is rendered with [Go's text/template](https://golang.org/pkg/text/template/).
 
@@ -142,9 +134,7 @@ zoo
 
 https://github.com/suzuki-shunsuke/github-comment/pull/1#issuecomment-601503124
 
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/exec-1.png">
-</p>
+![exec-1](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/exec-1.png)
 
 Let's send the comment only if the command is failed.
 Update the above configuration.
