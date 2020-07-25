@@ -47,16 +47,17 @@ steps:
     commands:
       - golangci-lint run
     volumes: *volumes
-  - name: codecov
+  - name: test
     image: golang:1.14.6
     commands:
-      # bash and cgo seem to be required
-      - bash scripts/codecov_test.sh
-      - curl -s https://codecov.io/bash > /tmp/codecov.sh
-      - test "$LOCAL" = "true" -o "$DRONE_BUILD_EVENT" = "pull_request" || bash /tmp/codecov.sh
+      - mkdir -p bin
+      - curl -L -o bin/cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
+      - chmod a+x bin/cc-test-reporter
+      - export PATH="$PWD/bin:$PATH"
+      - bash scripts/test-code-climate.sh
     environment:
-      CODECOV_TOKEN:
-        from_secret: codecov_token
+      CC_TEST_REPORTER_ID:
+        from_secret: cc_test_reporter_id
     volumes: *volumes
   - name: remove changes
     image: &image_git plugins/git
