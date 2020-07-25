@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Base Base
+	Vars map[string]interface{}
 	Post map[string]string
 	Exec map[string][]ExecConfig
 }
