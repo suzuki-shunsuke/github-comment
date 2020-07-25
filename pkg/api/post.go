@@ -36,6 +36,7 @@ type PostTemplateParams struct {
 	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
+	Vars        map[string]string
 }
 
 type PostController struct {
@@ -96,6 +97,7 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts option.Pos
 		Repo:        opts.Repo,
 		SHA1:        opts.SHA1,
 		TemplateKey: opts.TemplateKey,
+		Vars:        opts.Vars,
 	})
 	if err != nil {
 		return cmt, err

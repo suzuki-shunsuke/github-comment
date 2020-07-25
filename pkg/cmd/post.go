@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"os"
+	"strings"
 
 	"golang.org/x/crypto/ssh/terminal"
 
@@ -55,12 +57,28 @@ func (runner Runner) postCommand() cli.Command {
 				Name:  "pr",
 				Usage: "GitHub pull request number",
 			},
+			&cli.StringSliceFlag{
+				Name:  "var",
+				Usage: "template variable",
+			},
 		},
 	}
 }
 
+func parseVarsFlag(varsSlice []string) (map[string]string, error) {
+	vars := make(map[string]string, len(varsSlice))
+	for _, v := range varsSlice {
+		a := strings.SplitN(v, ":", 2)
+		if len(a) < 2 {
+			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
+		}
+		vars[a[0]] = a[1]
+	}
+	return vars, nil
+}
+
 // parsePostOptions parses the command line arguments of the subcommand "post".
-func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
+func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
@@ -69,12 +87,20 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) {
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
+	vars, err := parseVarsFlag(c.StringSlice("var"))
+	if err != nil {
+		return err
+	}
+	opts.Vars = vars
+	return nil
 }
 
 // postAction is an entrypoint of the subcommand "post".
 func (runner Runner) postAction(c *cli.Context) error {
 	opts := option.PostOptions{}
-	parsePostOptions(&opts, c)
+	if err := parsePostOptions(&opts, c); err != nil {
+		return err
+	}
 	wd, err := os.Getwd()
 	if err != nil {
 		return err

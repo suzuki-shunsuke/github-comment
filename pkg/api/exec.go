@@ -29,6 +29,7 @@ type ExecCommentParams struct {
 	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
+	Vars        map[string]string
 }
 
 type Executor interface {
@@ -87,6 +88,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Repo:           opts.Repo,
 		SHA1:           opts.SHA1,
 		TemplateKey:    opts.TemplateKey,
+		Vars:           opts.Vars,
 	})
 	if err != nil {
 		return ecerror.Wrap(err, result.ExitCode)

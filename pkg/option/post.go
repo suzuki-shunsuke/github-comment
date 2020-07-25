@@ -16,6 +16,7 @@ type PostOptions struct {
 	Template    string
 	TemplateKey string
 	ConfigPath  string
+	Vars        map[string]string
 }
 
 func ValidatePost(opts PostOptions) error {
