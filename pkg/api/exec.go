@@ -30,7 +30,7 @@ type ExecCommentParams struct {
 	SHA1        string
 	TemplateKey string
 	Template    string
-	Vars        map[string]string
+	Vars        map[string]interface{}
 }
 
 type Executor interface {
@@ -89,6 +89,10 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Stdin: ctrl.Stdin,
 	})
 
+	for k, v := range opts.Vars {
+		cfg.Vars[k] = v
+	}
+
 	ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
@@ -101,7 +105,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		SHA1:           opts.SHA1,
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
-		Vars:           opts.Vars,
+		Vars:           cfg.Vars,
 	})
 	if err != nil {
 		return ecerror.Wrap(err, result.ExitCode)

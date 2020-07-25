@@ -36,7 +36,7 @@ type PostTemplateParams struct {
 	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
-	Vars        map[string]string
+	Vars        map[string]interface{}
 }
 
 type PostController struct {
@@ -64,7 +64,9 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	return nil
 }
 
-func (ctrl PostController) getCommentParams(ctx context.Context, opts option.PostOptions) (comment.Comment, error) {
+func (ctrl PostController) getCommentParams(
+	ctx context.Context, opts option.PostOptions,
+) (comment.Comment, error) {
 	cmt := comment.Comment{}
 	if option.IsCircleCI(ctrl.Getenv) {
 		if err := option.ComplementPost(&opts, ctrl.Getenv); err != nil {
@@ -102,13 +104,17 @@ func (ctrl PostController) getCommentParams(ctx context.Context, opts option.Pos
 		opts.Template = tpl
 	}
 
+	for k, v := range opts.Vars {
+		cfg.Vars[k] = v
+	}
+
 	tpl, err := ctrl.Renderer.Render(opts.Template, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
 		SHA1:        opts.SHA1,
 		TemplateKey: opts.TemplateKey,
-		Vars:        opts.Vars,
+		Vars:        cfg.Vars,
 	})
 	if err != nil {
 		return cmt, err
