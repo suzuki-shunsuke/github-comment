@@ -51,11 +51,15 @@ func (runner Runner) execCommand() cli.Command {
 				Name:  "pr",
 				Usage: "GitHub pull request number",
 			},
+			&cli.StringSliceFlag{
+				Name:  "var",
+				Usage: "template variable",
+			},
 		},
 	}
 }
 
-func parseExecOptions(opts *option.ExecOptions, c *cli.Context) {
+func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
@@ -64,6 +68,12 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) {
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
 	opts.Args = c.Args().Slice()
+	vars, err := parseVarsFlag(c.StringSlice("var"))
+	if err != nil {
+		return err
+	}
+	opts.Vars = vars
+	return nil
 }
 
 func existFile(p string) bool {
@@ -73,7 +83,9 @@ func existFile(p string) bool {
 
 func (runner Runner) execAction(c *cli.Context) error {
 	opts := option.ExecOptions{}
-	parseExecOptions(&opts, c)
+	if err := parseExecOptions(&opts, c); err != nil {
+		return err
+	}
 	wd, err := os.Getwd()
 	if err != nil {
 		return err

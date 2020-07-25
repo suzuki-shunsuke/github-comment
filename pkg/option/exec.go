@@ -17,6 +17,7 @@ type ExecOptions struct {
 	TemplateKey string
 	ConfigPath  string
 	Args        []string
+	Vars        map[string]string
 }
 
 func ValidateExec(opts ExecOptions) error {
