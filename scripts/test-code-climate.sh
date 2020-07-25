@@ -23,7 +23,7 @@ for d in $(go list ./...); do
   if [ "$(wc -l < "$profile")" -eq 1 ]; then
     continue
   fi
-  ee cc-test-reporter format-coverage -t gocov -p "github.com/suzuki-shunsuke/github-comment" --debug -o "$coverage" "$profile"
+  ee cc-test-reporter format-coverage -t gocov -p "github.com/suzuki-shunsuke/github-comment" -o "$coverage" "$profile"
 done
 
 result=.code-climate/codeclimate.total.json
