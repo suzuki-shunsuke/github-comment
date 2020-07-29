@@ -106,7 +106,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
-	})
+	}, cfg.Templates)
 	if err != nil {
 		return ecerror.Wrap(err, result.ExitCode)
 	}
@@ -134,7 +134,7 @@ func (ctrl ExecController) getExecConfig(
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
 func (ctrl ExecController) getComment(
-	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	execConfigs []config.ExecConfig, cmtParams ExecCommentParams, templates map[string]string,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
 	tpl := cmtParams.Template
@@ -152,7 +152,7 @@ func (ctrl ExecController) getComment(
 		tpl = execConfig.Template
 	}
 
-	body, err := ctrl.Renderer.Render(tpl, cmtParams)
+	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
@@ -167,8 +167,9 @@ func (ctrl ExecController) getComment(
 
 func (ctrl ExecController) post(
 	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	templates map[string]string,
 ) error {
-	cmt, f, err := ctrl.getComment(execConfigs, cmtParams)
+	cmt, f, err := ctrl.getComment(execConfigs, cmtParams, templates)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,15 @@ type Renderer struct {
 	Getenv func(string) string
 }
 
-func (renderer Renderer) Render(tpl string, params interface{}) (string, error) {
+func addTemplates(tpl string, templates map[string]string) string {
+	for k, v := range templates {
+		tpl += `{{define "` + k + `"}}` + v + "{{end}}"
+	}
+	return tpl
+}
+
+func (renderer Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
+	tpl = addTemplates(tpl, templates)
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env": renderer.Getenv,
 	}).Parse(tpl)

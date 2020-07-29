@@ -23,7 +23,7 @@ type Reader interface {
 }
 
 type Renderer interface {
-	Render(tpl string, params interface{}) (string, error)
+	Render(tpl string, templates map[string]string, params interface{}) (string, error)
 }
 
 type PostTemplateParams struct {
@@ -108,7 +108,7 @@ func (ctrl PostController) getCommentParams(
 		cfg.Vars[k] = v
 	}
 
-	tpl, err := ctrl.Renderer.Render(opts.Template, PostTemplateParams{
+	tpl, err := ctrl.Renderer.Render(opts.Template, cfg.Templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
