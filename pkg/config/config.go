@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Base Base
-	Vars map[string]interface{}
-	Post map[string]string
-	Exec map[string][]ExecConfig
+	Base      Base
+	Vars      map[string]interface{}
+	Templates map[string]string
+	Post      map[string]string
+	Exec      map[string][]ExecConfig
 }
 
 type Base struct {
