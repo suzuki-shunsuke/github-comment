@@ -42,10 +42,7 @@ func ValidateExec(opts ExecOptions) error {
 	return nil
 }
 
-func ComplementExec(opts *ExecOptions, getEnv func(string) string) error {
-	if !IsCircleCI(getEnv) {
-		return nil
-	}
+func complementExecCircleCI(opts *ExecOptions, getEnv func(string) string) error {
 	if opts.Org == "" {
 		opts.Org = getEnv("CIRCLE_PROJECT_USERNAME")
 	}
@@ -69,6 +66,39 @@ func ComplementExec(opts *ExecOptions, getEnv func(string) string) error {
 		opts.PRNumber = b
 	} else {
 		return fmt.Errorf("failed to extract a pull request number from the environment variable CIRCLE_PULL_REQUEST: %w", err)
+	}
+	return nil
+}
+
+func complementExecDrone(opts *ExecOptions, getEnv func(string) string) error {
+	if opts.Org == "" {
+		opts.Org = getEnv("DRONE_REPO_OWNER")
+	}
+	if opts.Repo == "" {
+		opts.Repo = getEnv("DRONE_REPO_NAME")
+	}
+	if opts.SHA1 != "" || opts.PRNumber != 0 {
+		return nil
+	}
+	pr := getEnv("DRONE_PULL_REQUEST")
+	if pr == "" {
+		opts.SHA1 = getEnv("DRONE_COMMIT_SHA1")
+		return nil
+	}
+	if b, err := strconv.Atoi(pr); err == nil {
+		opts.PRNumber = b
+	} else {
+		return fmt.Errorf("DRONE_PULL_REQUEST is invalid. It is failed to parse DRONE_PULL_REQUEST as an integer: %w", err)
+	}
+	return nil
+}
+
+func ComplementExec(opts *ExecOptions, getEnv func(string) string) error {
+	if isCircleCI(getEnv) {
+		return complementExecCircleCI(opts, getEnv)
+	}
+	if isDrone(getEnv) {
+		return complementExecDrone(opts, getEnv)
 	}
 	return nil
 }
