@@ -90,7 +90,7 @@ func complementPostDrone(opts *PostOptions, getEnv func(string) string) error {
 }
 
 func ComplementPost(opts *PostOptions, getEnv func(string) string) error {
-	if IsCircleCI(getEnv) {
+	if isCircleCI(getEnv) {
 		return complementPostCircleCI(opts, getEnv)
 	}
 	if isDrone(getEnv) {
@@ -99,7 +99,7 @@ func ComplementPost(opts *PostOptions, getEnv func(string) string) error {
 	return nil
 }
 
-func IsCircleCI(getEnv func(string) string) bool {
+func isCircleCI(getEnv func(string) string) bool {
 	return getEnv("CIRCLECI") != ""
 }
 
