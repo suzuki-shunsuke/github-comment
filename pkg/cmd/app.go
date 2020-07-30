@@ -17,11 +17,13 @@ type Runner struct {
 func (runner Runner) Run(ctx context.Context, args []string) error {
 	postCommand := runner.postCommand()
 	execCommand := runner.execCommand()
+	initCommand := runner.initCommand()
 	app := cli.App{
 		Version: constant.Version,
 		Commands: []*cli.Command{
 			&postCommand,
 			&execCommand,
+			&initCommand,
 		},
 	}
 	return app.RunContext(ctx, args)
