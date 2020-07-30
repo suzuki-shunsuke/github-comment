@@ -38,7 +38,7 @@ func ValidatePost(opts PostOptions) error {
 	return nil
 }
 
-func ComplementPost(opts *PostOptions, getEnv func(string) string) error {
+func complementPostCircleCI(opts *PostOptions, getEnv func(string) string) error {
 	if opts.Org == "" {
 		opts.Org = getEnv("CIRCLE_PROJECT_USERNAME")
 	}
@@ -66,6 +66,43 @@ func ComplementPost(opts *PostOptions, getEnv func(string) string) error {
 	return nil
 }
 
+func complementPostDrone(opts *PostOptions, getEnv func(string) string) error {
+	if opts.Org == "" {
+		opts.Org = getEnv("DRONE_REPO_OWNER")
+	}
+	if opts.Repo == "" {
+		opts.Repo = getEnv("DRONE_REPO_NAME")
+	}
+	if opts.SHA1 != "" || opts.PRNumber != 0 {
+		return nil
+	}
+	pr := getEnv("DRONE_PULL_REQUEST")
+	if pr == "" {
+		opts.SHA1 = getEnv("DRONE_COMMIT_SHA1")
+		return nil
+	}
+	if b, err := strconv.Atoi(pr); err == nil {
+		opts.PRNumber = b
+	} else {
+		return fmt.Errorf("DRONE_PULL_REQUEST is invalid. It is failed to parse DRONE_PULL_REQUEST as an integer: %w", err)
+	}
+	return nil
+}
+
+func ComplementPost(opts *PostOptions, getEnv func(string) string) error {
+	if IsCircleCI(getEnv) {
+		return complementPostCircleCI(opts, getEnv)
+	}
+	if isDrone(getEnv) {
+		return complementPostDrone(opts, getEnv)
+	}
+	return nil
+}
+
 func IsCircleCI(getEnv func(string) string) bool {
 	return getEnv("CIRCLECI") != ""
+}
+
+func isDrone(getEnv func(string) string) bool {
+	return getEnv("DRONE") != ""
 }
