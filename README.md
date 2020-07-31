@@ -252,6 +252,10 @@ https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
 * pr: CIRCLE_PULL_REQUEST
 * revision: CIRCLE_SHA
 
+## Blog
+
+Written in Japanese. https://techblog.szksh.cloud/github-comment/
+
 ## License
 
 [MIT](LICENSE)
