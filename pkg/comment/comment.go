@@ -22,7 +22,7 @@ type Commenter struct {
 }
 
 func (commenter Commenter) getPath(cmt Comment) string {
-	if cmt.SHA1 == "" {
+	if cmt.PRNumber != 0 {
 		return "/repos/" + cmt.Org + "/" + cmt.Repo + "/issues/" + strconv.Itoa(cmt.PRNumber) + "/comments"
 	}
 	return "/repos/" + cmt.Org + "/" + cmt.Repo + "/commits/" + cmt.SHA1 + "/comments"

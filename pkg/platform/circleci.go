@@ -23,12 +23,14 @@ func (cc CircleCI) ComplementPost(opts *option.PostOptions) error {
 	if opts.Repo == "" {
 		opts.Repo = cc.getEnv("CIRCLE_PROJECT_REPONAME")
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = cc.getEnv("CIRCLE_SHA1")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	pr := cc.getEnv("CIRCLE_PULL_REQUEST")
 	if pr == "" {
-		opts.SHA1 = cc.getEnv("CIRCLE_SHA1")
 		return nil
 	}
 	a := strings.LastIndex(pr, "/")
@@ -51,12 +53,14 @@ func (cc CircleCI) ComplementExec(opts *option.ExecOptions) error {
 	if opts.Repo == "" {
 		opts.Repo = cc.getEnv("CIRCLE_PROJECT_REPONAME")
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = cc.getEnv("CIRCLE_SHA1")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	pr := cc.getEnv("CIRCLE_PULL_REQUEST")
 	if pr == "" {
-		opts.SHA1 = cc.getEnv("CIRCLE_SHA1")
 		return nil
 	}
 	a := strings.LastIndex(pr, "/")
