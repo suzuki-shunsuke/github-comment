@@ -41,7 +41,10 @@ func (ac GitHubActions) ComplementPost(opts *option.PostOptions) error {
 			opts.Repo = a[1]
 		}
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = ac.getEnv("GITHUB_SHA")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	f, err := ac.read(ac.getEnv("GITHUB_EVENT_PATH"))
@@ -52,10 +55,6 @@ func (ac GitHubActions) ComplementPost(opts *option.PostOptions) error {
 	pr, err := ac.getPRNumberFromPayload(f)
 	if err != nil {
 		return err
-	}
-	if pr == 0 {
-		opts.SHA1 = ac.getEnv("GITHUB_SHA")
-		return nil
 	}
 	opts.PRNumber = pr
 	return nil
@@ -71,7 +70,10 @@ func (ac GitHubActions) ComplementExec(opts *option.ExecOptions) error {
 			opts.Repo = a[1]
 		}
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = ac.getEnv("GITHUB_SHA")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	f, err := ac.read(ac.getEnv("GITHUB_EVENT_PATH"))
@@ -82,10 +84,6 @@ func (ac GitHubActions) ComplementExec(opts *option.ExecOptions) error {
 	pr, err := ac.getPRNumberFromPayload(f)
 	if err != nil {
 		return err
-	}
-	if pr == 0 {
-		opts.SHA1 = ac.getEnv("GITHUB_SHA")
-		return nil
 	}
 	opts.PRNumber = pr
 	return nil

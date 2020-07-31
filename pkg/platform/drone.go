@@ -22,12 +22,14 @@ func (drone Drone) ComplementPost(opts *option.PostOptions) error {
 	if opts.Repo == "" {
 		opts.Repo = drone.getEnv("DRONE_REPO_NAME")
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	pr := drone.getEnv("DRONE_PULL_REQUEST")
 	if pr == "" {
-		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
 		return nil
 	}
 	if b, err := strconv.Atoi(pr); err == nil {
@@ -45,12 +47,14 @@ func (drone Drone) ComplementExec(opts *option.ExecOptions) error {
 	if opts.Repo == "" {
 		opts.Repo = drone.getEnv("DRONE_REPO_NAME")
 	}
-	if opts.SHA1 != "" || opts.PRNumber != 0 {
+	if opts.SHA1 == "" {
+		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
+	}
+	if opts.PRNumber != 0 {
 		return nil
 	}
 	pr := drone.getEnv("DRONE_PULL_REQUEST")
 	if pr == "" {
-		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
 		return nil
 	}
 	if b, err := strconv.Atoi(pr); err == nil {
