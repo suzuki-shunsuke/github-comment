@@ -37,8 +37,9 @@ $ github-comment --help
 
 Please prepare a GitHub access token. https://github.com/settings/tokens
 
-`github-comment` provides two subcommands.
+`github-comment` provides three subcommands.
 
+* init: generate a configuration file template
 * post: create a comment
 * exec: execute a shell command and create a comment according to the command result
 
@@ -278,9 +279,37 @@ In addition to the variables of `post` command, the following variables can be u
 * Stderr: the command standard error output
 * CombinedOutput: Stdout + Stderr
 * Command: https://golang.org/pkg/os/exec/#Cmd.String
-* JoinCommand
+* JoinCommand: the string which the command and arguments are joined with the space character ` `
 * ExitCode: the command exit code
 * Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
+
+### Define reusable template components
+
+```yaml
+templates:
+  <template name>: <template content>
+post:
+  default: |
+    {{template "<template name>" .}} ...
+```
+
+### Define variables
+
+```yaml
+vars:
+  <variable name>: <variable value>
+post:
+  default: |
+    {{.Vars.<variable name>}} ...
+```
+
+The variable can be passed with the option `-var <variable name>:<variable value>` too.
+
+ex.
+
+```
+$ github-comment post -var name:foo
+```
 
 ## post command supports standard input to pass a template
 
@@ -324,6 +353,11 @@ https://docs.github.com/en/actions/configuring-and-managing-workflows/using-envi
 * repo: GITHUB_REPOSITORY
 * pr: GITHUB_EVENT_PATH
 * revision: GITHUB_SHA
+
+## Configuration file path
+
+The configuration file path can be specified with the `--config (-c)` option.
+If the confgiuration file path isn't specified, the file named `.github-comment.yml` or `.github-comment.yaml` would be searched from the current directory to the root directory.
 
 ## Blog
 
