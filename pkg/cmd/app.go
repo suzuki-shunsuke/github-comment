@@ -19,6 +19,8 @@ func (runner Runner) Run(ctx context.Context, args []string) error {
 	execCommand := runner.execCommand()
 	initCommand := runner.initCommand()
 	app := cli.App{
+		Name:    "github-comment",
+		Usage:   "post a comment to GitHub",
 		Version: constant.Version,
 		Commands: []*cli.Command{
 			&postCommand,

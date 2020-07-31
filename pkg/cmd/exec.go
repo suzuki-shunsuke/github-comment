@@ -19,7 +19,7 @@ import (
 func (runner Runner) execCommand() cli.Command {
 	return cli.Command{
 		Name:   "exec",
-		Usage:  "post a command result as a comment",
+		Usage:  "execute a command and post the result as a comment",
 		Action: runner.execAction,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
