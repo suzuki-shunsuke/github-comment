@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
@@ -18,6 +19,7 @@ type ExecCommentParams struct {
 	Stderr         string
 	CombinedOutput string
 	Command        string
+	JoinCommand    string
 	ExitCode       int
 	Env            func(string) string
 	// PRNumber is the pull request number where the comment is posted
@@ -96,6 +98,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
+		JoinCommand:    strings.Join(opts.Args, " "),
 		Stdout:         result.Stdout,
 		Stderr:         result.Stderr,
 		CombinedOutput: result.CombinedOutput,
