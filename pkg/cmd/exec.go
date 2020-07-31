@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io"
 	"os"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
@@ -9,6 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
@@ -95,6 +97,11 @@ func (runner Runner) execAction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	pt := platform.Get(os.Getenv, func(p string) (io.ReadCloser, error) {
+		return os.Open(p)
+	})
+
 	ctrl := api.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -116,7 +123,8 @@ func (runner Runner) execAction(c *cli.Context) error {
 			Stderr: runner.Stderr,
 			Env:    os.Environ(),
 		},
-		Expr: expr.Expr{},
+		Expr:     expr.Expr{},
+		Platform: pt,
 	}
 	return ctrl.Exec(c.Context, opts)
 }

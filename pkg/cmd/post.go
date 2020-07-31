@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"io"
 	"os"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
@@ -106,6 +108,10 @@ func (runner Runner) postAction(c *cli.Context) error {
 		return err
 	}
 
+	pt := platform.Get(os.Getenv, func(p string) (io.ReadCloser, error) {
+		return os.Open(p)
+	})
+
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -123,6 +129,7 @@ func (runner Runner) postAction(c *cli.Context) error {
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
+		Platform: pt,
 	}
 	return ctrl.Post(c.Context, opts)
 }

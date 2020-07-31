@@ -11,6 +11,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
@@ -54,11 +55,14 @@ type ExecController struct {
 	Renderer  Renderer
 	Executor  Executor
 	Expr      Expr
+	Platform  platform.Platform
 }
 
 func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error {
-	if err := option.ComplementExec(&opts, ctrl.Getenv); err != nil {
-		return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+	if ctrl.Platform != nil {
+		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
+			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+		}
 	}
 
 	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)

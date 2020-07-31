@@ -10,6 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 )
 
 // Commenter is API to post a comment to GitHub
@@ -51,6 +52,7 @@ type PostController struct {
 	Reader    Reader
 	Commenter Commenter
 	Renderer  Renderer
+	Platform  platform.Platform
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
@@ -68,8 +70,10 @@ func (ctrl PostController) getCommentParams(
 	ctx context.Context, opts option.PostOptions,
 ) (comment.Comment, error) {
 	cmt := comment.Comment{}
-	if err := option.ComplementPost(&opts, ctrl.Getenv); err != nil {
-		return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+	if ctrl.Platform != nil {
+		if err := ctrl.Platform.ComplementPost(&opts); err != nil {
+			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+		}
 	}
 	if opts.Template == "" {
 		tpl, err := ctrl.readTemplateFromStdin()
