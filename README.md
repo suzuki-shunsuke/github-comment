@@ -187,6 +187,70 @@ exec:
         Hello, world
 ```
 
+## Usage
+
+```
+$ github-comment help
+NAME:
+   github-comment - post a comment to GitHub
+
+USAGE:
+   github-comment [global options] command [command options] [arguments...]
+
+VERSION:
+   1.5.1
+
+COMMANDS:
+   post     post a comment
+   exec     execute a command and post the result as a comment
+   init     scaffold a configuration file if it doesn't exist
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h     show help (default: false)
+   --version, -v  print the version (default: false)
+```
+
+```
+$ github-comment help post
+NAME:
+   github-comment post - post a comment
+
+USAGE:
+   github-comment post [command options] [arguments...]
+
+OPTIONS:
+   --org value                     GitHub organization name
+   --repo value                    GitHub repository name
+   --token value                   GitHub API token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
+   --sha1 value                    commit sha1
+   --template value                comment template
+   --template-key value, -k value  comment template key (default: "default")
+   --config value                  configuration file path
+   --pr value                      GitHub pull request number (default: 0)
+   --var value                     template variable
+```
+
+```
+$ github-comment help exec
+NAME:
+   github-comment exec - execute a command and post the result as a comment
+
+USAGE:
+   github-comment exec [command options] [arguments...]
+
+OPTIONS:
+   --org value                     GitHub organization name
+   --repo value                    GitHub repository name
+   --token value                   GitHub API token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
+   --sha1 value                    commit sha1
+   --template value                comment template
+   --template-key value, -k value  comment template key (default: "default")
+   --config value                  configuration file path
+   --pr value                      GitHub pull request number (default: 0)
+   --var value                     template variable
+```
+
 ## Configuration
 
 ### post: variables which can be used in template
@@ -196,6 +260,7 @@ exec:
 * PRNumber
 * SHA1
 * TemplateKey
+* Vars
 
 ### exec
 
@@ -207,29 +272,15 @@ When the evaluation result is `false` the element is ignored, and the first matc
 If `dont_comment` is `true`, the comment isn't created.
 If no element matches, the comment isn't created without error.
 
-The following variables can be used in `when` and `template`
+In addition to the variables of `post` command, the following variables can be used in `when` and `template`
 
 * Stdout: the command standard output
 * Stderr: the command standard error output
 * CombinedOutput: Stdout + Stderr
 * Command: https://golang.org/pkg/os/exec/#Cmd.String
+* JoinCommand
 * ExitCode: the command exit code
 * Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
-* Org
-* Repo
-* PRNumber
-* SHA1
-* TemplateKey
-
-## Options
-
-* token: GitHub API token to create a comment
-* org: GitHub organization name
-* repo: GitHub repository name
-* revision: commit SHA
-* pr: pull request number
-* template: comment text
-* template-key: template key
 
 ## post command supports standard input to pass a template
 
@@ -239,11 +290,15 @@ Instead of `-template`, we can pass a template from a standard input.
 $ echo hello | github-comment post
 ```
 
-## Environment variables
+## Complement options with Platform's built-in Environment variables
 
-* GITHUB_TOKEN, GITHUB_ACCESS_TOKEN: complement the option `token`
+The following platforms are supported.
 
-## Support to complement options with CircleCI built-in Environment variables
+* CircleCI
+* GitHub Actions
+* Drone
+
+### CircleCI
 
 https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
 
@@ -251,6 +306,24 @@ https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
 * repo: CIRCLE_PROJECT_REPONAME
 * pr: CIRCLE_PULL_REQUEST
 * revision: CIRCLE_SHA
+
+### Drone
+
+https://docs.drone.io/pipeline/environment/reference/
+
+* org: DRONE_REPO_OWNER
+* repo: DRONE_REPO_NAME
+* pr: DRONE_PULL_REQUEST
+* revision: DRONE_COMMIT_SHA1
+
+### GitHub Actions
+
+https://docs.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables
+
+* org: GITHUB_REPOSITORY
+* repo: GITHUB_REPOSITORY
+* pr: GITHUB_EVENT_PATH
+* revision: GITHUB_SHA
 
 ## Blog
 
