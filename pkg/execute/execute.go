@@ -30,7 +30,7 @@ type Params struct {
 }
 
 func (executor Executor) Run(ctx context.Context, params Params) (Result, error) {
-	cmd := exec.Command(params.Cmd, params.Args...)
+	cmd := exec.Command(params.Cmd, params.Args...) //nolint:gosec
 	cmd.Stdin = params.Stdin
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}

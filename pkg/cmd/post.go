@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/crypto/ssh/terminal"
-
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
@@ -16,9 +14,10 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
-func (runner Runner) postCommand() cli.Command {
+func (runner Runner) postCommand() cli.Command { //nolint:dupl
 	return cli.Command{
 		Name:   "post",
 		Usage:  "post a comment",
@@ -71,7 +70,7 @@ func parseVarsFlag(varsSlice []string) (map[string]string, error) {
 	vars := make(map[string]string, len(varsSlice))
 	for _, v := range varsSlice {
 		a := strings.SplitN(v, ":", 2)
-		if len(a) < 2 {
+		if len(a) < 2 { //nolint:gomnd
 			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
 		}
 		vars[a[0]] = a[1]

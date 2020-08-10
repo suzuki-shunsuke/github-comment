@@ -37,7 +37,7 @@ func (ac GitHubActions) ComplementPost(opts *option.PostOptions) error {
 		opts.Org = a[0]
 	}
 	if opts.Repo == "" {
-		if len(a) == 2 {
+		if len(a) == 2 { //nolint:gomnd
 			opts.Repo = a[1]
 		}
 	}
@@ -66,7 +66,7 @@ func (ac GitHubActions) ComplementExec(opts *option.ExecOptions) error {
 		opts.Org = a[0]
 	}
 	if opts.Repo == "" {
-		if len(a) == 2 {
+		if len(a) == 2 { //nolint:gomnd
 			opts.Repo = a[1]
 		}
 	}

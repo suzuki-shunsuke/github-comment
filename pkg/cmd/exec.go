@@ -16,7 +16,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (runner Runner) execCommand() cli.Command {
+func (runner Runner) execCommand() cli.Command { //nolint:dupl
 	return cli.Command{
 		Name:   "exec",
 		Usage:  "execute a command and post the result as a comment",

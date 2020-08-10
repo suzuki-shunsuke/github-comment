@@ -99,7 +99,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		cfg.Vars[k] = v
 	}
 
-	ctrl.post(ctx, execConfigs, ExecCommentParams{
+	_ = ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    strings.Join(opts.Args, " "),

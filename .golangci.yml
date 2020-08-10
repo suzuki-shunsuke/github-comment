@@ -1,20 +1,9 @@
 ---
 linters:
-  enable:
-    - deadcode
-    - goconst
-    - gofmt
-    - goimports
-    - golint
-    - gosimple
-    - govet
-    - interfacer
-    - maligned
-    - misspell
-    - nakedret
-    - staticcheck
-    - structcheck
-    - unconvert
-    - unused
-    - varcheck
-  disable-all: true
+  enable-all: true
+  disable:
+    - wsl
+    - goerr113
+    - nlreturn
+    - lll
+    - godot

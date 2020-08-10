@@ -13,5 +13,5 @@ func (fsys Fsys) Exist(path string) bool {
 }
 
 func (fsys Fsys) Write(path string, content []byte) error {
-	return ioutil.WriteFile(path, content, 0o755)
+	return ioutil.WriteFile(path, content, 0o755) //nolint:gosec
 }
