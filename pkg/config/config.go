@@ -32,17 +32,17 @@ type Reader struct {
 	ExistFile ExistFile
 }
 
-func (reader Reader) find(wd string) (string, bool, error) {
+func (reader Reader) find(wd string) (string, bool) {
 	names := []string{".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
 			p := filepath.Join(wd, name)
 			if reader.ExistFile(p) {
-				return p, true, nil
+				return p, true
 			}
 		}
 		if wd == "/" || wd == "" {
-			return "", false, nil
+			return "", false
 		}
 		wd = filepath.Dir(wd)
 	}
@@ -64,10 +64,7 @@ func (reader Reader) read(p string) (Config, error) {
 func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
 	cfg := Config{}
 	if cfgPath == "" {
-		p, b, err := reader.find(wd)
-		if err != nil {
-			return cfg, err
-		}
+		p, b := reader.find(wd)
 		if !b {
 			return cfg, nil
 		}

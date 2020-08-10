@@ -56,7 +56,7 @@ type PostController struct {
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
-	cmt, err := ctrl.getCommentParams(ctx, opts)
+	cmt, err := ctrl.getCommentParams(opts)
 	if err != nil {
 		return err
 	}
@@ -66,9 +66,7 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	return nil
 }
 
-func (ctrl PostController) getCommentParams(
-	ctx context.Context, opts option.PostOptions,
-) (comment.Comment, error) {
+func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) {
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(&opts); err != nil {

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"strings"
 	"testing"
 
@@ -21,7 +20,7 @@ func (m mockReader) FindAndRead(cfgPath, wd string) (config.Config, error) {
 	return m.cfg, m.err
 }
 
-func TestPostController_getCommentParams(t *testing.T) {
+func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	data := []struct {
 		title string
 		ctrl  PostController
@@ -183,11 +182,10 @@ func TestPostController_getCommentParams(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
-			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
+			cmt, err := d.ctrl.getCommentParams(d.opts)
 			if d.isErr {
 				require.NotNil(t, err)
 				return

@@ -29,7 +29,7 @@ func (commenter Commenter) getPath(cmt Comment) string {
 }
 
 func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
-	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{
+	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{ //nolint:bodyclose
 		Method: http.MethodPost,
 		Path:   commenter.getPath(cmt),
 		Header: http.Header{

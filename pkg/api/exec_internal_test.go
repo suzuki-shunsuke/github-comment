@@ -8,7 +8,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 )
 
-func TestExecController_getExecConfig(t *testing.T) {
+func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 	data := []struct {
 		title       string
 		ctrl        ExecController
