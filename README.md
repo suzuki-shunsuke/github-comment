@@ -354,6 +354,15 @@ https://docs.github.com/en/actions/configuring-and-managing-workflows/using-envi
 * pr: GITHUB_EVENT_PATH
 * revision: GITHUB_SHA
 
+### AWS CodeBuild
+
+https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
+
+* org: CODEBUILD_SOURCE_REPO_URL
+* repo: CODEBUILD_SOURCE_REPO_URL
+* pr: CODEBUILD_SOURCE_VERSION
+* revision: CODEBUILD_RESOLVED_SOURCE_VERSION
+
 ## Configuration file path
 
 The configuration file path can be specified with the `--config (-c)` option.
