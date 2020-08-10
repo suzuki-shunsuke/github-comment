@@ -24,6 +24,9 @@ func Get(getEnv func(string) string, read func(string) (io.ReadCloser, error)) P
 		CircleCI{
 			getEnv: getEnv,
 		},
+		CodeBuild{
+			getEnv: getEnv,
+		},
 	}
 	for _, platform := range platforms {
 		if platform.Match() {
