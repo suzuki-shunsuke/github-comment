@@ -36,7 +36,7 @@ volumes:
     temp: {}
 steps:
   - name: download go modules
-    image: golang:1.14.6
+    image: golang:1.14.7
     commands:
       - go mod download
     volumes: &volumes
@@ -48,7 +48,7 @@ steps:
       - golangci-lint run
     volumes: *volumes
   - name: test
-    image: golang:1.14.6
+    image: golang:1.14.7
     commands:
       - mkdir -p bin
       - curl -L -o bin/cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
