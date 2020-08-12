@@ -58,7 +58,7 @@ type ExecController struct {
 	Platform  platform.Platform
 }
 
-func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error {
+func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
 			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
@@ -95,6 +95,9 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		Stdin: ctrl.Stdin,
 	})
 
+	if cfg.Vars == nil {
+		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
 	}

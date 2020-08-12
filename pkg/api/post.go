@@ -66,7 +66,7 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	return nil
 }
 
-func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) {
+func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(&opts); err != nil {
@@ -104,6 +104,9 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		opts.Template = tpl
 	}
 
+	if cfg.Vars == nil {
+		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
 	}
