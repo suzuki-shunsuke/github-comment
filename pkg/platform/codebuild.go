@@ -16,13 +16,11 @@ func (cb CodeBuild) Match() bool {
 	return cb.getEnv("CODEBUILD_BUILD_ID") != ""
 }
 
-func (cb CodeBuild) ComplementPost(opts *option.PostOptions) error {
+func (cb CodeBuild) ComplementPost(opts *option.PostOptions) error { //nolint:dupl
 	url := cb.getEnv("CODEBUILD_SOURCE_REPO_URL")
 	if opts.Org == "" {
-		fmt.Println(url)
 		if strings.HasPrefix(url, "https://github.com") {
 			a := strings.Split(url, "/")
-			fmt.Println(a)
 			opts.Org = a[len(a)-2]
 		}
 	}
@@ -54,7 +52,7 @@ func (cb CodeBuild) ComplementPost(opts *option.PostOptions) error {
 	return nil
 }
 
-func (cb CodeBuild) ComplementExec(opts *option.ExecOptions) error {
+func (cb CodeBuild) ComplementExec(opts *option.ExecOptions) error { //nolint:dupl
 	url := cb.getEnv("CODEBUILD_SOURCE_REPO_URL")
 	if opts.Org == "" {
 		if strings.HasPrefix(url, "https://github.com") {
@@ -65,7 +63,7 @@ func (cb CodeBuild) ComplementExec(opts *option.ExecOptions) error {
 	if opts.Repo == "" {
 		if strings.HasPrefix(url, "https://github.com") {
 			a := strings.Split(url, "/")
-			opts.Org = strings.TrimRight(a[len(a)-1], ".git")
+			opts.Repo = strings.TrimSuffix(a[len(a)-1], ".git")
 		}
 	}
 	if opts.SHA1 == "" {
