@@ -102,7 +102,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		cfg.Vars[k] = v
 	}
 
-	_ = ctrl.post(ctx, execConfigs, ExecCommentParams{
+	if err := ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    strings.Join(opts.Args, " "),
@@ -116,7 +116,9 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
-	}, cfg.Templates)
+	}, cfg.Templates); err != nil {
+		fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
+	}
 	if err != nil {
 		return ecerror.Wrap(err, result.ExitCode)
 	}
