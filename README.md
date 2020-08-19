@@ -199,7 +199,7 @@ USAGE:
    github-comment [global options] command [command options] [arguments...]
 
 VERSION:
-   1.5.1
+   1.8.0
 
 COMMANDS:
    post     post a comment
@@ -230,6 +230,7 @@ OPTIONS:
    --config value                  configuration file path
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
+   --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
 ```
 
 ```
@@ -250,6 +251,7 @@ OPTIONS:
    --config value                  configuration file path
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
+   --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
 ```
 
 ## Configuration
