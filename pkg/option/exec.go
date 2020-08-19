@@ -15,6 +15,7 @@ type ExecOptions struct {
 	ConfigPath  string
 	Args        []string
 	Vars        map[string]string
+	DryRun      bool
 }
 
 func ValidateExec(opts ExecOptions) error {

@@ -62,6 +62,10 @@ func (runner Runner) postCommand() cli.Command { //nolint:dupl
 				Name:  "var",
 				Usage: "template variable",
 			},
+			&cli.BoolFlag{
+				Name:  "dry-run",
+				Usage: "output a comment to standard error output instead of posting to GitHub",
+			},
 		},
 	}
 }
@@ -88,6 +92,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
+	opts.DryRun = c.Bool("dry-run")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -111,6 +116,18 @@ func (runner Runner) postAction(c *cli.Context) error {
 		return os.Open(p)
 	})
 
+	var cmt api.Commenter
+	if opts.DryRun {
+		cmt = comment.Mock{
+			Stderr: os.Stderr,
+		}
+	} else {
+		cmt = comment.Commenter{
+			Token:      opts.Token,
+			HTTPClient: httpclient.New("https://api.github.com"),
+		}
+	}
+
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -121,10 +138,7 @@ func (runner Runner) postAction(c *cli.Context) error {
 		Reader: config.Reader{
 			ExistFile: existFile,
 		},
-		Commenter: comment.Commenter{
-			Token:      opts.Token,
-			HTTPClient: httpclient.New("https://api.github.com"),
-		},
+		Commenter: cmt,
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
