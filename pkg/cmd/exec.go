@@ -61,6 +61,10 @@ func (runner Runner) execCommand() cli.Command { //nolint:dupl
 				Name:  "var",
 				Usage: "template variable",
 			},
+			&cli.BoolFlag{
+				Name:  "dry-run",
+				Usage: "output a comment to standard error output instead of posting to GitHub",
+			},
 		},
 	}
 }
@@ -75,6 +79,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
 	opts.Args = c.Args().Slice()
+	opts.DryRun = c.Bool("dry-run")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -102,19 +107,28 @@ func (runner Runner) execAction(c *cli.Context) error {
 		return os.Open(p)
 	})
 
+	var cmt api.Commenter
+	if opts.DryRun {
+		cmt = comment.Mock{
+			Stderr: os.Stderr,
+		}
+	} else {
+		cmt = comment.Commenter{
+			Token:      opts.Token,
+			HTTPClient: httpclient.New("https://api.github.com"),
+		}
+	}
+
 	ctrl := api.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		Reader: config.Reader{
 			ExistFile: existFile,
 		},
-		Stdin:  runner.Stdin,
-		Stdout: runner.Stdout,
-		Stderr: runner.Stderr,
-		Commenter: comment.Commenter{
-			Token:      opts.Token,
-			HTTPClient: httpclient.New("https://api.github.com"),
-		},
+		Stdin:     runner.Stdin,
+		Stdout:    runner.Stdout,
+		Stderr:    runner.Stderr,
+		Commenter: cmt,
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
