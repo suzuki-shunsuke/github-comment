@@ -1,0 +1,22 @@
+---
+post:
+  default: |
+    CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
+  hello: |
+    $Hello: {{Env "HELLO"}}
+exec:
+  hello:
+    - when: ExitCode != 0
+      template: |
+        failure
+        exit code: {{.ExitCode}}
+        stdout: {{.Stdout}}
+        stderr: {{.Stderr}}
+        combined output: {{.CombinedOutput}}
+    - when: true
+      template: |
+        $Hello: {{Env "HELLO"}}
+        exit code: {{.ExitCode}}
+        stdout: {{.Stdout}}
+        stderr: {{.Stderr}}
+        combined output: {{.CombinedOutput}}

@@ -59,12 +59,17 @@ steps:
       CC_TEST_REPORTER_ID:
         from_secret: cc_test_reporter_id
     volumes: *volumes
+  - name: dry-run
+    image: golang:1.15.0
+    commands:
+      - bash scripts/test-dry-run.sh
+    volumes: *volumes
+
   - name: remove changes
     image: &image_git plugins/git
     commands:
       # Sometimes it is failed to release by goreleaser due to changes of go.sum
       - git checkout -- .
-
   - name: fetch tags to release
     image: *image_git
     commands:
@@ -72,6 +77,7 @@ steps:
     when:
       event:
         - tag
+
   - name: release
     image: goreleaser/goreleaser:v0.142.0
     commands:
