@@ -23,7 +23,7 @@ func (drone Drone) ComplementPost(opts *option.PostOptions) error {
 		opts.Repo = drone.getEnv("DRONE_REPO_NAME")
 	}
 	if opts.SHA1 == "" {
-		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
+		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA")
 	}
 	if opts.PRNumber != 0 {
 		return nil
@@ -48,7 +48,7 @@ func (drone Drone) ComplementExec(opts *option.ExecOptions) error {
 		opts.Repo = drone.getEnv("DRONE_REPO_NAME")
 	}
 	if opts.SHA1 == "" {
-		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA1")
+		opts.SHA1 = drone.getEnv("DRONE_COMMIT_SHA")
 	}
 	if opts.PRNumber != 0 {
 		return nil
