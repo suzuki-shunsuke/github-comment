@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io"
 	"os"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
@@ -103,9 +102,10 @@ func (runner Runner) execAction(c *cli.Context) error {
 		return err
 	}
 
-	pt := platform.Get(os.Getenv, func(p string) (io.ReadCloser, error) {
-		return os.Open(p)
-	})
+	var pt api.Platform
+	if p, f := platform.Get(); f {
+		pt = p
+	}
 
 	var cmt api.Commenter
 	if opts.DryRun {

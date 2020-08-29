@@ -10,7 +10,6 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 )
 
 // Commenter is API to post a comment to GitHub
@@ -52,7 +51,12 @@ type PostController struct {
 	Reader    Reader
 	Commenter Commenter
 	Renderer  Renderer
-	Platform  platform.Platform
+	Platform  Platform
+}
+
+type Platform interface {
+	ComplementPost(opts *option.PostOptions) error
+	ComplementExec(opts *option.ExecOptions) error
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
