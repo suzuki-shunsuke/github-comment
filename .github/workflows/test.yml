@@ -1,0 +1,14 @@
+---
+name: CI
+on: [push,pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.15.0'
+      - run: go mod download
+      - name: dry run
+        run: bash scripts/test-dry-run.sh
