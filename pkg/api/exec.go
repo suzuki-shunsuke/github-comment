@@ -11,7 +11,6 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
@@ -55,7 +54,7 @@ type ExecController struct {
 	Renderer  Renderer
 	Executor  Executor
 	Expr      Expr
-	Platform  platform.Platform
+	Platform  Platform
 }
 
 func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen

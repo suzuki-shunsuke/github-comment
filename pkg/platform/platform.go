@@ -1,37 +1,66 @@
 package platform
 
 import (
-	"io"
-
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/go-ci-env/cienv"
 )
 
-type Platform interface {
-	ComplementPost(opts *option.PostOptions) error
-	ComplementExec(opts *option.ExecOptions) error
-	Match() bool
+type Platform struct {
+	Platform cienv.Platform
 }
 
-func Get(getEnv func(string) string, read func(string) (io.ReadCloser, error)) Platform {
-	platforms := []Platform{
-		GitHubActions{
-			read:   read,
-			getEnv: getEnv,
-		},
-		Drone{
-			getEnv: getEnv,
-		},
-		CircleCI{
-			getEnv: getEnv,
-		},
-		CodeBuild{
-			getEnv: getEnv,
-		},
+func (pt Platform) ComplementPost(opts *option.PostOptions) error {
+	if opts.Org == "" {
+		opts.Org = pt.Platform.RepoOwner()
 	}
-	for _, platform := range platforms {
-		if platform.Match() {
-			return platform
-		}
+	if opts.Repo == "" {
+		opts.Repo = pt.Platform.RepoName()
+	}
+	if opts.SHA1 == "" {
+		opts.SHA1 = pt.Platform.SHA()
+	}
+	if opts.PRNumber != 0 {
+		return nil
+	}
+	pr, err := pt.Platform.PRNumber()
+	if err != nil {
+		return err
+	}
+	if pr > 0 {
+		opts.PRNumber = pr
 	}
 	return nil
+}
+
+func (pt Platform) ComplementExec(opts *option.ExecOptions) error {
+	if opts.Org == "" {
+		opts.Org = pt.Platform.RepoOwner()
+	}
+	if opts.Repo == "" {
+		opts.Repo = pt.Platform.RepoName()
+	}
+	if opts.SHA1 == "" {
+		opts.SHA1 = pt.Platform.SHA()
+	}
+	if opts.PRNumber != 0 {
+		return nil
+	}
+	pr, err := pt.Platform.PRNumber()
+	if err != nil {
+		return err
+	}
+	if pr > 0 {
+		opts.PRNumber = pr
+	}
+	return nil
+}
+
+func Get() (Platform, bool) {
+	pt := Platform{
+		Platform: cienv.Get(),
+	}
+	if pt.Platform == nil {
+		return Platform{}, false
+	}
+	return pt, true
 }
