@@ -1,0 +1,17 @@
+version: 2.1
+workflows:
+  build:
+    jobs:
+      - test
+jobs:
+  test:
+    docker:
+      - image: golang:1.15.0
+    steps:
+      - checkout
+      - run:
+          name: go mod download
+          command: go mod download
+      - run:
+          name: test
+          command: bash scripts/test-dry-run.sh
