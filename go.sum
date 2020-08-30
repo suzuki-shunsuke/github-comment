@@ -38,8 +38,8 @@ github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/suzuki-shunsuke/flute/v2 v2.0.0 h1:cDpi+h9wceJuOEjOxTvZNQXsIS+lv2Ism4ZdfYgMOnU=
 github.com/suzuki-shunsuke/flute/v2 v2.0.0/go.mod h1:wsUAUZbz+DSjv+XDv/gZeEX/mMu1y9kzIXCN5Slu6NY=
-github.com/suzuki-shunsuke/go-ci-env v0.1.1 h1:kBTP48/NujxgEOfISJIG1ub/ZRUBEyL36SnV5eIO7Ko=
-github.com/suzuki-shunsuke/go-ci-env v0.1.1/go.mod h1:kO9UgcQIAH4Pu4ESkUJHPuQEtesxHPKkpQqeJHJzzdk=
+github.com/suzuki-shunsuke/go-ci-env v0.2.0 h1:ZxlP/W4x4Bpkbo0ys50nIt9oYwZTdJzAtKs+g2uNznE=
+github.com/suzuki-shunsuke/go-ci-env v0.2.0/go.mod h1:kO9UgcQIAH4Pu4ESkUJHPuQEtesxHPKkpQqeJHJzzdk=
 github.com/suzuki-shunsuke/go-cliutil v0.0.0-20181211154308-176f852d9bca/go.mod h1:Vq3NkhgmA9DT/2UZ08x/3A34xxvzQ/vTMABnTWKoMbY=
 github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0 h1:oVXrrYNGBq4POyITQNWKzwsYz7B2nUcqtDbeX4BfeEc=
 github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0/go.mod h1:kDFtLeftDiIUUHXGI3xq5eJ+uAOi50FPrxPENTHktJ0=
