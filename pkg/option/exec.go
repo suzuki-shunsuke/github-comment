@@ -16,6 +16,7 @@ type ExecOptions struct {
 	Args        []string
 	Vars        map[string]string
 	DryRun      bool
+	SkipNoToken bool
 }
 
 func ValidateExec(opts ExecOptions) error {
@@ -25,7 +26,7 @@ func ValidateExec(opts ExecOptions) error {
 	if opts.Repo == "" {
 		return errors.New("repo is required")
 	}
-	if opts.Token == "" {
+	if opts.Token == "" && !opts.SkipNoToken {
 		return errors.New("token is required")
 	}
 	if opts.TemplateKey == "" {

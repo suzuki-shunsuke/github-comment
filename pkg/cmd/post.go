@@ -65,6 +65,12 @@ func (runner Runner) postCommand() cli.Command { //nolint:dupl
 				Name:  "dry-run",
 				Usage: "output a comment to standard error output instead of posting to GitHub",
 			},
+			&cli.BoolFlag{
+				Name:    "skip-no-token",
+				Aliases: []string{"n"},
+				Usage:   "works like dry-run if the GitHub Access Token isn't set",
+				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+			},
 		},
 	}
 }
@@ -92,12 +98,30 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.ConfigPath = c.String("config")
 	opts.PRNumber = c.Int("pr")
 	opts.DryRun = c.Bool("dry-run")
+	opts.SkipNoToken = c.Bool("skip-no-token")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
 	}
 	opts.Vars = vars
 	return nil
+}
+
+func getPostCommenter(opts option.PostOptions) api.Commenter {
+	if opts.DryRun {
+		return comment.Mock{
+			Stderr: os.Stderr,
+		}
+	}
+	if opts.SkipNoToken && opts.Token == "" {
+		return comment.Mock{
+			Stderr: os.Stderr,
+		}
+	}
+	return comment.Commenter{
+		Token:      opts.Token,
+		HTTPClient: httpclient.New("https://api.github.com"),
+	}
 }
 
 // postAction is an entrypoint of the subcommand "post".
@@ -116,18 +140,6 @@ func (runner Runner) postAction(c *cli.Context) error {
 		pt = p
 	}
 
-	var cmt api.Commenter
-	if opts.DryRun {
-		cmt = comment.Mock{
-			Stderr: os.Stderr,
-		}
-	} else {
-		cmt = comment.Commenter{
-			Token:      opts.Token,
-			HTTPClient: httpclient.New("https://api.github.com"),
-		}
-	}
-
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -138,7 +150,7 @@ func (runner Runner) postAction(c *cli.Context) error {
 		Reader: config.Reader{
 			ExistFile: existFile,
 		},
-		Commenter: cmt,
+		Commenter: getPostCommenter(opts),
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},

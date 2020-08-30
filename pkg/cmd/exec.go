@@ -64,6 +64,12 @@ func (runner Runner) execCommand() cli.Command { //nolint:dupl
 				Name:  "dry-run",
 				Usage: "output a comment to standard error output instead of posting to GitHub",
 			},
+			&cli.BoolFlag{
+				Name:    "skip-no-token",
+				Aliases: []string{"n"},
+				Usage:   "works like dry-run if the GitHub Access Token isn't set",
+				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+			},
 		},
 	}
 }
@@ -79,6 +85,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.PRNumber = c.Int("pr")
 	opts.Args = c.Args().Slice()
 	opts.DryRun = c.Bool("dry-run")
+	opts.SkipNoToken = c.Bool("skip-no-token")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -90,6 +97,23 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 func existFile(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
+}
+
+func getExecCommenter(opts option.ExecOptions) api.Commenter {
+	if opts.DryRun {
+		return comment.Mock{
+			Stderr: os.Stderr,
+		}
+	}
+	if opts.SkipNoToken && opts.Token == "" {
+		return comment.Mock{
+			Stderr: os.Stderr,
+		}
+	}
+	return comment.Commenter{
+		Token:      opts.Token,
+		HTTPClient: httpclient.New("https://api.github.com"),
+	}
 }
 
 func (runner Runner) execAction(c *cli.Context) error {
@@ -107,18 +131,6 @@ func (runner Runner) execAction(c *cli.Context) error {
 		pt = p
 	}
 
-	var cmt api.Commenter
-	if opts.DryRun {
-		cmt = comment.Mock{
-			Stderr: os.Stderr,
-		}
-	} else {
-		cmt = comment.Commenter{
-			Token:      opts.Token,
-			HTTPClient: httpclient.New("https://api.github.com"),
-		}
-	}
-
 	ctrl := api.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
@@ -128,7 +140,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		Stdin:     runner.Stdin,
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
-		Commenter: cmt,
+		Commenter: getExecCommenter(opts),
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
