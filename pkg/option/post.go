@@ -15,6 +15,7 @@ type PostOptions struct {
 	ConfigPath  string
 	Vars        map[string]string
 	DryRun      bool
+	SkipNoToken bool
 }
 
 func ValidatePost(opts PostOptions) error {
@@ -24,7 +25,7 @@ func ValidatePost(opts PostOptions) error {
 	if opts.Repo == "" {
 		return errors.New("repo is required")
 	}
-	if opts.Token == "" {
+	if opts.Token == "" && !opts.SkipNoToken {
 		return errors.New("token is required")
 	}
 	if opts.Template == "" && opts.TemplateKey == "" {
