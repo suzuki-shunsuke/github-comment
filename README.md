@@ -199,7 +199,7 @@ USAGE:
    github-comment [global options] command [command options] [arguments...]
 
 VERSION:
-   1.8.0
+   1.9.0
 
 COMMANDS:
    post     post a comment
@@ -231,6 +231,8 @@ OPTIONS:
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
+   --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --help, -h                      show help (default: false)
 ```
 
 ```
@@ -252,6 +254,8 @@ OPTIONS:
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
+   --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --help, -h                      show help (default: false)
 ```
 
 ## Configuration
