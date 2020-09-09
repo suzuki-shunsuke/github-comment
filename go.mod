@@ -3,7 +3,7 @@ module github.com/suzuki-shunsuke/github-comment
 go 1.14
 
 require (
-	github.com/antonmedv/expr v1.8.8
+	github.com/antonmedv/expr v1.8.9
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/suzuki-shunsuke/go-ci-env v0.2.0
