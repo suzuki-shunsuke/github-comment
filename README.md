@@ -270,6 +270,8 @@ OPTIONS:
 * SHA1
 * TemplateKey
 * Vars
+* Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
+* Sprig Function: http://masterminds.github.io/sprig/
 
 ### exec
 
@@ -289,7 +291,6 @@ In addition to the variables of `post` command, the following variables can be u
 * Command: https://golang.org/pkg/os/exec/#Cmd.String
 * JoinCommand: the string which the command and arguments are joined with the space character ` `
 * ExitCode: the command exit code
-* Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
 
 ### Define reusable template components
 
