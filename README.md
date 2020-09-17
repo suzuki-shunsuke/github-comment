@@ -75,10 +75,12 @@ You can write the template in the configuration file.
 
 ```yaml
 post:
-  default: |
-    {{.Org}}/{{.Repo}} test
-  hello: |
-    hello world
+  default:
+    template: |
+      {{.Org}}/{{.Repo}} test
+  hello:
+    template: |
+      hello world
 ```
 
 If the argument `-template` is given, the configuration file is ignored.
@@ -295,8 +297,9 @@ In addition to the variables of `post` command, the following variables can be u
 templates:
   <template name>: <template content>
 post:
-  default: |
-    {{template "<template name>" .}} ...
+  default:
+    template: |
+      {{template "<template name>" .}} ...
 ```
 
 ### Define variables
@@ -305,8 +308,9 @@ post:
 vars:
   <variable name>: <variable value>
 post:
-  default: |
-    {{.Vars.<variable name>}} ...
+  default:
+    template: |
+      {{.Vars.<variable name>}} ...
 ```
 
 The variable can be passed with the option `-var <variable name>:<variable value>` too.
@@ -323,6 +327,49 @@ Instead of `-template`, we can pass a template from a standard input.
 
 ```
 $ echo hello | github-comment post
+```
+
+## post a substitute comment when it is failed to post a too long comment
+
+When the comment is too long, it is failed to post a comment due to GitHub API's validation.
+
+```json
+{
+  "message": "Validation Failed",
+  "errors": [
+    {
+      "resource": "IssueComment",
+      "code": "unprocessable",
+      "field": "data",
+      "message": "Body is too long (maximum is 65536 characters)"
+    }
+  ],
+  "documentation_url": "https://docs.github.com/rest/reference/issues#create-an-issue-comment"
+}
+```
+
+If a comment includes the long command standard output, you may encounter the error.
+
+github-comment supports to post a substitute comment in that case.
+
+When it is failed to post a comment of `template`, github-comment posts a comment of `template_for_too_long` instead of `template`.
+
+ex.
+
+```yaml
+post:
+  hello:
+    template: too long comment
+    template_for_too_long: comment is too long
+exec:
+  hello:
+    - when: ExitCode != 0
+      template: |
+        exit code: {{.ExitCode}}
+        combined output: {{.CombinedOutput}}
+      template_for_too_long: |
+        comment is too long so the command output is omitted
+        exit code: {{.ExitCode}}
 ```
 
 ## Complement options with Platform's built-in Environment variables
