@@ -11,15 +11,6 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
-type mockReader struct {
-	cfg config.Config
-	err error
-}
-
-func (m mockReader) FindAndRead(cfgPath, wd string) (config.Config, error) {
-	return m.cfg, m.err
-}
-
 func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	data := []struct {
 		title string
@@ -38,7 +29,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -64,7 +54,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Reader:   mockReader{},
 				Renderer: template.Renderer{},
 			},
 			opts: option.PostOptions{
@@ -90,12 +79,10 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Reader: mockReader{
-					cfg: config.Config{
-						Post: map[string]config.PostConfig{
-							"default": {
-								Template: "hello",
-							},
+				Config: config.Config{
+					Post: map[string]config.PostConfig{
+						"default": {
+							Template: "hello",
 						},
 					},
 				},
@@ -128,7 +115,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Reader: mockReader{},
 				Renderer: template.Renderer{
 					Getenv: func(k string) string {
 						if k == "FOO" {
@@ -162,12 +148,10 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Reader: mockReader{
-					cfg: config.Config{
-						Base: config.Base{
-							Org:  "suzuki-shunsuke",
-							Repo: "github-comment",
-						},
+				Config: config.Config{
+					Base: config.Base{
+						Org:  "suzuki-shunsuke",
+						Repo: "github-comment",
 					},
 				},
 				Renderer: template.Renderer{},

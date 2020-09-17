@@ -48,10 +48,10 @@ type PostController struct {
 	// If thre is the standard input, it is treated as the comment template
 	HasStdin  func() bool
 	Stdin     io.Reader
-	Reader    Reader
 	Commenter Commenter
 	Renderer  Renderer
 	Platform  Platform
+	Config    config.Config
 }
 
 type Platform interface {
@@ -85,10 +85,8 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		opts.Template = tpl
 	}
 
-	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
-	if err != nil {
-		return cmt, err
-	}
+	cfg := ctrl.Config
+
 	if opts.Org == "" {
 		opts.Org = cfg.Base.Org
 	}

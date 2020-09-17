@@ -6,6 +6,7 @@ import (
 )
 
 const cfgTemplate = `---
+# skip_no_token: true
 # base:
 #   org:
 #   repo:

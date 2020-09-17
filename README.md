@@ -372,6 +372,25 @@ exec:
         exit code: {{.ExitCode}}
 ```
 
+## skip-no-token
+
+https://github.com/suzuki-shunsuke/github-comment/issues/115
+
+In some situation, the GitHub Access Token isn't exposed to the environment variable for the security.
+
+For example, on Drone Secrets are not exposed to pull requests by default.
+
+https://docs.drone.io/secret/repository/
+
+> Secrets are not exposed to pull requests by default.
+> This prevents a bad actor from sending a pull request and attempting to expose your secrets.
+
+`github-comment` requires the GitHub Access Token, so it fails to run `github-comment post` and `github-comment exec`.
+
+We can avoid the error by the command line option `--skip-no-token` or the configuration `skip_no_token: true`.
+If the GitHub Access Token is set, this option is ignored.
+If the GitHub Access Token isn't set, this option works like `--dry-run`.
+
 ## Complement options with Platform's built-in Environment variables
 
 The following platforms are supported.

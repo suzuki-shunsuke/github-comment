@@ -9,11 +9,12 @@ import (
 )
 
 type Config struct {
-	Base      Base
-	Vars      map[string]interface{}
-	Templates map[string]string
-	Post      map[string]PostConfig
-	Exec      map[string][]ExecConfig
+	Base        Base
+	Vars        map[string]interface{}
+	Templates   map[string]string
+	Post        map[string]PostConfig
+	Exec        map[string][]ExecConfig
+	SkipNoToken bool `yaml:"skip_no_token"`
 }
 
 type Base struct {
