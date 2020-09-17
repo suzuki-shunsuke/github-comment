@@ -3,6 +3,8 @@ package template
 import (
 	"bytes"
 	"html/template"
+
+	"github.com/Masterminds/sprig"
 )
 
 type Renderer struct {
@@ -20,7 +22,7 @@ func (renderer Renderer) Render(tpl string, templates map[string]string, params 
 	tpl = addTemplates(tpl, templates)
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env": renderer.Getenv,
-	}).Parse(tpl)
+	}).Funcs(sprig.FuncMap()).Parse(tpl)
 	if err != nil {
 		return "", err
 	}
