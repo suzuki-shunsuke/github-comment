@@ -149,6 +149,7 @@ func (ctrl ExecController) getComment(
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
 	tpl := cmtParams.Template
+	tplForTooLong := ""
 	if tpl == "" {
 		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
@@ -161,18 +162,24 @@ func (ctrl ExecController) getComment(
 			return cmt, false, nil
 		}
 		tpl = execConfig.Template
+		tplForTooLong = execConfig.TemplateForTooLong
 	}
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
 	if err != nil {
 		return cmt, false, err
 	}
+	bodyForTooLong, err := ctrl.Renderer.Render(tplForTooLong, templates, cmtParams)
+	if err != nil {
+		return cmt, false, err
+	}
 	return comment.Comment{
-		PRNumber: cmtParams.PRNumber,
-		Org:      cmtParams.Org,
-		Repo:     cmtParams.Repo,
-		Body:     body,
-		SHA1:     cmtParams.SHA1,
+		PRNumber:       cmtParams.PRNumber,
+		Org:            cmtParams.Org,
+		Repo:           cmtParams.Repo,
+		Body:           body,
+		BodyForTooLong: bodyForTooLong,
+		SHA1:           cmtParams.SHA1,
 	}, true, nil
 }
 

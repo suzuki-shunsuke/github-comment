@@ -5,18 +5,19 @@ import (
 )
 
 type ExecOptions struct {
-	PRNumber    int
-	Org         string
-	Repo        string
-	Token       string
-	SHA1        string
-	Template    string
-	TemplateKey string
-	ConfigPath  string
-	Args        []string
-	Vars        map[string]string
-	DryRun      bool
-	SkipNoToken bool
+	PRNumber           int
+	Org                string
+	Repo               string
+	Token              string
+	SHA1               string
+	Template           string
+	TemplateForTooLong string
+	TemplateKey        string
+	ConfigPath         string
+	Args               []string
+	Vars               map[string]string
+	DryRun             bool
+	SkipNoToken        bool
 }
 
 func ValidateExec(opts ExecOptions) error {

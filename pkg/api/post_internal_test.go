@@ -92,8 +92,10 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				},
 				Reader: mockReader{
 					cfg: config.Config{
-						Post: map[string]string{
-							"default": "hello",
+						Post: map[string]config.PostConfig{
+							"default": {
+								Template: "hello",
+							},
 						},
 					},
 				},

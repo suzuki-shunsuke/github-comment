@@ -105,7 +105,8 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		if err != nil {
 			return cmt, err
 		}
-		opts.Template = tpl
+		opts.Template = tpl.Template
+		opts.TemplateForTooLong = tpl.TemplateForTooLong
 	}
 
 	if cfg.Vars == nil {
@@ -126,13 +127,25 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 	if err != nil {
 		return cmt, err
 	}
+	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, cfg.Templates, PostTemplateParams{
+		PRNumber:    opts.PRNumber,
+		Org:         opts.Org,
+		Repo:        opts.Repo,
+		SHA1:        opts.SHA1,
+		TemplateKey: opts.TemplateKey,
+		Vars:        cfg.Vars,
+	})
+	if err != nil {
+		return cmt, err
+	}
 
 	return comment.Comment{
-		PRNumber: opts.PRNumber,
-		Org:      opts.Org,
-		Repo:     opts.Repo,
-		Body:     tpl,
-		SHA1:     opts.SHA1,
+		PRNumber:       opts.PRNumber,
+		Org:            opts.Org,
+		Repo:           opts.Repo,
+		Body:           tpl,
+		BodyForTooLong: tplForTooLong,
+		SHA1:           opts.SHA1,
 	}, nil
 }
 
@@ -147,9 +160,9 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl PostController) readTemplateFromConfig(cfg config.Config, key string) (string, error) {
+func (ctrl PostController) readTemplateFromConfig(cfg config.Config, key string) (config.PostConfig, error) {
 	if t, ok := cfg.Post[key]; ok {
 		return t, nil
 	}
-	return "", errors.New("the template " + key + " isn't found")
+	return config.PostConfig{}, errors.New("the template " + key + " isn't found")
 }
