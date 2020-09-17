@@ -55,6 +55,7 @@ type ExecController struct {
 	Executor  Executor
 	Expr      Expr
 	Platform  Platform
+	Config    config.Config
 }
 
 func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
@@ -64,10 +65,8 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		}
 	}
 
-	cfg, err := ctrl.Reader.FindAndRead(opts.ConfigPath, ctrl.Wd)
-	if err != nil {
-		return err
-	}
+	cfg := ctrl.Config
+
 	if opts.Org == "" {
 		opts.Org = cfg.Base.Org
 	}

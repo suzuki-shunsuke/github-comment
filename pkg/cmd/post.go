@@ -140,21 +140,29 @@ func (runner Runner) postAction(c *cli.Context) error {
 		pt = p
 	}
 
+	cfgReader := config.Reader{
+		ExistFile: existFile,
+	}
+
+	cfg, err := cfgReader.FindAndRead(opts.ConfigPath, wd)
+	if err != nil {
+		return err
+	}
+	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
+
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
 			return !terminal.IsTerminal(0)
 		},
-		Stdin: runner.Stdin,
-		Reader: config.Reader{
-			ExistFile: existFile,
-		},
+		Stdin:     runner.Stdin,
 		Commenter: getPostCommenter(opts),
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Platform: pt,
+		Config:   cfg,
 	}
 	return ctrl.Post(c.Context, opts)
 }

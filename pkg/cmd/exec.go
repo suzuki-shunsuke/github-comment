@@ -131,12 +131,18 @@ func (runner Runner) execAction(c *cli.Context) error {
 		pt = p
 	}
 
+	cfgReader := config.Reader{
+		ExistFile: existFile,
+	}
+	cfg, err := cfgReader.FindAndRead(opts.ConfigPath, wd)
+	if err != nil {
+		return err
+	}
+	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
+
 	ctrl := api.ExecController{
-		Wd:     wd,
-		Getenv: os.Getenv,
-		Reader: config.Reader{
-			ExistFile: existFile,
-		},
+		Wd:        wd,
+		Getenv:    os.Getenv,
 		Stdin:     runner.Stdin,
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
@@ -151,6 +157,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		},
 		Expr:     expr.Expr{},
 		Platform: pt,
+		Config:   cfg,
 	}
 	return ctrl.Exec(c.Context, opts)
 }
