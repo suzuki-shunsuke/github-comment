@@ -16,11 +16,13 @@ const cfgTemplate = `---
 # templates:
 #   header: "# {{.Org}}/{{.Repo}}"
 # post:
-#   default: |
-#     {{template "header" .}}
-#     {{.Vars.foo}} {{.Vars.zoo.foo}}
-#     {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
-#   hello: hello
+#   default:
+#     template: |
+#       {{template "header" .}}
+#       {{.Vars.foo}} {{.Vars.zoo.foo}}
+#       {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+#   hello:
+#     template: hello
 # exec:
 #   hello:
 #     - when: true
@@ -50,6 +52,15 @@ const cfgTemplate = `---
 #
 #         ` + "```" + `
 #         {{.CombinedOutput}}
+#         ` + "```" + `
+#       template_for_too_long: |
+#         {{template "header" .}}
+#         {{.Vars.foo}} {{.Vars.zoo.foo}}
+#         {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+#         exit code: {{.ExitCode}}
+#
+#         ` + "```" + `
+#         $ {{.Command}}
 #         ` + "```" + `
 `
 
