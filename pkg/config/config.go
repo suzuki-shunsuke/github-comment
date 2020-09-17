@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -11,7 +12,7 @@ type Config struct {
 	Base      Base
 	Vars      map[string]interface{}
 	Templates map[string]string
-	Post      map[string]string
+	Post      map[string]PostConfig
 	Exec      map[string][]ExecConfig
 }
 
@@ -20,10 +21,44 @@ type Base struct {
 	Repo string
 }
 
+type PostConfig struct {
+	Template           string
+	TemplateForTooLong string `yaml:"template_for_too_long"`
+}
+
+func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var val interface{}
+	if err := unmarshal(&val); err != nil {
+		return err
+	}
+	if s, ok := val.(string); ok {
+		pc.Template = s
+		return nil
+	}
+	if m, ok := val.(map[string]interface{}); ok { //nolint:nestif
+		if tpl, ok := m["template"]; ok {
+			t, ok := tpl.(string)
+			if !ok {
+				return fmt.Errorf("invalid config. template should be string: %+v", tpl)
+			}
+			pc.Template = t
+		}
+		if tpl, ok := m["template_for_too_long"]; ok {
+			t, ok := tpl.(string)
+			if !ok {
+				return fmt.Errorf("invalid config. template_for_too_long should be string: %+v", tpl)
+			}
+			pc.TemplateForTooLong = t
+		}
+	}
+	return fmt.Errorf("invalid config. post config should be string or map[string]intterface{}: %+v", val)
+}
+
 type ExecConfig struct {
-	When        string
-	Template    string
-	DontComment bool `yaml:"dont_comment"`
+	When               string
+	Template           string
+	TemplateForTooLong string `yaml:"template_for_too_long"`
+	DontComment        bool   `yaml:"dont_comment"`
 }
 
 type ExistFile func(string) bool

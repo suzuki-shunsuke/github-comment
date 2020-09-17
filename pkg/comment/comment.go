@@ -2,23 +2,36 @@ package comment
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 )
 
 type Comment struct {
-	PRNumber int
-	Org      string
-	Repo     string
-	Body     string
-	SHA1     string
+	PRNumber       int
+	Org            string
+	Repo           string
+	Body           string
+	BodyForTooLong string
+	SHA1           string
 }
 
 type Commenter struct {
 	HTTPClient httpclient.Client
 	Token      string
+}
+
+type ValidationErrors struct {
+	Errors []ValidationError `json:"errors"`
+}
+
+type ValidationError struct {
+	Message string `json:"message"`
 }
 
 func (commenter Commenter) getPath(cmt Comment) string {
@@ -28,7 +41,11 @@ func (commenter Commenter) getPath(cmt Comment) string {
 	return "/repos/" + cmt.Org + "/" + cmt.Repo + "/commits/" + cmt.SHA1 + "/comments"
 }
 
-func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
+func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool) error {
+	body := cmt.Body
+	if tooLong {
+		body = cmt.BodyForTooLong
+	}
 	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{ //nolint:bodyclose
 		Method: http.MethodPost,
 		Path:   commenter.getPath(cmt),
@@ -36,8 +53,28 @@ func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
 			"Authorization": []string{"token " + commenter.Token},
 		},
 		RequestBody: map[string]string{
-			"body": cmt.Body,
+			"body": body,
 		},
 	})
+	return err
+}
+
+func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
+	err := commenter.create(ctx, cmt, false)
+	if cmt.BodyForTooLong == "" {
+		return err
+	}
+	e := &httpclient.Error{}
+	if errors.As(err, &e) {
+		log.Println("http error")
+		validationErrors := ValidationErrors{}
+		if err := json.Unmarshal(e.BodyByte(), &validationErrors); err == nil {
+			for _, ve := range validationErrors.Errors {
+				if strings.HasPrefix(ve.Message, "Body is too long") {
+					return commenter.create(ctx, cmt, true)
+				}
+			}
+		}
+	}
 	return err
 }
