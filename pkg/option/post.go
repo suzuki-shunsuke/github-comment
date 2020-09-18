@@ -17,6 +17,7 @@ type PostOptions struct {
 	Vars               map[string]string
 	DryRun             bool
 	SkipNoToken        bool
+	Silent             bool
 }
 
 func ValidatePost(opts PostOptions) error {

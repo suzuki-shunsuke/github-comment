@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func (runner Runner) postCommand() cli.Command { //nolint:dupl
+func (runner Runner) postCommand() cli.Command { //nolint:funlen,dupl
 	return cli.Command{
 		Name:   "post",
 		Usage:  "post a comment",
@@ -71,6 +71,11 @@ func (runner Runner) postCommand() cli.Command { //nolint:dupl
 				Usage:   "works like dry-run if the GitHub Access Token isn't set",
 				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
 			},
+			&cli.BoolFlag{
+				Name:    "silent",
+				Aliases: []string{"s"},
+				Usage:   "suppress the output of dry-run and skip-no-token",
+			},
 		},
 	}
 }
@@ -99,6 +104,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.PRNumber = c.Int("pr")
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
+	opts.Silent = c.Bool("silent")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -111,11 +117,13 @@ func getPostCommenter(opts option.PostOptions) api.Commenter {
 	if opts.DryRun {
 		return comment.Mock{
 			Stderr: os.Stderr,
+			Silent: opts.Silent,
 		}
 	}
 	if opts.SkipNoToken && opts.Token == "" {
 		return comment.Mock{
 			Stderr: os.Stderr,
+			Silent: opts.Silent,
 		}
 	}
 	return comment.Commenter{

@@ -15,7 +15,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (runner Runner) execCommand() cli.Command { //nolint:dupl
+func (runner Runner) execCommand() cli.Command { //nolint:funlen,dupl
 	return cli.Command{
 		Name:   "exec",
 		Usage:  "execute a command and post the result as a comment",
@@ -70,6 +70,11 @@ func (runner Runner) execCommand() cli.Command { //nolint:dupl
 				Usage:   "works like dry-run if the GitHub Access Token isn't set",
 				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
 			},
+			&cli.BoolFlag{
+				Name:    "silent",
+				Aliases: []string{"s"},
+				Usage:   "suppress the output of dry-run and skip-no-token",
+			},
 		},
 	}
 }
@@ -86,6 +91,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Args = c.Args().Slice()
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
+	opts.Silent = c.Bool("silent")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -103,11 +109,13 @@ func getExecCommenter(opts option.ExecOptions) api.Commenter {
 	if opts.DryRun {
 		return comment.Mock{
 			Stderr: os.Stderr,
+			Silent: opts.Silent,
 		}
 	}
 	if opts.SkipNoToken && opts.Token == "" {
 		return comment.Mock{
 			Stderr: os.Stderr,
+			Silent: opts.Silent,
 		}
 	}
 	return comment.Commenter{
@@ -139,6 +147,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		return err
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
+	opts.Silent = opts.Silent || cfg.Silent
 
 	ctrl := api.ExecController{
 		Wd:        wd,
