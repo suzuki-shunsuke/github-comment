@@ -234,6 +234,7 @@ OPTIONS:
    --var value                     template variable
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
    --help, -h                      show help (default: false)
 ```
 
@@ -257,6 +258,7 @@ OPTIONS:
    --var value                     template variable
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
    --help, -h                      show help (default: false)
 ```
 

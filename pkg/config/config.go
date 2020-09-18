@@ -15,6 +15,7 @@ type Config struct {
 	Post        map[string]PostConfig
 	Exec        map[string][]ExecConfig
 	SkipNoToken bool `yaml:"skip_no_token"`
+	Silent      bool
 }
 
 type Base struct {

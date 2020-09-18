@@ -18,6 +18,7 @@ type ExecOptions struct {
 	Vars               map[string]string
 	DryRun             bool
 	SkipNoToken        bool
+	Silent             bool
 }
 
 func ValidateExec(opts ExecOptions) error {
