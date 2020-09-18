@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -66,7 +65,6 @@ func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
 	}
 	e := &httpclient.Error{}
 	if errors.As(err, &e) {
-		log.Println("http error")
 		validationErrors := ValidationErrors{}
 		if err := json.Unmarshal(e.BodyByte(), &validationErrors); err == nil {
 			for _, ve := range validationErrors.Errors {
