@@ -401,42 +401,9 @@ The following platforms are supported.
 * CircleCI
 * GitHub Actions
 * Drone
+* AWS CodeBuild
 
-### CircleCI
-
-https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
-
-* org: CIRCLE_PROJECT_USERNAME
-* repo: CIRCLE_PROJECT_REPONAME
-* pr: CIRCLE_PULL_REQUEST
-* revision: CIRCLE_SHA
-
-### Drone
-
-https://docs.drone.io/pipeline/environment/reference/
-
-* org: DRONE_REPO_OWNER
-* repo: DRONE_REPO_NAME
-* pr: DRONE_PULL_REQUEST
-* revision: DRONE_COMMIT_SHA1
-
-### GitHub Actions
-
-https://docs.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables
-
-* org: GITHUB_REPOSITORY
-* repo: GITHUB_REPOSITORY
-* pr: GITHUB_EVENT_PATH
-* revision: GITHUB_SHA
-
-### AWS CodeBuild
-
-https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
-
-* org: CODEBUILD_SOURCE_REPO_URL
-* repo: CODEBUILD_SOURCE_REPO_URL
-* pr: CODEBUILD_SOURCE_VERSION
-* revision: CODEBUILD_RESOLVED_SOURCE_VERSION
+To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
 ## Configuration file path
 
