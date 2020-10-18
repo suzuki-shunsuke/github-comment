@@ -2,8 +2,9 @@
 post:
   default: |
     CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
-  hello: |
-    $Hello: {{Env "HELLO"}} {{ "hello!" | upper | repeat 5 }}
+  hello:
+    template: |
+      $Hello: {{Env "HELLO"}} {{ "hello!" | upper | repeat 5 }}
 exec:
   hello:
     - when: ExitCode != 0

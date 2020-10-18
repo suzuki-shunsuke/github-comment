@@ -37,7 +37,7 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		pc.Template = s
 		return nil
 	}
-	if m, ok := val.(map[string]interface{}); ok { //nolint:nestif
+	if m, ok := val.(map[interface{}]interface{}); ok { //nolint:nestif
 		if tpl, ok := m["template"]; ok {
 			t, ok := tpl.(string)
 			if !ok {
@@ -52,6 +52,7 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 			pc.TemplateForTooLong = t
 		}
+		return nil
 	}
 	return fmt.Errorf("invalid config. post config should be string or map[string]intterface{}: %+v", val)
 }
