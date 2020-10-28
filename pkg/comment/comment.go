@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -55,7 +56,7 @@ func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool
 			"body": body,
 		},
 	})
-	return err
+	return fmt.Errorf("send a comment by GitHub API: %w", err)
 }
 
 func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {

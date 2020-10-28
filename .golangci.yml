@@ -7,3 +7,4 @@ linters:
     - nlreturn
     - lll
     - godot
+    - exhaustivestruct

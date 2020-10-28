@@ -90,11 +90,11 @@ func (reader Reader) read(p string) (Config, error) {
 	cfg := Config{}
 	f, err := os.Open(p)
 	if err != nil {
-		return cfg, err
+		return cfg, fmt.Errorf("open a configuration file "+p+": %w", err)
 	}
 	defer f.Close()
 	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		return cfg, err
+		return cfg, fmt.Errorf("decode a configuration file as YAML: %w", err)
 	}
 	return cfg, nil
 }

@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 
 	"github.com/Masterminds/sprig"
@@ -24,11 +25,11 @@ func (renderer Renderer) Render(tpl string, templates map[string]string, params 
 		"Env": renderer.Getenv,
 	}).Funcs(sprig.FuncMap()).Parse(tpl)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("parse a template: %w", err)
 	}
 	buf := &bytes.Buffer{}
 	if err := tmpl.Execute(buf, params); err != nil {
-		return "", err
+		return "", fmt.Errorf("render a template with params: %w", err)
 	}
 	return buf.String(), nil
 }

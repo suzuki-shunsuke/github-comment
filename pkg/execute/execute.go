@@ -3,6 +3,7 @@ package execute
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os/exec"
 
@@ -42,11 +43,15 @@ func (executor Executor) Run(ctx context.Context, params Params) (Result, error)
 	runner := timeout.NewRunner(0)
 	err := runner.Run(ctx, cmd)
 	ec := cmd.ProcessState.ExitCode()
-	return Result{
+	result := Result{
 		ExitCode:       ec,
 		Cmd:            cmd.String(),
 		Stdout:         stdout.String(),
 		Stderr:         stderr.String(),
 		CombinedOutput: combinedOutput.String(),
-	}, err
+	}
+	if err == nil {
+		return result, nil
+	}
+	return result, fmt.Errorf("run a command: %w", err)
 }

@@ -123,7 +123,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		Vars:        cfg.Vars,
 	})
 	if err != nil {
-		return cmt, err
+		return cmt, fmt.Errorf("render a template for post: %w", err)
 	}
 	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, cfg.Templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
@@ -134,7 +134,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		Vars:        cfg.Vars,
 	})
 	if err != nil {
-		return cmt, err
+		return cmt, fmt.Errorf("render a template template_for_too_long for post: %w", err)
 	}
 
 	return comment.Comment{

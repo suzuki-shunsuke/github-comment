@@ -1,6 +1,8 @@
 package platform
 
 import (
+	"fmt"
+
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/go-ci-env/cienv"
 )
@@ -24,7 +26,7 @@ func (pt Platform) ComplementPost(opts *option.PostOptions) error {
 	}
 	pr, err := pt.Platform.PRNumber()
 	if err != nil {
-		return err
+		return fmt.Errorf("get a pull request number from an environment variable: %w", err)
 	}
 	if pr > 0 {
 		opts.PRNumber = pr
@@ -47,7 +49,7 @@ func (pt Platform) ComplementExec(opts *option.ExecOptions) error {
 	}
 	pr, err := pt.Platform.PRNumber()
 	if err != nil {
-		return err
+		return fmt.Errorf("get a pull request number from an environment variable: %w", err)
 	}
 	if pr > 0 {
 		opts.PRNumber = pr

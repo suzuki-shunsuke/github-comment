@@ -75,7 +75,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	}
 
 	if err := option.ValidateExec(opts); err != nil {
-		return err
+		return fmt.Errorf("validate command options: %w", err)
 	}
 
 	var execConfigs []config.ExecConfig
@@ -133,7 +133,7 @@ func (ctrl ExecController) getExecConfig(
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
 		if err != nil {
-			return execConfig, false, err
+			return execConfig, false, fmt.Errorf("test a condition is matched: %w", err)
 		}
 		if !f {
 			continue
@@ -168,11 +168,11 @@ func (ctrl ExecController) getComment(
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
 	if err != nil {
-		return cmt, false, err
+		return cmt, false, fmt.Errorf("render a comment template: %w", err)
 	}
 	bodyForTooLong, err := ctrl.Renderer.Render(tplForTooLong, templates, cmtParams)
 	if err != nil {
-		return cmt, false, err
+		return cmt, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
 	}
 	return comment.Comment{
 		PRNumber:       cmtParams.PRNumber,
