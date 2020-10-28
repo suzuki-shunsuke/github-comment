@@ -394,6 +394,22 @@ We can avoid the error by the command line option `--skip-no-token` or the confi
 If the GitHub Access Token is set, this option is ignored.
 If the GitHub Access Token isn't set, this option works like `--dry-run`.
 
+## Skip to send a comment with Environment variable
+
+https://github.com/suzuki-shunsuke/github-comment/issues/143
+
+When we try to run shell scripts for CI on local for testing, in many case we don't want to send a comment.
+So github-comment supports to skip to send a comment with an environment variable.
+
+Set the environment variable `GITHUB_COMMENT_SKIP` to `true`.
+
+```
+$ export GITHUB_COMMENT_SKIP=true
+$ github-comment post -template test # Do nothing
+$ github-comment exec -- echo hello # a command is run but a comment isn't sent
+hello
+```
+
 ## Complement options with Platform's built-in Environment variables
 
 The following platforms are supported.
