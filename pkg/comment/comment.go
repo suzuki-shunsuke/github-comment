@@ -56,7 +56,10 @@ func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool
 			"body": body,
 		},
 	})
-	return fmt.Errorf("send a comment by GitHub API: %w", err)
+	if err != nil {
+		return fmt.Errorf("send a comment by GitHub API: %w", err)
+	}
+	return nil
 }
 
 func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
