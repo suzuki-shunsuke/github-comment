@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
@@ -135,6 +136,15 @@ func getPostCommenter(opts option.PostOptions) api.Commenter {
 
 // postAction is an entrypoint of the subcommand "post".
 func (runner Runner) postAction(c *cli.Context) error {
+	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
+		skipComment, err := strconv.ParseBool(a)
+		if err != nil {
+			return fmt.Errorf("parse the environment variable GITHUB_COMMENT_SKIP as a bool: %w", err)
+		}
+		if skipComment {
+			return nil
+		}
+	}
 	opts := option.PostOptions{}
 	if err := parsePostOptions(&opts, c); err != nil {
 		return err

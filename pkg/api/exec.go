@@ -74,8 +74,17 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		opts.Repo = cfg.Base.Repo
 	}
 
-	if err := option.ValidateExec(opts); err != nil {
-		return fmt.Errorf("validate command options: %w", err)
+	result, err := ctrl.Executor.Run(ctx, execute.Params{
+		Cmd:   opts.Args[0],
+		Args:  opts.Args[1:],
+		Stdin: ctrl.Stdin,
+	})
+
+	if opts.SkipComment {
+		if err != nil {
+			return ecerror.Wrap(err, result.ExitCode)
+		}
+		return nil
 	}
 
 	var execConfigs []config.ExecConfig
@@ -87,11 +96,9 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		execConfigs = a
 	}
 
-	result, err := ctrl.Executor.Run(ctx, execute.Params{
-		Cmd:   opts.Args[0],
-		Args:  opts.Args[1:],
-		Stdin: ctrl.Stdin,
-	})
+	if err := option.ValidateExec(opts); err != nil {
+		return fmt.Errorf("validate command options: %w", err)
+	}
 
 	if cfg.Vars == nil {
 		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
