@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
@@ -131,7 +132,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 	}
 	wd, err := os.Getwd()
 	if err != nil {
-		return err
+		return fmt.Errorf("get a current directory path: %w", err)
 	}
 
 	var pt api.Platform
@@ -144,7 +145,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 	}
 	cfg, err := cfgReader.FindAndRead(opts.ConfigPath, wd)
 	if err != nil {
-		return err
+		return fmt.Errorf("find and read a configuration file: %w", err)
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 	opts.Silent = opts.Silent || cfg.Silent
