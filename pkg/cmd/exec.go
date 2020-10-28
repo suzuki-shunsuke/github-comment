@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
@@ -129,6 +130,13 @@ func (runner Runner) execAction(c *cli.Context) error {
 	opts := option.ExecOptions{}
 	if err := parseExecOptions(&opts, c); err != nil {
 		return err
+	}
+	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
+		skipComment, err := strconv.ParseBool(a)
+		if err != nil {
+			return fmt.Errorf("parse the environment variable GITHUB_COMMENT_SKIP as a bool: %w", err)
+		}
+		opts.SkipComment = skipComment
 	}
 	wd, err := os.Getwd()
 	if err != nil {

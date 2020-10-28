@@ -19,6 +19,7 @@ type ExecOptions struct {
 	DryRun             bool
 	SkipNoToken        bool
 	Silent             bool
+	SkipComment        bool
 }
 
 func ValidateExec(opts ExecOptions) error {
