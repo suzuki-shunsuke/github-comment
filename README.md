@@ -273,6 +273,7 @@ OPTIONS:
 * TemplateKey
 * Vars
 * Env: the function to get the environment variable https://golang.org/pkg/os/#Getenv
+* AvoidHTMLEscape: the function to post a comment without HTML escape by [Go's html/template](https://golang.org/pkg/html/template/)
 * Sprig Function: http://masterminds.github.io/sprig/
 
 ### exec

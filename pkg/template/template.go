@@ -19,10 +19,15 @@ func addTemplates(tpl string, templates map[string]string) string {
 	return tpl
 }
 
+func avoidHTMLEscape(text string) template.HTML {
+	return template.HTML(text) //nolint:gosec
+}
+
 func (renderer Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env": renderer.Getenv,
+		"Env":             renderer.Getenv,
+		"AvoidHTMLEscape": avoidHTMLEscape,
 	}).Funcs(sprig.FuncMap()).Parse(tpl)
 	if err != nil {
 		return "", fmt.Errorf("parse a template: %w", err)
