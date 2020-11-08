@@ -57,6 +57,7 @@ type PostController struct {
 type Platform interface {
 	ComplementPost(opts *option.PostOptions) error
 	ComplementExec(opts *option.ExecOptions) error
+	CI() string
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {

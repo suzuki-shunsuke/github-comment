@@ -422,6 +422,75 @@ The following platforms are supported.
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
+## Builtin Templates
+
+Some default templates are provided.
+They are overwritten if the same name templates are defined in the configuration file.
+
+* templates.exit_code
+* templates.join_command
+* templates.hidden_combined_output
+* templates.header
+* exec.default
+
+### templates.exit_code
+
+```
+:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}: Exit Code {{.ExitCode}}
+```
+
+### templates.join_command
+
+```
+<pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>
+```
+
+### templates.hidden_combined_output
+
+```
+<details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>
+```
+
+### templates.header
+
+`header` is different per CI service.
+
+#### CircleCI
+
+```
+[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})
+```
+
+#### CodeBuild
+
+```
+[Build link]({{env "CODEBUILD_BUILD_URL"}})
+```
+
+#### Drone
+
+```
+[build]({{env "DRONE_BUILD_LINK"}}) [step]({{env "DRONE_BUILD_LINK"}}/{{env "DRONE_STAGE_NUMBER"}}/{{env "DRONE_STEP_NUMBER"}})
+```
+
+#### GitHub Actions
+
+```
+[Build link](https://github.com/{{env "GITHUB_REPOSITORY"}}/actions/runs/{{env "GITHUB_RUN_ID"}})
+```
+
+### exec.default
+
+```yaml
+when: ExitCode != 0
+template: |
+  {{template "exit_code" .}} {{template "header" .}}
+
+  {{template "join_command" .}}
+
+  {{template "hidden_combined_output" .}}`
+```
+
 ## Configuration file path
 
 The configuration file path can be specified with the `--config (-c)` option.
