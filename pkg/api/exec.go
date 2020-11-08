@@ -11,6 +11,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
@@ -58,10 +59,35 @@ type ExecController struct {
 	Config    config.Config
 }
 
+func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
+	var execConfigs []config.ExecConfig
+	if opts.Template == "" && opts.TemplateKey != "" {
+		a, ok := cfg.Exec[opts.TemplateKey]
+		if !ok {
+			if opts.TemplateKey != "default" {
+				return nil, errors.New("template isn't found: " + opts.TemplateKey)
+			}
+			execConfigs = []config.ExecConfig{
+				{
+					When: "ExitCode != 0",
+					Template: `{{template "exit_code" .}} {{template "header" .}}
+
+{{template "join_command" .}}
+
+{{template "hidden_combined_output" .}}`,
+				},
+			}
+		} else {
+			execConfigs = a
+		}
+	}
+	return execConfigs, nil
+}
+
 func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
-			return fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
 		}
 	}
 
@@ -87,13 +113,9 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		return nil
 	}
 
-	var execConfigs []config.ExecConfig
-	if opts.Template == "" && opts.TemplateKey != "" {
-		a, ok := cfg.Exec[opts.TemplateKey]
-		if !ok {
-			return errors.New("template isn't found: " + opts.TemplateKey)
-		}
-		execConfigs = a
+	execConfigs, err := ctrl.getExecConfigs(cfg, opts)
+	if err != nil {
+		return fmt.Errorf("get config: %w", err)
 	}
 
 	if err := option.ValidateExec(opts); err != nil {
@@ -105,6 +127,21 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
+	}
+
+	templates := map[string]string{}
+	if t := ctrl.Platform.CI(); t != "" {
+		if header, ok := template.GetBuiltinHeaders()[ctrl.Platform.CI()]; ok {
+			templates["header"] = header
+		} else {
+			templates["header"] = ""
+		}
+	}
+	for k, v := range template.GetBuiltinTemplates() {
+		templates[k] = v
+	}
+	for k, v := range cfg.Templates {
+		templates[k] = v
 	}
 
 	if err := ctrl.post(ctx, execConfigs, ExecCommentParams{
@@ -121,7 +158,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
-	}, cfg.Templates); err != nil {
+	}, templates); err != nil {
 		if !opts.Silent {
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
 		}

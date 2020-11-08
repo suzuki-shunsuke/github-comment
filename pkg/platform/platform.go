@@ -34,6 +34,13 @@ func (pt Platform) ComplementPost(opts *option.PostOptions) error {
 	return nil
 }
 
+func (pt Platform) CI() string {
+	if pt.Platform == nil {
+		return ""
+	}
+	return pt.Platform.CI()
+}
+
 func (pt Platform) ComplementExec(opts *option.ExecOptions) error {
 	if opts.Org == "" {
 		opts.Org = pt.Platform.RepoOwner()
