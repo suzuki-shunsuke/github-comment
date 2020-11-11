@@ -427,16 +427,16 @@ To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-
 Some default templates are provided.
 They are overwritten if the same name templates are defined in the configuration file.
 
-* templates.exit_code
+* templates.status
 * templates.join_command
 * templates.hidden_combined_output
-* templates.header
+* templates.link
 * exec.default
 
-### templates.exit_code
+### templates.status
 
 ```
-:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}: Exit Code {{.ExitCode}}
+:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:
 ```
 
 ### templates.join_command
@@ -451,9 +451,9 @@ They are overwritten if the same name templates are defined in the configuration
 <details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>
 ```
 
-### templates.header
+### templates.link
 
-`header` is different per CI service.
+`link` is different per CI service.
 
 #### CircleCI
 
@@ -484,7 +484,7 @@ They are overwritten if the same name templates are defined in the configuration
 ```yaml
 when: ExitCode != 0
 template: |
-  {{template "exit_code" .}} {{template "header" .}}
+  {{template "status" .}} {{template "link" .}}
 
   {{template "join_command" .}}
 

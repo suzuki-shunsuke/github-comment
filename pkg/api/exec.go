@@ -70,7 +70,7 @@ func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOpt
 			execConfigs = []config.ExecConfig{
 				{
 					When: "ExitCode != 0",
-					Template: `{{template "exit_code" .}} {{template "header" .}}
+					Template: `{{template "status" .}} {{template "link" .}}
 
 {{template "join_command" .}}
 
@@ -129,21 +129,11 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		cfg.Vars[k] = v
 	}
 
-	templates := map[string]string{}
-	if t := ctrl.Platform.CI(); t != "" {
-		if header, ok := template.GetBuiltinHeaders()[ctrl.Platform.CI()]; ok {
-			templates["header"] = header
-		} else {
-			templates["header"] = ""
-		}
+	ci := ""
+	if ctrl.Platform != nil {
+		ci = ctrl.Platform.CI()
 	}
-	for k, v := range template.GetBuiltinTemplates() {
-		templates[k] = v
-	}
-	for k, v := range cfg.Templates {
-		templates[k] = v
-	}
-
+	templates := template.GetTemplates(cfg.Templates, ci)
 	if err := ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,

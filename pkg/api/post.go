@@ -10,6 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
 // Commenter is API to post a comment to GitHub
@@ -115,7 +116,12 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		cfg.Vars[k] = v
 	}
 
-	tpl, err := ctrl.Renderer.Render(opts.Template, cfg.Templates, PostTemplateParams{
+	ci := ""
+	if ctrl.Platform != nil {
+		ci = ctrl.Platform.CI()
+	}
+	templates := template.GetTemplates(cfg.Templates, ci)
+	tpl, err := ctrl.Renderer.Render(opts.Template, templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
@@ -126,7 +132,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 	if err != nil {
 		return cmt, fmt.Errorf("render a template for post: %w", err)
 	}
-	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, cfg.Templates, PostTemplateParams{
+	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
