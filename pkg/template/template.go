@@ -22,12 +22,12 @@ func GetTemplates(templates map[string]string, ci string) map[string]string {
 		"hidden_combined_output": `<details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>`,
 	}
 
-	ret := map[string]string{}
+	ret := map[string]string{
+		"link": "",
+	}
 	if ci != "" {
 		if link, ok := buildLinks[ci]; ok {
 			ret["link"] = link
-		} else {
-			ret["link"] = ""
 		}
 	}
 	for k, v := range builtinTemplates {
