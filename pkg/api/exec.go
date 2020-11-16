@@ -100,15 +100,15 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		opts.Repo = cfg.Base.Repo
 	}
 
-	result, err := ctrl.Executor.Run(ctx, execute.Params{
+	result, execErr := ctrl.Executor.Run(ctx, execute.Params{
 		Cmd:   opts.Args[0],
 		Args:  opts.Args[1:],
 		Stdin: ctrl.Stdin,
 	})
 
 	if opts.SkipComment {
-		if err != nil {
-			return ecerror.Wrap(err, result.ExitCode)
+		if execErr != nil {
+			return ecerror.Wrap(execErr, result.ExitCode)
 		}
 		return nil
 	}
@@ -153,8 +153,8 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
 		}
 	}
-	if err != nil {
-		return ecerror.Wrap(err, result.ExitCode)
+	if execErr != nil {
+		return ecerror.Wrap(execErr, result.ExitCode)
 	}
 	return nil
 }
