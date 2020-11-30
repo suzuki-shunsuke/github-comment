@@ -16,7 +16,7 @@ tasks:
     short: t
     description: test
     usage: test
-    script: go test ./... -covermode=atomic
+    script: go test ./... -race -covermode=atomic
   - name: fmt
     description: format the go code
     usage: format the go code
