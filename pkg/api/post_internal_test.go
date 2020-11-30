@@ -12,6 +12,7 @@ import (
 )
 
 func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
+	t.Parallel()
 	data := []struct {
 		title string
 		ctrl  PostController
@@ -171,6 +172,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
+			t.Parallel()
 			cmt, err := d.ctrl.getCommentParams(d.opts)
 			if d.isErr {
 				require.NotNil(t, err)
@@ -183,6 +185,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 }
 
 func TestPostController_readTemplateFromStdin(t *testing.T) {
+	t.Parallel()
 	data := []struct {
 		title string
 		ctrl  PostController
@@ -211,6 +214,7 @@ func TestPostController_readTemplateFromStdin(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
+			t.Parallel()
 			tpl, err := d.ctrl.readTemplateFromStdin()
 			if d.isErr {
 				require.NotNil(t, err)
