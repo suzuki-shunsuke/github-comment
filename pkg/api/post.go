@@ -79,7 +79,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
 		}
 	}
-	if opts.Template == "" {
+	if opts.Template == "" && opts.StdinTemplate {
 		tpl, err := ctrl.readTemplateFromStdin()
 		if err != nil {
 			return cmt, err

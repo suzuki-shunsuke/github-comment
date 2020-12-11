@@ -18,6 +18,7 @@ type PostOptions struct {
 	DryRun             bool
 	SkipNoToken        bool
 	Silent             bool
+	StdinTemplate      bool
 }
 
 func ValidatePost(opts PostOptions) error {
