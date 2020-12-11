@@ -327,10 +327,10 @@ $ github-comment post -var name:foo
 
 ## post command supports standard input to pass a template
 
-Instead of `-template`, we can pass a template from a standard input.
+Instead of `-template`, we can pass a template from a standard input with `-stdin-template`.
 
 ```
-$ echo hello | github-comment post
+$ echo hello | github-comment post -stdin-template
 ```
 
 ## post a substitute comment when it is failed to post a too long comment

@@ -78,6 +78,10 @@ func (runner Runner) postCommand() cli.Command { //nolint:funlen,dupl
 				Aliases: []string{"s"},
 				Usage:   "suppress the output of dry-run and skip-no-token",
 			},
+			&cli.BoolFlag{
+				Name:  "stdin-template",
+				Usage: "read standard input as the template",
+			},
 		},
 	}
 }
@@ -107,6 +111,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
+	opts.StdinTemplate = c.Bool("stdin-template")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
