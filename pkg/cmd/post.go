@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func (runner Runner) postCommand() cli.Command { //nolint:funlen,dupl
+func (runner Runner) postCommand() cli.Command { //nolint:funlen
 	return cli.Command{
 		Name:   "post",
 		Usage:  "post a comment",
