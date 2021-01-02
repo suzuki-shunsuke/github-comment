@@ -3,6 +3,8 @@ kind: pipeline
 name: shell scripts
 clone:
   depth: 1
+image_pull_secrets:
+  - dockerconfig
 steps:
   - name: shellcheck
     image: koalaman/shellcheck-alpine:v0.7.1
@@ -17,6 +19,8 @@ kind: pipeline
 name: yamllint
 clone:
   depth: 1
+image_pull_secrets:
+  - dockerconfig
 steps:
   - name: output target files to the file
     image: plugins/git
@@ -34,6 +38,8 @@ clone:
 volumes:
   - name: gopath
     temp: {}
+image_pull_secrets:
+  - dockerconfig
 steps:
   - name: download go modules
     image: golang:1.15.6
