@@ -441,15 +441,35 @@ They are overwritten if the same name templates are defined in the configuration
 
 ### templates.join_command
 
+If `.JoinCommand` includes \`\`\`,
+
 ```
 <pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>
 ```
 
+Otherwise,
+
+<pre><code>```
+$ {{.JoinCommand | AvoidHTMLEscape}}
+```</pre></code>
+
 ### templates.hidden_combined_output
+
+If `.CombinedOutput` includes \`\`\` ,
 
 ```
 <details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>
 ```
+
+Otherwise,
+
+<pre><code>&lt;details&gt;
+
+```
+{{.CombinedOutput | AvoidHTMLEscape}}
+```
+
+&lt;/details&gt;</pre></code>
 
 ### templates.link
 
