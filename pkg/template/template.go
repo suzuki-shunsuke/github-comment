@@ -19,7 +19,7 @@ func GetTemplates(templates map[string]string, ci string) map[string]string {
 	builtinTemplates := map[string]string{
 		"status":                 `:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:`,
 		"join_command":           `<pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>`,
-		"hidden_combined_output": `<details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>`,
+		"hidden_combined_output": "<details>\n```\n{{.CombinedOutput | AvoidHTMLEscape}}\n```\n</details>",
 	}
 
 	ret := map[string]string{
