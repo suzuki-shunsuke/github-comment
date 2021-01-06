@@ -4,11 +4,19 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/Masterminds/sprig"
 )
 
-func GetTemplates(templates map[string]string, ci string) map[string]string {
+type ParamGetTemplates struct {
+	Templates      map[string]string
+	CI             string
+	JoinCommand    string
+	CombinedOutput string
+}
+
+func GetTemplates(param ParamGetTemplates) map[string]string {
 	buildLinks := map[string]string{
 		"circleci":       `[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})`,
 		"codebuild":      `[Build link]({{env "CODEBUILD_BUILD_URL"}})`,
@@ -18,22 +26,28 @@ func GetTemplates(templates map[string]string, ci string) map[string]string {
 
 	builtinTemplates := map[string]string{
 		"status":                 `:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:`,
-		"join_command":           `<pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>`,
-		"hidden_combined_output": "<details>\n```\n{{.CombinedOutput | AvoidHTMLEscape}}\n```\n</details>",
+		"join_command":           "```\n$ {{.JoinCommand | AvoidHTMLEscape}}\n```",
+		"hidden_combined_output": "<details>\n\n```\n{{.CombinedOutput | AvoidHTMLEscape}}\n```\n\n</details>",
+	}
+	if strings.Contains(param.JoinCommand, "```") {
+		builtinTemplates["join_command"] = "<pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>"
+	}
+	if strings.Contains(param.CombinedOutput, "```") {
+		builtinTemplates["hidden_combined_output"] = "<details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>"
 	}
 
 	ret := map[string]string{
 		"link": "",
 	}
-	if ci != "" {
-		if link, ok := buildLinks[ci]; ok {
+	if param.CI != "" {
+		if link, ok := buildLinks[param.CI]; ok {
 			ret["link"] = link
 		}
 	}
 	for k, v := range builtinTemplates {
 		ret[k] = v
 	}
-	for k, v := range templates {
+	for k, v := range param.Templates {
 		ret[k] = v
 	}
 	return ret

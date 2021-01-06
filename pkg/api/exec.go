@@ -133,11 +133,17 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 	if ctrl.Platform != nil {
 		ci = ctrl.Platform.CI()
 	}
-	templates := template.GetTemplates(cfg.Templates, ci)
+	joinCommand := strings.Join(opts.Args, " ")
+	templates := template.GetTemplates(template.ParamGetTemplates{
+		Templates:      cfg.Templates,
+		CI:             ci,
+		JoinCommand:    joinCommand,
+		CombinedOutput: result.CombinedOutput,
+	})
 	if err := ctrl.post(ctx, execConfigs, ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
-		JoinCommand:    strings.Join(opts.Args, " "),
+		JoinCommand:    joinCommand,
 		Stdout:         result.Stdout,
 		Stderr:         result.Stderr,
 		CombinedOutput: result.CombinedOutput,

@@ -120,7 +120,10 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 	if ctrl.Platform != nil {
 		ci = ctrl.Platform.CI()
 	}
-	templates := template.GetTemplates(cfg.Templates, ci)
+	templates := template.GetTemplates(template.ParamGetTemplates{
+		Templates: cfg.Templates,
+		CI:        ci,
+	})
 	tpl, err := ctrl.Renderer.Render(opts.Template, templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
