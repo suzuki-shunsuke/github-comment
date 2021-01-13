@@ -12,7 +12,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/suzuki-shunsuke/go-ci-env v1.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-httpclient v1.0.0
