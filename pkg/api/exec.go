@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
@@ -251,6 +252,13 @@ func (ctrl ExecController) post(
 	if !f {
 		return nil
 	}
+	logrus.WithFields(logrus.Fields{
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+		"sha":       cmt.SHA1,
+	}).Debug("comment meta data")
+
 	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt, map[string]interface{}{
 		"Command": map[string]interface{}{
 			"ExitCode":       cmtParams.ExitCode,
@@ -268,6 +276,10 @@ func (ctrl ExecController) post(
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
+	logrus.WithFields(logrus.Fields{
+		"count":    len(nodeIDs),
+		"node_ids": nodeIDs,
+	}).Debug("comments which would be hidden")
 	ctrl.hideComments(ctx, nodeIDs)
 	return nil
 }

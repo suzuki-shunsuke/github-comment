@@ -178,17 +178,23 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	if err != nil {
 		return err
 	}
+	logrus.WithFields(logrus.Fields{
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+		"sha":       cmt.SHA1,
+	}).Debug("comment meta data")
 	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt)
 	if err != nil {
 		return err
+	}
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	logrus.WithFields(logrus.Fields{
 		"count":    len(nodeIDs),
 		"node_ids": nodeIDs,
 	}).Debug("comments which would be hidden")
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
-	}
 	ctrl.hideComments(ctx, nodeIDs)
 	return nil
 }
