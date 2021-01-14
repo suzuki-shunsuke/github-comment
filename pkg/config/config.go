@@ -69,7 +69,8 @@ type ExecConfig struct {
 	When               string
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
-	DontComment        bool   `yaml:"dont_comment"`
+	Minimize           string
+	DontComment        bool `yaml:"dont_comment"`
 }
 
 type ExistFile func(string) bool

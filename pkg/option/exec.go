@@ -14,6 +14,7 @@ type ExecOptions struct {
 	TemplateForTooLong string
 	TemplateKey        string
 	ConfigPath         string
+	Minimize           string
 	Args               []string
 	Vars               map[string]string
 	DryRun             bool

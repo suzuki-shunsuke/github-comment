@@ -66,16 +66,22 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) { //nolint:funlen
+func listHiddenComments( //nolint:funlen
+	ctx context.Context,
+	commenter Commenter, exp Expr,
+	getEnv func(string) string,
+	stderr io.Writer,
+	cmt comment.Comment,
+) ([]string, error) {
 	if cmt.Minimize == "" {
 		return nil, nil
 	}
-	login, err := ctrl.Commenter.GetAuthenticatedUser(ctx)
+	login, err := commenter.GetAuthenticatedUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get an authenticated user: %w", err)
 	}
 
-	comments, err := ctrl.Commenter.List(ctx, comment.PullRequest{
+	comments, err := commenter.List(ctx, comment.PullRequest{
 		Org:      cmt.Org,
 		Repo:     cmt.Repo,
 		PRNumber: cmt.PRNumber,
@@ -98,7 +104,7 @@ func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.C
 			continue
 		}
 
-		f, err := ctrl.Expr.Match(cmt.Minimize, map[string]interface{}{
+		f, err := exp.Match(cmt.Minimize, map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
@@ -114,31 +120,40 @@ func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.C
 				"Body":        cmt.Body,
 				"TemplateKey": cmt.TemplateKey,
 			},
-			"Env": ctrl.Getenv,
+			"Env": getEnv,
 		})
 		if err != nil {
-			fmt.Fprintf(ctrl.Stderr, "[ERROR] judge whether an existing comment is hidden %s: %v\n", nodeID, err)
+			fmt.Fprintf(stderr, "[ERROR] judge whether an existing comment is hidden %s: %v\n", nodeID, err)
 			continue
 		}
 		if !f {
 			continue
 		}
 		nodeIDs = append(nodeIDs, nodeID)
-		if err := ctrl.Commenter.HideComment(ctx, nodeID); err != nil {
-			fmt.Fprintf(ctrl.Stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
+		if err := commenter.HideComment(ctx, nodeID); err != nil {
+			fmt.Fprintf(stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
 			continue
 		}
 	}
 	return nodeIDs, nil
 }
 
-func (ctrl PostController) hideComments(ctx context.Context, nodeIDs []string) {
+func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
+	return listHiddenComments(
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt)
+}
+
+func hideComments(ctx context.Context, commenter Commenter, stderr io.Writer, nodeIDs []string) {
 	for _, nodeID := range nodeIDs {
-		if err := ctrl.Commenter.HideComment(ctx, nodeID); err != nil {
-			fmt.Fprintf(ctrl.Stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
+		if err := commenter.HideComment(ctx, nodeID); err != nil {
+			fmt.Fprintf(stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
 			continue
 		}
 	}
+}
+
+func (ctrl PostController) hideComments(ctx context.Context, nodeIDs []string) {
+	hideComments(ctx, ctrl.Commenter, ctrl.Stderr, nodeIDs)
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
