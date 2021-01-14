@@ -90,6 +90,10 @@ func listHiddenComments( //nolint:funlen
 		return nil, err //nolint:wrapcheck
 	}
 	nodeIDs := []string{}
+	prg, err := exp.Compile(cmt.Minimize)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
 	for _, comment := range comments {
 		nodeID := comment.ID
 
@@ -104,7 +108,7 @@ func listHiddenComments( //nolint:funlen
 			continue
 		}
 
-		f, err := exp.Match(cmt.Minimize, map[string]interface{}{
+		f, err := prg.Run(map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
