@@ -61,9 +61,9 @@ type ExecController struct {
 	Config    config.Config
 }
 
-func (ctrl ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
+func (ctrl ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
 	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt)
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt, paramExpr)
 }
 
 func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
@@ -251,7 +251,16 @@ func (ctrl ExecController) post(
 	if !f {
 		return nil
 	}
-	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt)
+	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt, map[string]interface{}{
+		"Command": map[string]interface{}{
+			"ExitCode":       cmtParams.ExitCode,
+			"JoinCommand":    cmtParams.JoinCommand,
+			"Command":        cmtParams.Command,
+			"Stdout":         cmtParams.Stdout,
+			"Stderr":         cmtParams.Stderr,
+			"CombinedOutput": cmtParams.CombinedOutput,
+		},
+	})
 	if err != nil {
 		return err
 	}

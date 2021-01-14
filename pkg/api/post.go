@@ -72,6 +72,7 @@ func listHiddenComments( //nolint:funlen
 	getEnv func(string) string,
 	stderr io.Writer,
 	cmt comment.Comment,
+	paramExpr map[string]interface{},
 ) ([]string, error) {
 	if cmt.Minimize == "" {
 		return nil, nil
@@ -108,7 +109,7 @@ func listHiddenComments( //nolint:funlen
 			continue
 		}
 
-		f, err := prg.Run(map[string]interface{}{
+		param := map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
@@ -125,7 +126,13 @@ func listHiddenComments( //nolint:funlen
 				"TemplateKey": cmt.TemplateKey,
 			},
 			"Env": getEnv,
-		})
+		}
+
+		for k, v := range paramExpr {
+			param[k] = v
+		}
+
+		f, err := prg.Run(param)
 		if err != nil {
 			fmt.Fprintf(stderr, "[ERROR] judge whether an existing comment is hidden %s: %v\n", nodeID, err)
 			continue
@@ -144,7 +151,7 @@ func listHiddenComments( //nolint:funlen
 
 func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
 	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt)
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt, nil)
 }
 
 func hideComments(ctx context.Context, commenter Commenter, stderr io.Writer, nodeIDs []string) {
