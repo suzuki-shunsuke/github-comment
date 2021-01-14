@@ -16,6 +16,9 @@ import (
 // Commenter is API to post a comment to GitHub
 type Commenter interface {
 	Create(ctx context.Context, cmt comment.Comment) error
+	List(ctx context.Context, pr comment.PullRequest) ([]comment.IssueComment, error)
+	HideComment(ctx context.Context, nodeID string) error
+	GetAuthenticatedUser(ctx context.Context) (string, error)
 }
 
 // Reader is API to find and read the configuration file of github-comment
@@ -49,10 +52,12 @@ type PostController struct {
 	// If thre is the standard input, it is treated as the comment template
 	HasStdin  func() bool
 	Stdin     io.Reader
+	Stderr    io.Writer
 	Commenter Commenter
 	Renderer  Renderer
 	Platform  Platform
 	Config    config.Config
+	Expr      Expr
 }
 
 type Platform interface {
@@ -61,14 +66,94 @@ type Platform interface {
 	CI() string
 }
 
+func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) { //nolint:funlen
+	if cmt.Minimize == "" {
+		return nil, nil
+	}
+	login, err := ctrl.Commenter.GetAuthenticatedUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get an authenticated user: %w", err)
+	}
+
+	comments, err := ctrl.Commenter.List(ctx, comment.PullRequest{
+		Org:      cmt.Org,
+		Repo:     cmt.Repo,
+		PRNumber: cmt.PRNumber,
+	})
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+	nodeIDs := []string{}
+	for _, comment := range comments {
+		nodeID := comment.ID
+
+		// TODO remove these filters
+		if !comment.ViewerCanMinimize {
+			continue
+		}
+		if comment.IsMinimized {
+			continue
+		}
+		if comment.Author.Login != login {
+			continue
+		}
+
+		f, err := ctrl.Expr.Match(cmt.Minimize, map[string]interface{}{
+			"Comment": map[string]interface{}{
+				"Body": comment.Body,
+				// "CreatedAt": comment.CreatedAt,
+			},
+			"Commit": map[string]interface{}{
+				"Org":      cmt.Org,
+				"Repo":     cmt.Repo,
+				"PRNumber": cmt.PRNumber,
+				"SHA":      cmt.SHA1,
+			},
+			"Vars": cmt.Vars,
+			"PostedComment": map[string]interface{}{
+				"Body":        cmt.Body,
+				"TemplateKey": cmt.TemplateKey,
+			},
+			"Env": ctrl.Getenv,
+		})
+		if err != nil {
+			fmt.Fprintf(ctrl.Stderr, "[ERROR] judge whether an existing comment is hidden %s: %v\n", nodeID, err)
+			continue
+		}
+		if !f {
+			continue
+		}
+		nodeIDs = append(nodeIDs, nodeID)
+		if err := ctrl.Commenter.HideComment(ctx, nodeID); err != nil {
+			fmt.Fprintf(ctrl.Stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
+			continue
+		}
+	}
+	return nodeIDs, nil
+}
+
+func (ctrl PostController) hideComments(ctx context.Context, nodeIDs []string) {
+	for _, nodeID := range nodeIDs {
+		if err := ctrl.Commenter.HideComment(ctx, nodeID); err != nil {
+			fmt.Fprintf(ctrl.Stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
+			continue
+		}
+	}
+}
+
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
 	cmt, err := ctrl.getCommentParams(opts)
+	if err != nil {
+		return err
+	}
+	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt)
 	if err != nil {
 		return err
 	}
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
+	ctrl.hideComments(ctx, nodeIDs)
 	return nil
 }
 
@@ -107,6 +192,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
+		opts.Minimize = tpl.Minimize
 	}
 
 	if cfg.Vars == nil {
@@ -154,6 +240,9 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		Body:           tpl,
 		BodyForTooLong: tplForTooLong,
 		SHA1:           opts.SHA1,
+		Minimize:       opts.Minimize,
+		Vars:           cfg.Vars,
+		TemplateKey:    opts.TemplateKey,
 	}, nil
 }
 

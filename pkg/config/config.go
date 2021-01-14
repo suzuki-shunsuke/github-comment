@@ -26,6 +26,7 @@ type Base struct {
 type PostConfig struct {
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
+	Minimize           string
 }
 
 func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -51,6 +52,13 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				return fmt.Errorf("invalid config. template_for_too_long should be string: %+v", tpl)
 			}
 			pc.TemplateForTooLong = t
+		}
+		if tpl, ok := m["minimize"]; ok {
+			t, ok := tpl.(string)
+			if !ok {
+				return fmt.Errorf("invalid config. minimize should be string: %+v", tpl)
+			}
+			pc.Minimize = t
 		}
 		return nil
 	}

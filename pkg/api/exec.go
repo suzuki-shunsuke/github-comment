@@ -154,6 +154,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
+		Env:            ctrl.Getenv,
 	}, templates); err != nil {
 		if !opts.Silent {
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
