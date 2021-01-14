@@ -459,9 +459,7 @@ post:
       Comment.body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
 ```
 
-In `minimize`, the following variables can be used.
-
-In case of `post` command,
+In case of `post` command, we can use the following variables in `minimize`.
 
 * Commit:
   * Org
@@ -475,7 +473,7 @@ In case of `post` command,
   * TemplateKey
 * Vars
 
-In case of `exec` command, in addition to variables of `post` command,
+In addition to above variables, we can use the following variables in case of `exec` command.
 
 * Command
   * ExitCode
