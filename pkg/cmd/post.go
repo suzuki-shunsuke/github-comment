@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,10 +11,10 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
-	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -120,7 +121,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	return nil
 }
 
-func getPostCommenter(opts option.PostOptions) api.Commenter {
+func getPostCommenter(ctx context.Context, opts option.PostOptions) api.Commenter {
 	if opts.DryRun {
 		return comment.Mock{
 			Stderr: os.Stderr,
@@ -133,10 +134,8 @@ func getPostCommenter(opts option.PostOptions) api.Commenter {
 			Silent: opts.Silent,
 		}
 	}
-	return comment.Commenter{
-		Token:      opts.Token,
-		HTTPClient: httpclient.New("https://api.github.com"),
-	}
+
+	return comment.New(ctx, opts.Token)
 }
 
 // postAction is an entrypoint of the subcommand "post".
@@ -181,12 +180,14 @@ func (runner Runner) postAction(c *cli.Context) error {
 			return !terminal.IsTerminal(0)
 		},
 		Stdin:     runner.Stdin,
-		Commenter: getPostCommenter(opts),
+		Stderr:    runner.Stderr,
+		Commenter: getPostCommenter(c.Context, opts),
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Platform: pt,
 		Config:   cfg,
+		Expr:     expr.Expr{},
 	}
 	return ctrl.Post(c.Context, opts)
 }

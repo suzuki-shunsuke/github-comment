@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
-	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"github.com/urfave/cli/v2"
 )
 
@@ -107,7 +107,7 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func getExecCommenter(opts option.ExecOptions) api.Commenter {
+func getExecCommenter(ctx context.Context, opts option.ExecOptions) api.Commenter {
 	if opts.DryRun {
 		return comment.Mock{
 			Stderr: os.Stderr,
@@ -120,10 +120,7 @@ func getExecCommenter(opts option.ExecOptions) api.Commenter {
 			Silent: opts.Silent,
 		}
 	}
-	return comment.Commenter{
-		Token:      opts.Token,
-		HTTPClient: httpclient.New("https://api.github.com"),
-	}
+	return comment.New(ctx, opts.Token)
 }
 
 func (runner Runner) execAction(c *cli.Context) error {
@@ -164,7 +161,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		Stdin:     runner.Stdin,
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
-		Commenter: getExecCommenter(opts),
+		Commenter: getExecCommenter(c.Context, opts),
 		Renderer: template.Renderer{
 			Getenv: os.Getenv,
 		},

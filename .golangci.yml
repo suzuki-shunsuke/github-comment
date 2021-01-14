@@ -8,3 +8,4 @@ linters:
     - lll
     - godot
     - exhaustivestruct
+    - godox

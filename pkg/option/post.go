@@ -14,6 +14,7 @@ type PostOptions struct {
 	TemplateForTooLong string
 	TemplateKey        string
 	ConfigPath         string
+	Minimize           string
 	Vars               map[string]string
 	DryRun             bool
 	SkipNoToken        bool

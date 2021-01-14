@@ -422,6 +422,67 @@ The following platforms are supported.
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
+## Hide existing comments
+
+https://github.com/suzuki-shunsuke/github-comment/issues/187
+
+When github-comment is used at CI, github-comment posts a comment at every builds.
+So many same comments would be posted.
+Sometimes old comments are noisy, so we want to hide them.
+
+By configuring `minimize`, we can hide existing comments.
+`minimize` is an [expr](https://github.com/antonmedv/expr/blob/master/docs/Language-Definition.md) expression, and comments which match this condition would be hidden.
+
+```yaml
+post:
+  foo:
+    template: foo
+    minimize: comment.body contains "foo" # minimize existing comments which includes `foo`
+exec:
+  foo:
+  - when: ExitCode != 0
+    template: foo
+    minimize: comment.body contains "foo" # minimize existing comments which includes `foo`
+```
+
+If `minimize` isn't set, no comment is hidden.
+
+Wa can use HTML comment to hide comments.
+
+```yaml
+post:
+  foo:
+    template: |
+      {{"<!-- github-comment:foo-" | AvoidHTMLEscape}}{{env "TARGET"}}{{" -->" | AvoidHTMLEscape}}
+      foo {{env "TARGET"}}
+    minimize: |
+      Comment.body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
+```
+
+In case of `post` command, we can use the following variables in `minimize`.
+
+* Commit:
+  * Org
+  * Repo
+  * PRNumber
+  * SHA1
+* Comment
+  * Body
+* PostedComment:
+  * Body
+  * TemplateKey
+* Vars
+
+In addition to above variables, we can use the following variables in case of `exec` command.
+
+* Command
+  * ExitCode
+  * Stdout
+  * Stderr
+  * CombinedOutput
+  * Command
+  * JoinCommand
+
 ## Builtin Templates
 
 Some default templates are provided.

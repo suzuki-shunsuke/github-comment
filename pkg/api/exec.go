@@ -10,6 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
+	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
@@ -42,6 +43,7 @@ type Executor interface {
 
 type Expr interface {
 	Match(expression string, params interface{}) (bool, error)
+	Compile(expression string) (expr.Program, error)
 }
 
 type ExecController struct {
@@ -57,6 +59,11 @@ type ExecController struct {
 	Expr      Expr
 	Platform  Platform
 	Config    config.Config
+}
+
+func (ctrl ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
+	return listHiddenComments(
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt, paramExpr)
 }
 
 func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
@@ -154,6 +161,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
+		Env:            ctrl.Getenv,
 	}, templates); err != nil {
 		if !opts.Silent {
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
@@ -191,6 +199,7 @@ func (ctrl ExecController) getComment(
 	cmt := comment.Comment{}
 	tpl := cmtParams.Template
 	tplForTooLong := ""
+	minimize := ""
 	if tpl == "" {
 		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
@@ -204,6 +213,7 @@ func (ctrl ExecController) getComment(
 		}
 		tpl = execConfig.Template
 		tplForTooLong = execConfig.TemplateForTooLong
+		minimize = execConfig.Minimize
 	}
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
@@ -221,7 +231,13 @@ func (ctrl ExecController) getComment(
 		Body:           body,
 		BodyForTooLong: bodyForTooLong,
 		SHA1:           cmtParams.SHA1,
+		Minimize:       minimize,
+		Vars:           cmtParams.Vars,
 	}, true, nil
+}
+
+func (ctrl ExecController) hideComments(ctx context.Context, nodeIDs []string) {
+	hideComments(ctx, ctrl.Commenter, ctrl.Stderr, nodeIDs)
 }
 
 func (ctrl ExecController) post(
@@ -235,9 +251,23 @@ func (ctrl ExecController) post(
 	if !f {
 		return nil
 	}
+	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt, map[string]interface{}{
+		"Command": map[string]interface{}{
+			"ExitCode":       cmtParams.ExitCode,
+			"JoinCommand":    cmtParams.JoinCommand,
+			"Command":        cmtParams.Command,
+			"Stdout":         cmtParams.Stdout,
+			"Stderr":         cmtParams.Stderr,
+			"CombinedOutput": cmtParams.CombinedOutput,
+		},
+	})
+	if err != nil {
+		return err
+	}
 
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
+	ctrl.hideComments(ctx, nodeIDs)
 	return nil
 }
