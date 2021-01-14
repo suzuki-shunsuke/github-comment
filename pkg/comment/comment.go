@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -103,46 +102,6 @@ type PullRequest struct {
 	PRNumber int
 	Org      string
 	Repo     string
-}
-
-func (commenter Commenter) list(ctx context.Context, pr PullRequest, page int) ([]map[string]interface{}, error) {
-	cmts := []map[string]interface{}{}
-	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{ //nolint:bodyclose
-		Method: http.MethodGet,
-		Path:   "/repos/" + pr.Org + "/" + pr.Repo + "/issues/" + strconv.Itoa(pr.PRNumber) + "/comments",
-		Query: url.Values{
-			"per_page": []string{"100"},
-			"page":     []string{strconv.Itoa(page)},
-		},
-		Header: http.Header{
-			"Authorization": []string{"token " + commenter.Token},
-		},
-		ResponseBody: &cmts,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("list issue comments by GitHub API: %w", err)
-	}
-	return cmts, nil
-}
-
-const (
-	paginationLimit = 100
-	perPage         = 100
-)
-
-func (commenter Commenter) ListV3(ctx context.Context, pr PullRequest) ([]map[string]interface{}, error) {
-	cmts := []map[string]interface{}{}
-	for page := 1; page <= paginationLimit; page++ {
-		comments, err := commenter.list(ctx, pr, page)
-		if err != nil {
-			return nil, err
-		}
-		cmts = append(cmts, comments...)
-		if len(comments) < perPage {
-			return cmts, nil
-		}
-	}
-	return cmts, nil
 }
 
 // `graphql:"IssueComment(isMinimized: false, viewerCanMinimize: true)"`
