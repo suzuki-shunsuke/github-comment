@@ -1,12 +1,13 @@
 package signal
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 var once sync.Once //nolint:gochecknoglobals
@@ -24,7 +25,10 @@ func Handle(stderr io.Writer, callback func()) {
 			signalChan, syscall.SIGHUP, syscall.SIGINT,
 			syscall.SIGTERM, syscall.SIGQUIT)
 		sig := <-signalChan
-		fmt.Fprintf(stderr, "send signal %d\n", sig)
+		logrus.WithFields(logrus.Fields{
+			"program": "github-comment",
+			"signal":  sig,
+		}).Info("send a signal")
 		callback()
 	})
 }

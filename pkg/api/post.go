@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
@@ -70,7 +71,6 @@ func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	commenter Commenter, exp Expr,
 	getEnv func(string) string,
-	stderr io.Writer,
 	cmt comment.Comment,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
@@ -134,37 +134,43 @@ func listHiddenComments( //nolint:funlen
 
 		f, err := prg.Run(param)
 		if err != nil {
-			fmt.Fprintf(stderr, "[ERROR] judge whether an existing comment is hidden %s: %v\n", nodeID, err)
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"program": "github-comment",
+				"node_id": nodeID,
+			}).Error("judge whether an existing comment is hidden")
 			continue
 		}
 		if !f {
 			continue
 		}
 		nodeIDs = append(nodeIDs, nodeID)
-		if err := commenter.HideComment(ctx, nodeID); err != nil {
-			fmt.Fprintf(stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
-			continue
-		}
 	}
 	return nodeIDs, nil
 }
 
 func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
 	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt, nil)
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, nil)
 }
 
-func hideComments(ctx context.Context, commenter Commenter, stderr io.Writer, nodeIDs []string) {
+func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 	for _, nodeID := range nodeIDs {
 		if err := commenter.HideComment(ctx, nodeID); err != nil {
-			fmt.Fprintf(stderr, "[ERROR] hide an old comment %s: %v\n", nodeID, err)
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"program": "github-comment",
+				"node_id": nodeID,
+			}).Error("hide an old comment")
 			continue
 		}
+		logrus.WithFields(logrus.Fields{
+			"program": "github-comment",
+			"node_id": nodeID,
+		}).Debug("hide an old comment")
 	}
 }
 
 func (ctrl PostController) hideComments(ctx context.Context, nodeIDs []string) {
-	hideComments(ctx, ctrl.Commenter, ctrl.Stderr, nodeIDs)
+	hideComments(ctx, ctrl.Commenter, nodeIDs)
 }
 
 func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
@@ -176,6 +182,10 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	if err != nil {
 		return err
 	}
+	logrus.WithFields(logrus.Fields{
+		"count":    len(nodeIDs),
+		"node_ids": nodeIDs,
+	}).Debug("comments which would be hidden")
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}

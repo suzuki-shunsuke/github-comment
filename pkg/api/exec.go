@@ -63,7 +63,7 @@ type ExecController struct {
 
 func (ctrl ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
 	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, ctrl.Stderr, cmt, paramExpr)
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, paramExpr)
 }
 
 func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
@@ -237,7 +237,7 @@ func (ctrl ExecController) getComment(
 }
 
 func (ctrl ExecController) hideComments(ctx context.Context, nodeIDs []string) {
-	hideComments(ctx, ctrl.Commenter, ctrl.Stderr, nodeIDs)
+	hideComments(ctx, ctrl.Commenter, nodeIDs)
 }
 
 func (ctrl ExecController) post(

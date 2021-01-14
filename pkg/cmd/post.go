@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
@@ -113,6 +114,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
 	opts.StdinTemplate = c.Bool("stdin-template")
+	opts.LogLevel = c.String("log-level")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -138,6 +140,19 @@ func getPostCommenter(ctx context.Context, opts option.PostOptions) api.Commente
 	return comment.New(ctx, opts.Token)
 }
 
+func setLogLevel(logLevel string) {
+	if logLevel == "" {
+		return
+	}
+	lvl, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"log_level": logLevel,
+		}).WithError(err).Error("the log level is invalid")
+	}
+	logrus.SetLevel(lvl)
+}
+
 // postAction is an entrypoint of the subcommand "post".
 func (runner Runner) postAction(c *cli.Context) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
@@ -153,6 +168,8 @@ func (runner Runner) postAction(c *cli.Context) error {
 	if err := parsePostOptions(&opts, c); err != nil {
 		return err
 	}
+
+	setLogLevel(opts.LogLevel)
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)
