@@ -438,12 +438,12 @@ By configuring `minimize`, we can hide existing comments.
 post:
   foo:
     template: foo
-    minimize: comment.body contains "foo" # minimize existing comments which includes `foo`
+    minimize: Comment.Body contains "foo" # minimize existing comments which includes `foo`
 exec:
   foo:
   - when: ExitCode != 0
     template: foo
-    minimize: comment.body contains "foo" # minimize existing comments which includes `foo`
+    minimize: Comment.Body contains "foo" # minimize existing comments which includes `foo`
 ```
 
 If `minimize` isn't set, no comment is hidden.
@@ -457,7 +457,7 @@ post:
       {{"<!-- github-comment:foo-" | AvoidHTMLEscape}}{{env "TARGET"}}{{" -->" | AvoidHTMLEscape}}
       foo {{env "TARGET"}}
     minimize: |
-      Comment.body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
+      Comment.Body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
 ```
 
 In case of `post` command, we can use the following variables in `minimize`.
