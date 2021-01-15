@@ -12,3 +12,8 @@ jobs:
       - run: go mod download
       - name: dry run
         run: bash scripts/test-dry-run.sh
+      - name: dry run
+        run: bash scripts/test-hide-comments.sh
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        if: ${{ github.event_name == 'pull_request' }}
