@@ -1,10 +1,16 @@
 ---
+templates:
+  embed_template_key: '{{"<!-- github-comment:" | AvoidHTMLEscape}}{{.TemplateKey}}{{" -->" | AvoidHTMLEscape}}'
 post:
   default: |
     CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
   hello:
     template: |
       $Hello: {{Env "HELLO"}} {{ "hello!" | upper | repeat 5 }}
+
+      {{template "embed_template_key" .}}
+    minimize: |
+      Comment.Body contains "<!-- github-comment:" + PostedComment.TemplateKey + " -->"
 exec:
   hello:
     - when: ExitCode != 0

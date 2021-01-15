@@ -74,9 +74,9 @@ func isExcludedComment(cmt comment.IssueComment, login string) bool {
 	if cmt.IsMinimized {
 		return true
 	}
-	if cmt.Author.Login != login {
-		return true
-	}
+	// if cmt.Author.Login != login {
+	// 	return true
+	// }
 	return false
 }
 
@@ -95,7 +95,9 @@ func listHiddenComments( //nolint:funlen
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("get an authenticated user: %w", err)
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"program": "github-comment",
+		}).Error("get an authenticated user")
 	}
 
 	comments, err := commenter.List(ctx, comment.PullRequest{
@@ -126,6 +128,7 @@ func listHiddenComments( //nolint:funlen
 				"program": "github-comment",
 				"node_id": nodeID,
 				"login":   login,
+				"comment": fmt.Sprintf("%+v", comment),
 			}).Debug("exclude a comment")
 			continue
 		}
