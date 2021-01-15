@@ -74,9 +74,9 @@ func isExcludedComment(cmt comment.IssueComment, login string) bool {
 	if cmt.IsMinimized {
 		return true
 	}
-	if cmt.Author.Login != login {
-		return true
-	}
+	// if cmt.Author.Login != login {
+	// 	return true
+	// }
 	return false
 }
 
