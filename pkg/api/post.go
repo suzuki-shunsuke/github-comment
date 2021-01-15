@@ -128,6 +128,7 @@ func listHiddenComments( //nolint:funlen
 				"program": "github-comment",
 				"node_id": nodeID,
 				"login":   login,
+				"comment": fmt.Sprintf("%+v", comment),
 			}).Debug("exclude a comment")
 			continue
 		}
