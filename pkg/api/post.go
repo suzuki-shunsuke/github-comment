@@ -88,6 +88,9 @@ func listHiddenComments( //nolint:funlen
 	paramExpr map[string]interface{},
 ) ([]string, error) {
 	if cmt.Minimize == "" {
+		logrus.WithFields(logrus.Fields{
+			"program": "github-comment",
+		}).Debug("minimize isn't set")
 		return nil, nil
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
@@ -103,6 +106,13 @@ func listHiddenComments( //nolint:funlen
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
+	logrus.WithFields(logrus.Fields{
+		"program":   "github-comment",
+		"count":     len(comments),
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+	}).Debug("get comments")
 	nodeIDs := []string{}
 	prg, err := exp.Compile(cmt.Minimize)
 	if err != nil {
@@ -112,6 +122,11 @@ func listHiddenComments( //nolint:funlen
 		nodeID := comment.ID
 		// TODO remove these filters
 		if isExcludedComment(comment, login) {
+			logrus.WithFields(logrus.Fields{
+				"program": "github-comment",
+				"node_id": nodeID,
+				"login":   login,
+			}).Debug("exclude a comment")
 			continue
 		}
 
@@ -137,6 +152,12 @@ func listHiddenComments( //nolint:funlen
 			param[k] = v
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"program":  "github-comment",
+			"node_id":  nodeID,
+			"minimize": cmt.Minimize,
+			"param":    param,
+		}).Debug("judge whether an existing comment is hidden")
 		f, err := prg.Run(param)
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{

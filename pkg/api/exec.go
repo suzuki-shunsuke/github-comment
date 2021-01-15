@@ -234,6 +234,7 @@ func (ctrl ExecController) getComment(
 		SHA1:           cmtParams.SHA1,
 		Minimize:       minimize,
 		Vars:           cmtParams.Vars,
+		TemplateKey:    cmtParams.TemplateKey,
 	}, true, nil
 }
 
