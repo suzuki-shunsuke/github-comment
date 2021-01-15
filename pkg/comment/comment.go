@@ -21,7 +21,7 @@ type Comment struct {
 	Body           string
 	BodyForTooLong string
 	SHA1           string
-	Minimize       string
+	HideOldComment string
 	TemplateKey    string
 	Vars           map[string]interface{}
 }

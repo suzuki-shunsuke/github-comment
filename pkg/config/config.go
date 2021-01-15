@@ -26,7 +26,7 @@ type Base struct {
 type PostConfig struct {
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
-	Minimize           string
+	HideOldComment     string `yaml:"hide_old_comment"`
 }
 
 func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -53,12 +53,12 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 			pc.TemplateForTooLong = t
 		}
-		if tpl, ok := m["minimize"]; ok {
+		if tpl, ok := m["hide_old_comment"]; ok {
 			t, ok := tpl.(string)
 			if !ok {
-				return fmt.Errorf("invalid config. minimize should be string: %+v", tpl)
+				return fmt.Errorf("invalid config. hide_old_comment should be string: %+v", tpl)
 			}
-			pc.Minimize = t
+			pc.HideOldComment = t
 		}
 		return nil
 	}
@@ -69,8 +69,8 @@ type ExecConfig struct {
 	When               string
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
-	Minimize           string
-	DontComment        bool `yaml:"dont_comment"`
+	HideOldComment     string `yaml:"hide_old_comment"`
+	DontComment        bool   `yaml:"dont_comment"`
 }
 
 type ExistFile func(string) bool

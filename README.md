@@ -423,7 +423,7 @@ The following platforms are supported.
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
-## Hide existing comments
+## Hide old comments
 
 https://github.com/suzuki-shunsuke/github-comment/issues/187
 
@@ -431,22 +431,22 @@ When github-comment is used at CI, github-comment posts a comment at every build
 So many same comments would be posted.
 Sometimes old comments are noisy, so we want to hide them.
 
-By configuring `minimize`, we can hide existing comments.
-`minimize` is an [expr](https://github.com/antonmedv/expr/blob/master/docs/Language-Definition.md) expression, and comments which match this condition would be hidden.
+By configuring `hide_old_comment`, we can hide old comments.
+`hide_old_comment` is an [expr](https://github.com/antonmedv/expr/blob/master/docs/Language-Definition.md) expression, and comments which match this condition would be hidden.
 
 ```yaml
 post:
   foo:
     template: foo
-    minimize: Comment.Body contains "foo" # minimize existing comments which includes `foo`
+    hide_old_comment: Comment.Body contains "foo" # hide existing comments which includes `foo`
 exec:
   foo:
   - when: ExitCode != 0
     template: foo
-    minimize: Comment.Body contains "foo" # minimize existing comments which includes `foo`
+    hide_old_comment: Comment.Body contains "foo" # hide existing comments which includes `foo`
 ```
 
-If `minimize` isn't set, no comment is hidden.
+If `hide_old_comment` isn't set, no comment is hidden.
 
 Wa can use HTML comment to hide comments.
 
@@ -456,11 +456,11 @@ post:
     template: |
       {{"<!-- github-comment:foo-" | AvoidHTMLEscape}}{{env "TARGET"}}{{" -->" | AvoidHTMLEscape}}
       foo {{env "TARGET"}}
-    minimize: |
+    hide_old_comment: |
       Comment.Body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
 ```
 
-In case of `post` command, we can use the following variables in `minimize`.
+In case of `post` command, we can use the following variables in `hide_old_comment`.
 
 * Commit:
   * Org

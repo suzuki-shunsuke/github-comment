@@ -22,7 +22,7 @@ func (commenter Commenter) HideComment(ctx context.Context, nodeID string) error
 		SubjectID:  nodeID,
 	}
 	if err := commenter.V4Client.Mutate(ctx, &m, input, nil); err != nil {
-		return fmt.Errorf("minimize an old comment: %w", err)
+		return fmt.Errorf("hide an old comment: %w", err)
 	}
 	return nil
 }

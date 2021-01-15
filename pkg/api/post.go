@@ -89,10 +89,10 @@ func listHiddenComments( //nolint:funlen
 	cmt comment.Comment,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
-	if cmt.Minimize == "" {
+	if cmt.HideOldComment == "" {
 		logrus.WithFields(logrus.Fields{
 			"program": "github-comment",
-		}).Debug("minimize isn't set")
+		}).Debug("hide_old_comment isn't set")
 		return nil, nil
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
@@ -116,7 +116,7 @@ func listHiddenComments( //nolint:funlen
 		"pr_number": cmt.PRNumber,
 	}).Debug("get comments")
 	nodeIDs := []string{}
-	prg, err := exp.Compile(cmt.Minimize)
+	prg, err := exp.Compile(cmt.HideOldComment)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
@@ -155,10 +155,10 @@ func listHiddenComments( //nolint:funlen
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"program":  "github-comment",
-			"node_id":  nodeID,
-			"minimize": cmt.Minimize,
-			"param":    param,
+			"program":          "github-comment",
+			"node_id":          nodeID,
+			"hide_old_comment": cmt.HideOldComment,
+			"param":            param,
 		}).Debug("judge whether an existing comment is hidden")
 		f, err := prg.Run(param)
 		if err != nil {
@@ -266,7 +266,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
-		opts.Minimize = tpl.Minimize
+		opts.HideOldComment = tpl.HideOldComment
 	}
 
 	if cfg.Vars == nil {
@@ -314,7 +314,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 		Body:           tpl,
 		BodyForTooLong: tplForTooLong,
 		SHA1:           opts.SHA1,
-		Minimize:       opts.Minimize,
+		HideOldComment: opts.HideOldComment,
 		Vars:           cfg.Vars,
 		TemplateKey:    opts.TemplateKey,
 	}, nil
