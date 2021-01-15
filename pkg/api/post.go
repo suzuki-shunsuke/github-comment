@@ -97,7 +97,7 @@ func listHiddenComments( //nolint:funlen
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("get an authenticated user: %w", err)
+		logrus.WithError(err).Warn("get an authenticated user")
 	}
 
 	comments, err := commenter.List(ctx, comment.PullRequest{
