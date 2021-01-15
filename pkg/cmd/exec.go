@@ -94,6 +94,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
+	opts.LogLevel = c.String("log-level")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
@@ -135,6 +136,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		}
 		opts.SkipComment = skipComment
 	}
+	setLogLevel(opts.LogLevel)
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)

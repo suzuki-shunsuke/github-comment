@@ -27,6 +27,13 @@ func (runner Runner) Run(ctx context.Context, args []string) error {
 			&execCommand,
 			&initCommand,
 		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "log-level",
+				Usage:   "log level",
+				EnvVars: []string{"GITHUB_COMMENT_LOG_LEVEL"},
+			},
+		},
 	}
 	return app.RunContext(ctx, args)
 }

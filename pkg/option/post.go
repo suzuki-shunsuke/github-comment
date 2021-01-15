@@ -15,6 +15,7 @@ type PostOptions struct {
 	TemplateKey        string
 	ConfigPath         string
 	Minimize           string
+	LogLevel           string
 	Vars               map[string]string
 	DryRun             bool
 	SkipNoToken        bool

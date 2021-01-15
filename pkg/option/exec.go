@@ -15,6 +15,7 @@ type ExecOptions struct {
 	TemplateKey        string
 	ConfigPath         string
 	Minimize           string
+	LogLevel           string
 	Args               []string
 	Vars               map[string]string
 	DryRun             bool

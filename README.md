@@ -201,7 +201,7 @@ USAGE:
    github-comment [global options] command [command options] [arguments...]
 
 VERSION:
-   1.9.0
+   2.1.0
 
 COMMANDS:
    post     post a comment
@@ -210,6 +210,7 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
+   --log-level value  log level [$GITHUB_COMMENT_LOG_LEVEL]
    --help, -h     show help (default: false)
    --version, -v  print the version (default: false)
 ```
