@@ -14,7 +14,7 @@ type ExecOptions struct {
 	TemplateForTooLong string
 	TemplateKey        string
 	ConfigPath         string
-	Minimize           string
+	HideOldComment     string
 	LogLevel           string
 	Args               []string
 	Vars               map[string]string
