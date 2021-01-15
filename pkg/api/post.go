@@ -67,6 +67,19 @@ type Platform interface {
 	CI() string
 }
 
+func isExcludedComment(cmt comment.IssueComment, login string) bool {
+	if !cmt.ViewerCanMinimize {
+		return true
+	}
+	if cmt.IsMinimized {
+		return true
+	}
+	if cmt.Author.Login != login {
+		return true
+	}
+	return false
+}
+
 func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	commenter Commenter, exp Expr,
@@ -97,15 +110,8 @@ func listHiddenComments( //nolint:funlen
 	}
 	for _, comment := range comments {
 		nodeID := comment.ID
-
 		// TODO remove these filters
-		if !comment.ViewerCanMinimize {
-			continue
-		}
-		if comment.IsMinimized {
-			continue
-		}
-		if comment.Author.Login != login {
+		if isExcludedComment(comment, login) {
 			continue
 		}
 
@@ -127,7 +133,6 @@ func listHiddenComments( //nolint:funlen
 			},
 			"Env": getEnv,
 		}
-
 		for k, v := range paramExpr {
 			param[k] = v
 		}
