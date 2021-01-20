@@ -11,6 +11,7 @@ require (
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-colorable v0.1.8
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20201206200315-234843c633fa
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a // indirect

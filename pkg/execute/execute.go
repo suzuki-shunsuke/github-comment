@@ -7,6 +7,7 @@ import (
 	"io"
 	"os/exec"
 
+	"github.com/mattn/go-colorable"
 	"github.com/suzuki-shunsuke/go-timeout/timeout"
 )
 
@@ -36,8 +37,11 @@ func (executor Executor) Run(ctx context.Context, params Params) (Result, error)
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	combinedOutput := &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(executor.Stdout, stdout, combinedOutput)
-	cmd.Stderr = io.MultiWriter(executor.Stderr, stderr, combinedOutput)
+	uncolorizedStdout := colorable.NewNonColorable(stdout)
+	uncolorizedStderr := colorable.NewNonColorable(stderr)
+	uncolorizedCombinedOutput := colorable.NewNonColorable(combinedOutput)
+	cmd.Stdout = io.MultiWriter(executor.Stdout, uncolorizedStdout, uncolorizedCombinedOutput)
+	cmd.Stderr = io.MultiWriter(executor.Stderr, uncolorizedStderr, uncolorizedCombinedOutput)
 	cmd.Env = executor.Env
 
 	runner := timeout.NewRunner(0)
