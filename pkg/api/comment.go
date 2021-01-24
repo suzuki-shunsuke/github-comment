@@ -23,17 +23,20 @@ type CommentController struct {
 }
 
 func (ctrl *CommentController) Post(ctx context.Context, cmt comment.Comment, hiddenParam map[string]interface{}) error {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
 	skipHideComment := false
 	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt, hiddenParam)
 	if err != nil {
 		skipHideComment = true
-		logrus.WithError(err).Error("list hidden comments")
+		logE.WithError(err).Error("list hidden comments")
 	}
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}
 	if !skipHideComment {
-		logrus.WithFields(logrus.Fields{
+		logE.WithFields(logrus.Fields{
 			"count":    len(nodeIDs),
 			"node_ids": nodeIDs,
 		}).Debug("comments which would be hidden")
@@ -52,16 +55,17 @@ func (ctrl *CommentController) hideComments(ctx context.Context, nodeIDs []strin
 }
 
 func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
 	for _, nodeID := range nodeIDs {
 		if err := commenter.HideComment(ctx, nodeID); err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"program": "github-comment",
+			logE.WithError(err).WithFields(logrus.Fields{
 				"node_id": nodeID,
 			}).Error("hide an old comment")
 			continue
 		}
-		logrus.WithFields(logrus.Fields{
-			"program": "github-comment",
+		logE.WithFields(logrus.Fields{
 			"node_id": nodeID,
 		}).Debug("hide an old comment")
 	}
@@ -74,15 +78,16 @@ func listHiddenComments( //nolint:funlen
 	cmt comment.Comment,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
 	if cmt.HideOldComment == "" {
-		logrus.WithFields(logrus.Fields{
-			"program": "github-comment",
-		}).Debug("hide_old_comment isn't set")
+		logE.Debug("hide_old_comment isn't set")
 		return nil, nil
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
 	if err != nil {
-		logrus.WithError(err).Warn("get an authenticated user")
+		logE.WithError(err).Warn("get an authenticated user")
 	}
 
 	comments, err := commenter.List(ctx, comment.PullRequest{
@@ -93,13 +98,13 @@ func listHiddenComments( //nolint:funlen
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	logrus.WithFields(logrus.Fields{
-		"program":   "github-comment",
+	logE.WithFields(logrus.Fields{
 		"count":     len(comments),
 		"org":       cmt.Org,
 		"repo":      cmt.Repo,
 		"pr_number": cmt.PRNumber,
 	}).Debug("get comments")
+
 	nodeIDs := []string{}
 	prg, err := exp.Compile(cmt.HideOldComment)
 	if err != nil {
@@ -109,8 +114,7 @@ func listHiddenComments( //nolint:funlen
 		nodeID := comment.ID
 		// TODO remove these filters
 		if isExcludedComment(comment, login) {
-			logrus.WithFields(logrus.Fields{
-				"program": "github-comment",
+			logE.WithFields(logrus.Fields{
 				"node_id": nodeID,
 				"login":   login,
 			}).Debug("exclude a comment")
@@ -139,16 +143,14 @@ func listHiddenComments( //nolint:funlen
 			param[k] = v
 		}
 
-		logrus.WithFields(logrus.Fields{
-			"program":          "github-comment",
+		logE.WithFields(logrus.Fields{
 			"node_id":          nodeID,
 			"hide_old_comment": cmt.HideOldComment,
 			"param":            param,
 		}).Debug("judge whether an existing comment is hidden")
 		f, err := prg.Run(param)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"program": "github-comment",
+			logE.WithError(err).WithFields(logrus.Fields{
 				"node_id": nodeID,
 			}).Error("judge whether an existing comment is hidden")
 			continue
