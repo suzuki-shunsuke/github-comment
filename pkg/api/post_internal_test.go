@@ -45,7 +45,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Body:     "hello",
 				Vars:     map[string]interface{}{},
 			},
 		},
@@ -74,7 +73,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Body:     "foo",
 				Vars:     map[string]interface{}{},
 			},
 		},
@@ -113,7 +111,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:         "suzuki-shunsuke",
 				Repo:        "github-comment",
 				PRNumber:    1,
-				Body:        "hello",
 				TemplateKey: "default",
 				Vars:        map[string]interface{}{},
 			},
@@ -149,7 +146,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Body:     "BAR suzuki-shunsuke github-comment 1",
 				Vars:     map[string]interface{}{},
 			},
 		},
@@ -182,7 +178,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Body:     "hello",
 				Vars:     map[string]interface{}{},
 			},
 		},
@@ -197,6 +192,8 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				return
 			}
 			require.Nil(t, err)
+			cmt.Body = ""
+			cmt.BodyForTooLong = ""
 			require.Equal(t, d.exp, cmt)
 		})
 	}

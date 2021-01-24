@@ -38,6 +38,10 @@ func (pt *Platform) ComplementPost(opts *option.PostOptions) error {
 	return pt.complement(&opts.Options)
 }
 
+func (pt *Platform) ComplementHide(opts *option.HideOptions) error {
+	return pt.complement(&opts.Options)
+}
+
 func (pt *Platform) CI() string {
 	if pt.Platform == nil {
 		return ""

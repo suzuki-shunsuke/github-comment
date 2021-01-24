@@ -76,6 +76,7 @@ type PostTemplateParams struct {
 type Platform interface {
 	ComplementPost(opts *option.PostOptions) error
 	ComplementExec(opts *option.ExecOptions) error
+	ComplementHide(opts *option.HideOptions) error
 	CI() string
 }
 
@@ -114,7 +115,6 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
-		opts.HideOldComment = tpl.HideOldComment
 	}
 
 	if cfg.Vars == nil {
@@ -154,6 +154,24 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	if err != nil {
 		return cmt, fmt.Errorf("render a template template_for_too_long for post: %w", err)
 	}
+
+	cmtCtrl := CommentController{
+		Commenter: ctrl.Commenter,
+		Expr:      ctrl.Expr,
+		Getenv:    ctrl.Getenv,
+		Platform:  ctrl.Platform,
+	}
+	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+		"SHA1":        opts.SHA1,
+		"TemplateKey": opts.TemplateKey,
+		"Vars":        cfg.Vars,
+	})
+	if err != nil {
+		return cmt, err
+	}
+
+	tpl += embeddedComment
+	tplForTooLong += embeddedComment
 
 	return comment.Comment{
 		PRNumber:       opts.PRNumber,

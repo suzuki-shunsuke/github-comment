@@ -9,13 +9,15 @@ import (
 )
 
 type Config struct {
-	Base        Base
-	Vars        map[string]interface{}
-	Templates   map[string]string
-	Post        map[string]PostConfig
-	Exec        map[string][]ExecConfig
-	SkipNoToken bool `yaml:"skip_no_token"`
-	Silent      bool
+	Base             Base
+	Vars             map[string]interface{}
+	Templates        map[string]string
+	Post             map[string]PostConfig
+	Exec             map[string][]ExecConfig
+	Hide             map[string]string
+	SkipNoToken      bool `yaml:"skip_no_token"`
+	Silent           bool
+	EmbeddedMetaData map[string]string `yaml:"embedded_meta_data"`
 }
 
 type Base struct {
@@ -26,7 +28,6 @@ type Base struct {
 type PostConfig struct {
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
-	HideOldComment     string `yaml:"hide_old_comment"`
 }
 
 func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -53,13 +54,6 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 			pc.TemplateForTooLong = t
 		}
-		if tpl, ok := m["hide_old_comment"]; ok {
-			t, ok := tpl.(string)
-			if !ok {
-				return fmt.Errorf("invalid config. hide_old_comment should be string: %+v", tpl)
-			}
-			pc.HideOldComment = t
-		}
 		return nil
 	}
 	return fmt.Errorf("invalid config. post config should be string or map[string]intterface{}: %+v", val)
@@ -69,7 +63,6 @@ type ExecConfig struct {
 	When               string
 	Template           string
 	TemplateForTooLong string `yaml:"template_for_too_long"`
-	HideOldComment     string `yaml:"hide_old_comment"`
 	DontComment        bool   `yaml:"dont_comment"`
 }
 
@@ -108,8 +101,14 @@ func (reader Reader) read(p string) (Config, error) {
 	return cfg, nil
 }
 
+const defaultHideCondition = "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1"
+
 func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
-	cfg := Config{}
+	cfg := Config{
+		Hide: map[string]string{
+			"default": defaultHideCondition,
+		},
+	}
 	if cfgPath == "" {
 		p, b := reader.find(wd)
 		if !b {
@@ -117,5 +116,19 @@ func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
 		}
 		cfgPath = p
 	}
-	return reader.read(cfgPath)
+	cfg, err := reader.read(cfgPath)
+	if err != nil {
+		return cfg, err
+	}
+	if cfg.Hide == nil {
+		cfg.Hide = map[string]string{
+			"default": defaultHideCondition,
+		}
+		return cfg, nil
+	}
+	if _, ok := cfg.Hide["default"]; ok {
+		return cfg, nil
+	}
+	cfg.Hide["default"] = defaultHideCondition
+	return cfg, nil
 }
