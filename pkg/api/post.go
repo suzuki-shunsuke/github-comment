@@ -77,6 +77,7 @@ type PostTemplateParams struct {
 type Platform interface {
 	ComplementPost(opts *option.PostOptions) error
 	ComplementExec(opts *option.ExecOptions) error
+	ComplementHide(opts *option.HideOptions) error
 	CI() string
 }
 

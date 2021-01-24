@@ -151,6 +151,53 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 				Usage:  "scaffold a configuration file if it doesn't exist",
 				Action: runner.initAction,
 			},
+			{
+				Name:   "hide",
+				Usage:  "hide issue or pull request comments",
+				Action: runner.hideAction,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "org",
+						Usage: "GitHub organization name",
+					},
+					&cli.StringFlag{
+						Name:  "repo",
+						Usage: "GitHub repository name",
+					},
+					&cli.StringFlag{
+						Name:    "token",
+						Usage:   "GitHub API token",
+						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
+					},
+					&cli.StringFlag{
+						Name:  "config",
+						Usage: "configuration file path",
+					},
+					&cli.IntFlag{
+						Name:  "pr",
+						Usage: "GitHub pull request number",
+					},
+					&cli.StringSliceFlag{
+						Name:  "var",
+						Usage: "template variable",
+					},
+					&cli.BoolFlag{
+						Name:  "dry-run",
+						Usage: "output a comment to standard error output instead of posting to GitHub",
+					},
+					&cli.BoolFlag{
+						Name:    "skip-no-token",
+						Aliases: []string{"n"},
+						Usage:   "works like dry-run if the GitHub Access Token isn't set",
+						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+					},
+					&cli.BoolFlag{
+						Name:    "silent",
+						Aliases: []string{"s"},
+						Usage:   "suppress the output of dry-run and skip-no-token",
+					},
+				},
+			},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

@@ -212,6 +212,9 @@ func (ctrl *CommentController) complementMetaData(metadata map[string]interface{
 	if metadata == nil {
 		return
 	}
+	if ctrl.Platform == nil {
+		return
+	}
 	switch ctrl.Platform.CI() {
 	case "circleci":
 		metadata["job_name"] = ctrl.Getenv("CIRCLE_JOB")
