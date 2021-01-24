@@ -218,6 +218,25 @@ func (ctrl *ExecController) getComment(
 	if err != nil {
 		return cmt, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
 	}
+
+	cmtCtrl := CommentController{
+		Commenter: ctrl.Commenter,
+		Expr:      ctrl.Expr,
+		Getenv:    ctrl.Getenv,
+		Platform:  ctrl.Platform,
+	}
+
+	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+		"SHA1":        cmtParams.SHA1,
+		"TemplateKey": cmtParams.TemplateKey,
+	})
+	if err != nil {
+		return cmt, false, err
+	}
+
+	body += embeddedComment
+	bodyForTooLong += embeddedComment
+
 	return comment.Comment{
 		PRNumber:       cmtParams.PRNumber,
 		Org:            cmtParams.Org,

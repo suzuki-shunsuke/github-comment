@@ -75,3 +75,12 @@ func (ctrl *CommentController) complementMetaData(metadata map[string]interface{
 		metadata["JobID"] = ctrl.Getenv("CODEBUILD_BUILD_ID")
 	}
 }
+
+func (ctrl *CommentController) getEmbeddedComment(metadata map[string]interface{}) (string, error) {
+	ctrl.complementMetaData(metadata)
+	b, err := json.Marshal(metadata)
+	if err != nil {
+		return "", fmt.Errorf("marshal an embedded metadata to JSON: %w", err)
+	}
+	return "\n<!-- github-comment: " + string(b) + " -->", nil
+}

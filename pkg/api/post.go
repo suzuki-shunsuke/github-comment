@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -156,23 +155,20 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		return cmt, fmt.Errorf("render a template template_for_too_long for post: %w", err)
 	}
 
-	embeddedMetaData := map[string]interface{}{
-		"SHA1":        opts.SHA1,
-		"TemplateKey": opts.TemplateKey,
-	}
 	cmtCtrl := CommentController{
 		Commenter: ctrl.Commenter,
 		Expr:      ctrl.Expr,
 		Getenv:    ctrl.Getenv,
 		Platform:  ctrl.Platform,
 	}
-
-	cmtCtrl.complementMetaData(embeddedMetaData)
-	b, err := json.Marshal(embeddedMetaData)
+	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+		"SHA1":        opts.SHA1,
+		"TemplateKey": opts.TemplateKey,
+	})
 	if err != nil {
-		return cmt, fmt.Errorf("marshal an embedded metadata to JSON: %w", err)
+		return cmt, err
 	}
-	embeddedComment := "\n<!-- github-comment: " + string(b) + " -->"
+
 	tpl += embeddedComment
 	tplForTooLong += embeddedComment
 
