@@ -195,7 +195,6 @@ func (ctrl *ExecController) getComment(
 	cmt := comment.Comment{}
 	tpl := cmtParams.Template
 	tplForTooLong := ""
-	hideOldComment := ""
 	if tpl == "" {
 		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
@@ -209,7 +208,6 @@ func (ctrl *ExecController) getComment(
 		}
 		tpl = execConfig.Template
 		tplForTooLong = execConfig.TemplateForTooLong
-		hideOldComment = execConfig.HideOldComment
 	}
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
@@ -227,7 +225,6 @@ func (ctrl *ExecController) getComment(
 		Body:           body,
 		BodyForTooLong: bodyForTooLong,
 		SHA1:           cmtParams.SHA1,
-		HideOldComment: hideOldComment,
 		Vars:           cmtParams.Vars,
 		TemplateKey:    cmtParams.TemplateKey,
 	}, true, nil

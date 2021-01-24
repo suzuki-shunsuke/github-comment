@@ -72,3 +72,131 @@ func (ctrl *HideController) getCommentParams(opts option.HideOptions) (comment.C
 		HideOldComment: "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1",
 	}, nil
 }
+
+func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
+	for _, nodeID := range nodeIDs {
+		if err := commenter.HideComment(ctx, nodeID); err != nil {
+			logE.WithError(err).WithFields(logrus.Fields{
+				"node_id": nodeID,
+			}).Error("hide an old comment")
+			continue
+		}
+		logE.WithFields(logrus.Fields{
+			"node_id": nodeID,
+		}).Debug("hide an old comment")
+	}
+}
+
+func listHiddenComments( //nolint:funlen
+	ctx context.Context,
+	commenter Commenter, exp Expr,
+	getEnv func(string) string,
+	cmt comment.Comment,
+	paramExpr map[string]interface{},
+) ([]string, error) {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
+	if cmt.HideOldComment == "" {
+		logE.Debug("hide_old_comment isn't set")
+		return nil, nil
+	}
+	login, err := commenter.GetAuthenticatedUser(ctx)
+	if err != nil {
+		logE.WithError(err).Warn("get an authenticated user")
+	}
+
+	comments, err := commenter.List(ctx, comment.PullRequest{
+		Org:      cmt.Org,
+		Repo:     cmt.Repo,
+		PRNumber: cmt.PRNumber,
+	})
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+	logE.WithFields(logrus.Fields{
+		"count":     len(comments),
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+	}).Debug("get comments")
+
+	nodeIDs := []string{}
+	prg, err := exp.Compile(cmt.HideOldComment)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+	for _, comment := range comments {
+		nodeID := comment.ID
+		// TODO remove these filters
+		if isExcludedComment(comment, login) {
+			logE.WithFields(logrus.Fields{
+				"node_id": nodeID,
+				"login":   login,
+			}).Debug("exclude a comment")
+			continue
+		}
+
+		metadata := map[string]interface{}{}
+		hasMeta := extractMetaFromComment(comment.Body, metadata)
+		param := map[string]interface{}{
+			"Comment": map[string]interface{}{
+				"Body": comment.Body,
+				// "CreatedAt": comment.CreatedAt,
+				"Meta":    metadata,
+				"HasMeta": hasMeta,
+			},
+			"Commit": map[string]interface{}{
+				"Org":      cmt.Org,
+				"Repo":     cmt.Repo,
+				"PRNumber": cmt.PRNumber,
+				"SHA1":     cmt.SHA1,
+			},
+			"Vars": cmt.Vars,
+			"PostedComment": map[string]interface{}{
+				"Body":        cmt.Body,
+				"TemplateKey": cmt.TemplateKey,
+			},
+			"Env": getEnv,
+		}
+		for k, v := range paramExpr {
+			param[k] = v
+		}
+
+		logE.WithFields(logrus.Fields{
+			"node_id":          nodeID,
+			"hide_old_comment": cmt.HideOldComment,
+			"param":            param,
+		}).Debug("judge whether an existing comment is hidden")
+		f, err := prg.Run(param)
+		if err != nil {
+			logE.WithError(err).WithFields(logrus.Fields{
+				"node_id": nodeID,
+			}).Error("judge whether an existing comment is hidden")
+			continue
+		}
+		if !f {
+			continue
+		}
+		nodeIDs = append(nodeIDs, nodeID)
+	}
+	return nodeIDs, nil
+}
+
+func isExcludedComment(cmt comment.IssueComment, login string) bool {
+	if !cmt.ViewerCanMinimize {
+		return true
+	}
+	if cmt.IsMinimized {
+		return true
+	}
+	// GitHub Actions's GITHUB_TOKEN secret doesn't have a permission to get an authenticated user.
+	// So if `login` is empty, we give up filtering comments by login.
+	if login != "" && cmt.Author.Login != login {
+		return true
+	}
+	return false
+}

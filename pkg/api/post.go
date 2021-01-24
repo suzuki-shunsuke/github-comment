@@ -116,7 +116,6 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
-		opts.HideOldComment = tpl.HideOldComment
 	}
 
 	if cfg.Vars == nil {
