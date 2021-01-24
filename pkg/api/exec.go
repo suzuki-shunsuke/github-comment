@@ -62,12 +62,12 @@ type ExecController struct {
 	Config    config.Config
 }
 
-func (ctrl ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
+func (ctrl *ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
 	return listHiddenComments(
 		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, paramExpr)
 }
 
-func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
+func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
 	var execConfigs []config.ExecConfig
 	if opts.Template == "" && opts.TemplateKey != "" {
 		a, ok := cfg.Exec[opts.TemplateKey]
@@ -92,7 +92,7 @@ func (ctrl ExecController) getExecConfigs(cfg config.Config, opts option.ExecOpt
 	return execConfigs, nil
 }
 
-func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
+func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
@@ -176,7 +176,7 @@ func (ctrl ExecController) Exec(ctx context.Context, opts option.ExecOptions) er
 
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
-func (ctrl ExecController) getExecConfig(
+func (ctrl *ExecController) getExecConfig(
 	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 ) (config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
@@ -194,7 +194,7 @@ func (ctrl ExecController) getExecConfig(
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl ExecController) getComment(
+func (ctrl *ExecController) getComment(
 	execConfigs []config.ExecConfig, cmtParams ExecCommentParams, templates map[string]string,
 ) (comment.Comment, bool, error) {
 	cmt := comment.Comment{}
@@ -238,11 +238,11 @@ func (ctrl ExecController) getComment(
 	}, true, nil
 }
 
-func (ctrl ExecController) hideComments(ctx context.Context, nodeIDs []string) {
+func (ctrl *ExecController) hideComments(ctx context.Context, nodeIDs []string) {
 	hideComments(ctx, ctrl.Commenter, nodeIDs)
 }
 
-func (ctrl ExecController) post(
+func (ctrl *ExecController) post(
 	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 	templates map[string]string,
 ) error {

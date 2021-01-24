@@ -176,7 +176,7 @@ func listHiddenComments( //nolint:funlen
 	return nodeIDs, nil
 }
 
-func (ctrl PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
+func (ctrl *PostController) listHiddenComments(ctx context.Context, cmt comment.Comment) ([]string, error) {
 	return listHiddenComments(
 		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, nil)
 }
@@ -197,11 +197,11 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 	}
 }
 
-func (ctrl PostController) hideComments(ctx context.Context, nodeIDs []string) {
+func (ctrl *PostController) hideComments(ctx context.Context, nodeIDs []string) {
 	hideComments(ctx, ctrl.Commenter, nodeIDs)
 }
 
-func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) error {
+func (ctrl *PostController) Post(ctx context.Context, opts option.PostOptions) error {
 	cmt, err := ctrl.getCommentParams(opts)
 	if err != nil {
 		return err
@@ -231,7 +231,7 @@ func (ctrl PostController) Post(ctx context.Context, opts option.PostOptions) er
 	return nil
 }
 
-func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen
+func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(&opts); err != nil {
@@ -320,7 +320,7 @@ func (ctrl PostController) getCommentParams(opts option.PostOptions) (comment.Co
 	}, nil
 }
 
-func (ctrl PostController) readTemplateFromStdin() (string, error) {
+func (ctrl *PostController) readTemplateFromStdin() (string, error) {
 	if !ctrl.HasStdin() {
 		return "", nil
 	}
@@ -331,7 +331,7 @@ func (ctrl PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl PostController) readTemplateFromConfig(cfg config.Config, key string) (config.PostConfig, error) {
+func (ctrl *PostController) readTemplateFromConfig(cfg config.Config, key string) (config.PostConfig, error) {
 	if t, ok := cfg.Post[key]; ok {
 		return t, nil
 	}
