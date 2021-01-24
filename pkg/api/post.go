@@ -164,6 +164,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
 		"SHA1":        opts.SHA1,
 		"TemplateKey": opts.TemplateKey,
+		"Vars":        cfg.Vars,
 	})
 	if err != nil {
 		return cmt, err

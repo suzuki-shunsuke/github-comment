@@ -229,6 +229,7 @@ func (ctrl *ExecController) getComment(
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
 		"SHA1":        cmtParams.SHA1,
 		"TemplateKey": cmtParams.TemplateKey,
+		"Vars":        cmtParams.Vars,
 	})
 	if err != nil {
 		return cmt, false, err

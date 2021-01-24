@@ -173,9 +173,19 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:  "config",
 						Usage: "configuration file path",
 					},
+					&cli.StringFlag{
+						Name:    "hide-key",
+						Aliases: []string{"k"},
+						Usage:   "hide condition key",
+						Value:   "default",
+					},
 					&cli.IntFlag{
 						Name:  "pr",
 						Usage: "GitHub pull request number",
+					},
+					&cli.StringFlag{
+						Name:  "sha1",
+						Usage: "commit sha1",
 					},
 					&cli.StringSliceFlag{
 						Name:  "var",

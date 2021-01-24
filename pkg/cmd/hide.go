@@ -27,6 +27,8 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
 	opts.LogLevel = c.String("log-level")
+	opts.HideKey = c.String("hide-key")
+	opts.SHA1 = c.String("sha1")
 	return nil
 }
 

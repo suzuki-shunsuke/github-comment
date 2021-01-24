@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -64,12 +65,17 @@ func (ctrl *HideController) getCommentParams(opts option.HideOptions) (comment.C
 		opts.Repo = cfg.Base.Repo
 	}
 
+	hideCondition, ok := ctrl.Config.Hide[opts.HideKey]
+	if !ok {
+		return cmt, errors.New("invalid hide-key: " + opts.HideKey)
+	}
+
 	return comment.Comment{
 		PRNumber:       opts.PRNumber,
 		Org:            opts.Org,
 		Repo:           opts.Repo,
 		SHA1:           opts.SHA1,
-		HideOldComment: "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1",
+		HideOldComment: hideCondition,
 	}, nil
 }
 

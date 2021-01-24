@@ -6,6 +6,7 @@ import (
 
 type HideOptions struct {
 	Options
+	HideKey       string
 	StdinTemplate bool
 }
 
@@ -13,8 +14,8 @@ func ValidateHide(opts HideOptions) error {
 	if err := validate(opts.Options); err != nil {
 		return err
 	}
-	if opts.Template == "" && opts.TemplateKey == "" {
-		return errors.New("template or template-key are required")
+	if opts.HideKey == "" {
+		return errors.New("hide-key is required")
 	}
 	return nil
 }
