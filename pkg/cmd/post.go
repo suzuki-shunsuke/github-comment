@@ -131,7 +131,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		Stdin:     runner.Stdin,
 		Stderr:    runner.Stderr,
 		Commenter: getPostCommenter(c.Context, opts),
-		Renderer: template.Renderer{
+		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Platform: pt,

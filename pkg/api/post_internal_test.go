@@ -30,7 +30,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Renderer: template.Renderer{},
+				Renderer: &template.Renderer{},
 			},
 			opts: option.PostOptions{
 				Org:           "suzuki-shunsuke",
@@ -57,7 +57,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Renderer: template.Renderer{},
+				Renderer: &template.Renderer{},
 			},
 			opts: option.PostOptions{
 				Org:      "suzuki-shunsuke",
@@ -90,7 +90,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 						},
 					},
 				},
-				Renderer: template.Renderer{
+				Renderer: &template.Renderer{
 					Getenv: func(k string) string {
 						return ""
 					},
@@ -121,7 +121,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Renderer: template.Renderer{
+				Renderer: &template.Renderer{
 					Getenv: func(k string) string {
 						if k == "FOO" {
 							return "BAR"
@@ -161,7 +161,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 						Repo: "github-comment",
 					},
 				},
-				Renderer: template.Renderer{},
+				Renderer: &template.Renderer{},
 			},
 			opts: option.PostOptions{
 				Token:         "xxx",

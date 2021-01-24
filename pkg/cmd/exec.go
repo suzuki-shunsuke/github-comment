@@ -100,7 +100,7 @@ func (runner *Runner) execAction(c *cli.Context) error {
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
 		Commenter: getExecCommenter(c.Context, opts),
-		Renderer: template.Renderer{
+		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Executor: execute.Executor{
