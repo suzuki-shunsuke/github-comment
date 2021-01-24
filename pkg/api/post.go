@@ -14,6 +14,53 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
+type PostController struct {
+	// Wd is a path to the working directory
+	Wd string
+	// Getenv returns the environment variable. os.Getenv
+	Getenv func(string) string
+	// HasStdin returns true if there is the standard input
+	// If thre is the standard input, it is treated as the comment template
+	HasStdin  func() bool
+	Stdin     io.Reader
+	Stderr    io.Writer
+	Commenter Commenter
+	Renderer  Renderer
+	Platform  Platform
+	Config    config.Config
+	Expr      Expr
+}
+
+func (ctrl *PostController) Post(ctx context.Context, opts option.PostOptions) error {
+	cmt, err := ctrl.getCommentParams(opts)
+	if err != nil {
+		return err
+	}
+	logrus.WithFields(logrus.Fields{
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+		"sha":       cmt.SHA1,
+	}).Debug("comment meta data")
+	skipHideComment := false
+	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt)
+	if err != nil {
+		skipHideComment = true
+		logrus.WithError(err).Error("list hidden comments")
+	}
+	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
+		return fmt.Errorf("failed to create an issue comment: %w", err)
+	}
+	if !skipHideComment {
+		logrus.WithFields(logrus.Fields{
+			"count":    len(nodeIDs),
+			"node_ids": nodeIDs,
+		}).Debug("comments which would be hidden")
+		ctrl.hideComments(ctx, nodeIDs)
+	}
+	return nil
+}
+
 // Commenter is API to post a comment to GitHub
 type Commenter interface {
 	Create(ctx context.Context, cmt comment.Comment) error
@@ -42,23 +89,6 @@ type PostTemplateParams struct {
 	SHA1        string
 	TemplateKey string
 	Vars        map[string]interface{}
-}
-
-type PostController struct {
-	// Wd is a path to the working directory
-	Wd string
-	// Getenv returns the environment variable. os.Getenv
-	Getenv func(string) string
-	// HasStdin returns true if there is the standard input
-	// If thre is the standard input, it is treated as the comment template
-	HasStdin  func() bool
-	Stdin     io.Reader
-	Stderr    io.Writer
-	Commenter Commenter
-	Renderer  Renderer
-	Platform  Platform
-	Config    config.Config
-	Expr      Expr
 }
 
 type Platform interface {
@@ -199,36 +229,6 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 
 func (ctrl *PostController) hideComments(ctx context.Context, nodeIDs []string) {
 	hideComments(ctx, ctrl.Commenter, nodeIDs)
-}
-
-func (ctrl *PostController) Post(ctx context.Context, opts option.PostOptions) error {
-	cmt, err := ctrl.getCommentParams(opts)
-	if err != nil {
-		return err
-	}
-	logrus.WithFields(logrus.Fields{
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
-		"sha":       cmt.SHA1,
-	}).Debug("comment meta data")
-	skipHideComment := false
-	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt)
-	if err != nil {
-		skipHideComment = true
-		logrus.WithError(err).Error("list hidden comments")
-	}
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
-	}
-	if !skipHideComment {
-		logrus.WithFields(logrus.Fields{
-			"count":    len(nodeIDs),
-			"node_ids": nodeIDs,
-		}).Debug("comments which would be hidden")
-		ctrl.hideComments(ctx, nodeIDs)
-	}
-	return nil
 }
 
 func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen

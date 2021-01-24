@@ -17,36 +17,6 @@ import (
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
-type ExecCommentParams struct {
-	Stdout         string
-	Stderr         string
-	CombinedOutput string
-	Command        string
-	JoinCommand    string
-	ExitCode       int
-	Env            func(string) string
-	// PRNumber is the pull request number where the comment is posted
-	PRNumber int
-	// Org is the GitHub Organization or User name
-	Org string
-	// Repo is the GitHub Repository name
-	Repo string
-	// SHA1 is the commit SHA1
-	SHA1        string
-	TemplateKey string
-	Template    string
-	Vars        map[string]interface{}
-}
-
-type Executor interface {
-	Run(ctx context.Context, params execute.Params) (execute.Result, error)
-}
-
-type Expr interface {
-	Match(expression string, params interface{}) (bool, error)
-	Compile(expression string) (expr.Program, error)
-}
-
 type ExecController struct {
 	Wd        string
 	Stdin     io.Reader
@@ -60,36 +30,6 @@ type ExecController struct {
 	Expr      Expr
 	Platform  Platform
 	Config    config.Config
-}
-
-func (ctrl *ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
-	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, paramExpr)
-}
-
-func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
-	var execConfigs []config.ExecConfig
-	if opts.Template == "" && opts.TemplateKey != "" {
-		a, ok := cfg.Exec[opts.TemplateKey]
-		if !ok {
-			if opts.TemplateKey != "default" {
-				return nil, errors.New("template isn't found: " + opts.TemplateKey)
-			}
-			execConfigs = []config.ExecConfig{
-				{
-					When: "ExitCode != 0",
-					Template: `{{template "status" .}} {{template "link" .}}
-
-{{template "join_command" .}}
-
-{{template "hidden_combined_output" .}}`,
-				},
-			}
-		} else {
-			execConfigs = a
-		}
-	}
-	return execConfigs, nil
 }
 
 func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
@@ -172,6 +112,66 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) e
 		return ecerror.Wrap(execErr, result.ExitCode)
 	}
 	return nil
+}
+
+type ExecCommentParams struct {
+	Stdout         string
+	Stderr         string
+	CombinedOutput string
+	Command        string
+	JoinCommand    string
+	ExitCode       int
+	Env            func(string) string
+	// PRNumber is the pull request number where the comment is posted
+	PRNumber int
+	// Org is the GitHub Organization or User name
+	Org string
+	// Repo is the GitHub Repository name
+	Repo string
+	// SHA1 is the commit SHA1
+	SHA1        string
+	TemplateKey string
+	Template    string
+	Vars        map[string]interface{}
+}
+
+type Executor interface {
+	Run(ctx context.Context, params execute.Params) (execute.Result, error)
+}
+
+type Expr interface {
+	Match(expression string, params interface{}) (bool, error)
+	Compile(expression string) (expr.Program, error)
+}
+
+func (ctrl *ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
+	return listHiddenComments(
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, paramExpr)
+}
+
+func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
+	var execConfigs []config.ExecConfig
+	if opts.Template == "" && opts.TemplateKey != "" {
+		a, ok := cfg.Exec[opts.TemplateKey]
+		if !ok {
+			if opts.TemplateKey != "default" {
+				return nil, errors.New("template isn't found: " + opts.TemplateKey)
+			}
+			execConfigs = []config.ExecConfig{
+				{
+					When: "ExitCode != 0",
+					Template: `{{template "status" .}} {{template "link" .}}
+
+{{template "join_command" .}}
+
+{{template "hidden_combined_output" .}}`,
+				},
+			}
+		} else {
+			execConfigs = a
+		}
+	}
+	return execConfigs, nil
 }
 
 // getExecConfig returns matched ExecConfig.
