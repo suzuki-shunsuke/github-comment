@@ -235,7 +235,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(&opts); err != nil {
-			return cmt, fmt.Errorf("failed to complement opts with CircleCI built in environment variables: %w", err)
+			return cmt, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
 	if opts.Template == "" && opts.StdinTemplate {
