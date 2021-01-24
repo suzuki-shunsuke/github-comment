@@ -9,7 +9,7 @@ import (
 // initAction is an entrypoint of the subcommand "init".
 func (runner *Runner) initAction(c *cli.Context) error {
 	ctrl := api.InitController{
-		Fsys: fsys.Fsys{},
+		Fsys: &fsys.Fsys{},
 	}
 	return ctrl.Run(c.Context)
 }
