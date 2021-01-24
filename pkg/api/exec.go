@@ -144,11 +144,6 @@ type Expr interface {
 	Compile(expression string) (expr.Program, error)
 }
 
-func (ctrl *ExecController) listHiddenComments(ctx context.Context, cmt comment.Comment, paramExpr map[string]interface{}) ([]string, error) {
-	return listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, paramExpr)
-}
-
 func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
 	var execConfigs []config.ExecConfig
 	if opts.Template == "" && opts.TemplateKey != "" {
@@ -238,10 +233,6 @@ func (ctrl *ExecController) getComment(
 	}, true, nil
 }
 
-func (ctrl *ExecController) hideComments(ctx context.Context, nodeIDs []string) {
-	hideComments(ctx, ctrl.Commenter, nodeIDs)
-}
-
 func (ctrl *ExecController) post(
 	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
 	templates map[string]string,
@@ -259,8 +250,13 @@ func (ctrl *ExecController) post(
 		"pr_number": cmt.PRNumber,
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
-	skipHideComment := false
-	nodeIDs, err := ctrl.listHiddenComments(ctx, cmt, map[string]interface{}{
+
+	cmtCtrl := CommentController{
+		Commenter: ctrl.Commenter,
+		Expr:      ctrl.Expr,
+		Getenv:    ctrl.Getenv,
+	}
+	return cmtCtrl.Post(ctx, cmt, map[string]interface{}{
 		"Command": map[string]interface{}{
 			"ExitCode":       cmtParams.ExitCode,
 			"JoinCommand":    cmtParams.JoinCommand,
@@ -270,20 +266,4 @@ func (ctrl *ExecController) post(
 			"CombinedOutput": cmtParams.CombinedOutput,
 		},
 	})
-	if err != nil {
-		skipHideComment = true
-		logrus.WithError(err).Error("list hidden comments")
-	}
-
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
-	}
-	if !skipHideComment {
-		logrus.WithFields(logrus.Fields{
-			"count":    len(nodeIDs),
-			"node_ids": nodeIDs,
-		}).Debug("comments which would be hidden")
-		ctrl.hideComments(ctx, nodeIDs)
-	}
-	return nil
 }
