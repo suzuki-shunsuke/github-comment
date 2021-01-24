@@ -51,14 +51,6 @@ func (ctrl *PostController) Post(ctx context.Context, opts option.PostOptions) e
 	return cmtCtrl.Post(ctx, cmt, nil)
 }
 
-// Commenter is API to post a comment to GitHub
-type Commenter interface {
-	Create(ctx context.Context, cmt comment.Comment) error
-	List(ctx context.Context, pr comment.PullRequest) ([]comment.IssueComment, error)
-	HideComment(ctx context.Context, nodeID string) error
-	GetAuthenticatedUser(ctx context.Context) (string, error)
-}
-
 // Reader is API to find and read the configuration file of github-comment
 type Reader interface {
 	FindAndRead(cfgPath, wd string) (config.Config, error)
