@@ -79,21 +79,6 @@ type Platform interface {
 	CI() string
 }
 
-func isExcludedComment(cmt comment.IssueComment, login string) bool {
-	if !cmt.ViewerCanMinimize {
-		return true
-	}
-	if cmt.IsMinimized {
-		return true
-	}
-	// GitHub Actions's GITHUB_TOKEN secret doesn't have a permission to get an authenticated user.
-	// So if `login` is empty, we give up filtering comments by login.
-	if login != "" && cmt.Author.Login != login {
-		return true
-	}
-	return false
-}
-
 func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
