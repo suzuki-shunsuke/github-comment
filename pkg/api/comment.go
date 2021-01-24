@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
@@ -20,6 +22,7 @@ type CommentController struct {
 	Commenter Commenter
 	Expr      Expr
 	Getenv    func(string) string
+	Platform  Platform
 }
 
 func (ctrl *CommentController) Post(ctx context.Context, cmt comment.Comment, hiddenParam map[string]interface{}) error {
@@ -69,6 +72,29 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 			"node_id": nodeID,
 		}).Debug("hide an old comment")
 	}
+}
+
+const (
+	embeddedCommentPrefix    = "<!-- github-comment: "
+	embeddedCommentSuffix    = " -->"
+	lenEmbeddedCommentPrefix = len(embeddedCommentPrefix)
+	lenEmbeddedCommentSuffix = len(embeddedCommentSuffix)
+)
+
+func extractMetaFromComment(body string, metadata map[string]interface{}) bool {
+	for _, line := range strings.Split(body, "\n") {
+		if !strings.HasPrefix(line, embeddedCommentPrefix) {
+			continue
+		}
+		if !strings.HasSuffix(line, embeddedCommentSuffix) {
+			continue
+		}
+		if err := json.Unmarshal([]byte(line[lenEmbeddedCommentPrefix:len(line)-lenEmbeddedCommentSuffix]), &metadata); err != nil {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func listHiddenComments( //nolint:funlen
@@ -121,16 +147,20 @@ func listHiddenComments( //nolint:funlen
 			continue
 		}
 
+		metadata := map[string]interface{}{}
+		hasMeta := extractMetaFromComment(comment.Body, metadata)
 		param := map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
+				"Meta":    metadata,
+				"HasMeta": hasMeta,
 			},
 			"Commit": map[string]interface{}{
 				"Org":      cmt.Org,
 				"Repo":     cmt.Repo,
 				"PRNumber": cmt.PRNumber,
-				"SHA":      cmt.SHA1,
+				"SHA1":     cmt.SHA1,
 			},
 			"Vars": cmt.Vars,
 			"PostedComment": map[string]interface{}{
@@ -176,4 +206,23 @@ func isExcludedComment(cmt comment.IssueComment, login string) bool {
 		return true
 	}
 	return false
+}
+
+func (ctrl *CommentController) complementMetaData(metadata map[string]interface{}) {
+	if metadata == nil {
+		return
+	}
+	switch ctrl.Platform.CI() {
+	case "circleci":
+		metadata["job_name"] = ctrl.Getenv("CIRCLE_JOB")
+		metadata["job_id"] = ctrl.Getenv("CIRCLE_WORKFLOW_JOB_ID")
+	case "drone":
+		metadata["workflow_name"] = ctrl.Getenv("DRONE_STATE_NAME")
+		metadata["job_name"] = ctrl.Getenv("DRONE_STEP_NAME")
+	case "github-actions":
+		metadata["workflow_name"] = ctrl.Getenv("GITHUB_WORKFLOW")
+		metadata["job_name"] = ctrl.Getenv("GITHUB_JOB")
+	case "codebuild":
+		metadata["job_id"] = ctrl.Getenv("CODEBUILD_BUILD_ID")
+	}
 }
