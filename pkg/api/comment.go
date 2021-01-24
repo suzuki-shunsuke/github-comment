@@ -63,15 +63,15 @@ func (ctrl *CommentController) complementMetaData(metadata map[string]interface{
 	}
 	switch ctrl.Platform.CI() {
 	case "circleci":
-		metadata["job_name"] = ctrl.Getenv("CIRCLE_JOB")
-		metadata["job_id"] = ctrl.Getenv("CIRCLE_WORKFLOW_JOB_ID")
+		metadata["JobName"] = ctrl.Getenv("CIRCLE_JOB")
+		metadata["JobID"] = ctrl.Getenv("CIRCLE_WORKFLOW_JOB_ID")
 	case "drone":
-		metadata["workflow_name"] = ctrl.Getenv("DRONE_STATE_NAME")
-		metadata["job_name"] = ctrl.Getenv("DRONE_STEP_NAME")
+		metadata["WorkflowName"] = ctrl.Getenv("DRONE_STATE_NAME")
+		metadata["JobName"] = ctrl.Getenv("DRONE_STEP_NAME")
 	case "github-actions":
-		metadata["workflow_name"] = ctrl.Getenv("GITHUB_WORKFLOW")
-		metadata["job_name"] = ctrl.Getenv("GITHUB_JOB")
+		metadata["WorkflowName"] = ctrl.Getenv("GITHUB_WORKFLOW")
+		metadata["JobName"] = ctrl.Getenv("GITHUB_JOB")
 	case "codebuild":
-		metadata["job_id"] = ctrl.Getenv("CODEBUILD_BUILD_ID")
+		metadata["JobID"] = ctrl.Getenv("CODEBUILD_BUILD_ID")
 	}
 }
