@@ -60,7 +60,7 @@ func getExecCommenter(ctx context.Context, opts option.ExecOptions) api.Commente
 	return comment.New(ctx, opts.Token)
 }
 
-func (runner Runner) execAction(c *cli.Context) error {
+func (runner *Runner) execAction(c *cli.Context) error {
 	opts := option.ExecOptions{}
 	if err := parseExecOptions(&opts, c); err != nil {
 		return err

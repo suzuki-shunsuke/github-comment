@@ -7,7 +7,7 @@ import (
 )
 
 // initAction is an entrypoint of the subcommand "init".
-func (runner Runner) initAction(c *cli.Context) error {
+func (runner *Runner) initAction(c *cli.Context) error {
 	ctrl := api.InitController{
 		Fsys: fsys.Fsys{},
 	}
