@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-type PostOptions struct {
+type Options struct {
 	PRNumber           int
 	Org                string
 	Repo               string
@@ -20,10 +20,14 @@ type PostOptions struct {
 	DryRun             bool
 	SkipNoToken        bool
 	Silent             bool
-	StdinTemplate      bool
 }
 
-func ValidatePost(opts PostOptions) error {
+type PostOptions struct {
+	Options
+	StdinTemplate bool
+}
+
+func validate(opts Options) error {
 	if opts.Org == "" {
 		return errors.New("org is required")
 	}
@@ -33,11 +37,18 @@ func ValidatePost(opts PostOptions) error {
 	if opts.Token == "" && !opts.SkipNoToken {
 		return errors.New("token is required")
 	}
-	if opts.Template == "" && opts.TemplateKey == "" {
-		return errors.New("template or template-key are required")
-	}
 	if opts.SHA1 == "" && opts.PRNumber == -1 {
 		return errors.New("sha1 or pr are required")
+	}
+	return nil
+}
+
+func ValidatePost(opts PostOptions) error {
+	if err := validate(opts.Options); err != nil {
+		return err
+	}
+	if opts.Template == "" && opts.TemplateKey == "" {
+		return errors.New("template or template-key are required")
 	}
 	return nil
 }
