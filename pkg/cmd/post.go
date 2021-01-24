@@ -109,7 +109,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 
 	var pt api.Platform
 	if p, f := platform.Get(); f {
-		pt = p
+		pt = &p
 	}
 
 	cfgReader := config.Reader{
