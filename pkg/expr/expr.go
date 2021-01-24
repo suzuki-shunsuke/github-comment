@@ -9,7 +9,7 @@ import (
 
 type Expr struct{}
 
-func (Expr) Match(expression string, params interface{}) (bool, error) {
+func (*Expr) Match(expression string, params interface{}) (bool, error) {
 	prog, err := expr.Compile(expression, expr.Env(params), expr.AsBool())
 	if err != nil {
 		return false, fmt.Errorf("compile an expression: "+expression+": %w", err)
@@ -28,7 +28,7 @@ type Program interface {
 	Run(params interface{}) (bool, error)
 }
 
-func (Expr) Compile(expression string) (Program, error) {
+func (*Expr) Compile(expression string) (Program, error) {
 	prog := Prog{}
 	prg, err := expr.Compile(expression, expr.AsBool())
 	if err != nil {

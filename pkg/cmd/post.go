@@ -136,7 +136,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		},
 		Platform: pt,
 		Config:   cfg,
-		Expr:     expr.Expr{},
+		Expr:     &expr.Expr{},
 	}
 	return ctrl.Post(c.Context, opts)
 }

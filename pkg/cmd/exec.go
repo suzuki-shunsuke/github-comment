@@ -108,7 +108,7 @@ func (runner *Runner) execAction(c *cli.Context) error {
 			Stderr: runner.Stderr,
 			Env:    os.Environ(),
 		},
-		Expr:     expr.Expr{},
+		Expr:     &expr.Expr{},
 		Platform: pt,
 		Config:   cfg,
 	}
