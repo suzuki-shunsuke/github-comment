@@ -20,74 +20,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func (runner Runner) postCommand() cli.Command { //nolint:funlen
-	return cli.Command{
-		Name:   "post",
-		Usage:  "post a comment",
-		Action: runner.postAction,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:  "org",
-				Usage: "GitHub organization name",
-			},
-			&cli.StringFlag{
-				Name:  "repo",
-				Usage: "GitHub repository name",
-			},
-			&cli.StringFlag{
-				Name:    "token",
-				Usage:   "GitHub API token",
-				EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-			},
-			&cli.StringFlag{
-				Name:  "sha1",
-				Usage: "commit sha1",
-			},
-			&cli.StringFlag{
-				Name:  "template",
-				Usage: "comment template",
-			},
-			&cli.StringFlag{
-				Name:    "template-key",
-				Aliases: []string{"k"},
-				Usage:   "comment template key",
-				Value:   "default",
-			},
-			&cli.StringFlag{
-				Name:  "config",
-				Usage: "configuration file path",
-			},
-			&cli.IntFlag{
-				Name:  "pr",
-				Usage: "GitHub pull request number",
-			},
-			&cli.StringSliceFlag{
-				Name:  "var",
-				Usage: "template variable",
-			},
-			&cli.BoolFlag{
-				Name:  "dry-run",
-				Usage: "output a comment to standard error output instead of posting to GitHub",
-			},
-			&cli.BoolFlag{
-				Name:    "skip-no-token",
-				Aliases: []string{"n"},
-				Usage:   "works like dry-run if the GitHub Access Token isn't set",
-				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
-			},
-			&cli.BoolFlag{
-				Name:    "silent",
-				Aliases: []string{"s"},
-				Usage:   "suppress the output of dry-run and skip-no-token",
-			},
-			&cli.BoolFlag{
-				Name:  "stdin-template",
-				Usage: "read standard input as the template",
-			},
-		},
-	}
-}
-
 func parseVarsFlag(varsSlice []string) (map[string]string, error) {
 	vars := make(map[string]string, len(varsSlice))
 	for _, v := range varsSlice {
@@ -154,7 +86,7 @@ func setLogLevel(logLevel string) {
 }
 
 // postAction is an entrypoint of the subcommand "post".
-func (runner Runner) postAction(c *cli.Context) error {
+func (runner *Runner) postAction(c *cli.Context) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -177,7 +109,7 @@ func (runner Runner) postAction(c *cli.Context) error {
 
 	var pt api.Platform
 	if p, f := platform.Get(); f {
-		pt = p
+		pt = &p
 	}
 
 	cfgReader := config.Reader{
@@ -199,12 +131,12 @@ func (runner Runner) postAction(c *cli.Context) error {
 		Stdin:     runner.Stdin,
 		Stderr:    runner.Stderr,
 		Commenter: getPostCommenter(c.Context, opts),
-		Renderer: template.Renderer{
+		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Platform: pt,
 		Config:   cfg,
-		Expr:     expr.Expr{},
+		Expr:     &expr.Expr{},
 	}
 	return ctrl.Post(c.Context, opts)
 }

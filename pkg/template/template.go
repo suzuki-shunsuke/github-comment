@@ -68,7 +68,7 @@ func avoidHTMLEscape(text string) template.HTML {
 	return template.HTML(text) //nolint:gosec
 }
 
-func (renderer Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
+func (renderer *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env":             renderer.Getenv,

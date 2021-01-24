@@ -11,7 +11,7 @@ type Platform struct {
 	Platform cienv.Platform
 }
 
-func (pt Platform) ComplementPost(opts *option.PostOptions) error {
+func (pt *Platform) complement(opts *option.Options) error {
 	if opts.Org == "" {
 		opts.Org = pt.Platform.RepoOwner()
 	}
@@ -34,34 +34,19 @@ func (pt Platform) ComplementPost(opts *option.PostOptions) error {
 	return nil
 }
 
-func (pt Platform) CI() string {
+func (pt *Platform) ComplementPost(opts *option.PostOptions) error {
+	return pt.complement(&opts.Options)
+}
+
+func (pt *Platform) CI() string {
 	if pt.Platform == nil {
 		return ""
 	}
 	return pt.Platform.CI()
 }
 
-func (pt Platform) ComplementExec(opts *option.ExecOptions) error {
-	if opts.Org == "" {
-		opts.Org = pt.Platform.RepoOwner()
-	}
-	if opts.Repo == "" {
-		opts.Repo = pt.Platform.RepoName()
-	}
-	if opts.SHA1 == "" {
-		opts.SHA1 = pt.Platform.SHA()
-	}
-	if opts.PRNumber != 0 {
-		return nil
-	}
-	pr, err := pt.Platform.PRNumber()
-	if err != nil {
-		return fmt.Errorf("get a pull request number from an environment variable: %w", err)
-	}
-	if pr > 0 {
-		opts.PRNumber = pr
-	}
-	return nil
+func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
+	return pt.complement(&opts.Options)
 }
 
 func Get() (Platform, bool) {

@@ -17,70 +17,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (runner Runner) execCommand() cli.Command { //nolint:funlen
-	return cli.Command{
-		Name:   "exec",
-		Usage:  "execute a command and post the result as a comment",
-		Action: runner.execAction,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:  "org",
-				Usage: "GitHub organization name",
-			},
-			&cli.StringFlag{
-				Name:  "repo",
-				Usage: "GitHub repository name",
-			},
-			&cli.StringFlag{
-				Name:    "token",
-				Usage:   "GitHub API token",
-				EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-			},
-			&cli.StringFlag{
-				Name:  "sha1",
-				Usage: "commit sha1",
-			},
-			&cli.StringFlag{
-				Name:  "template",
-				Usage: "comment template",
-			},
-			&cli.StringFlag{
-				Name:    "template-key",
-				Aliases: []string{"k"},
-				Usage:   "comment template key",
-				Value:   "default",
-			},
-			&cli.StringFlag{
-				Name:  "config",
-				Usage: "configuration file path",
-			},
-			&cli.IntFlag{
-				Name:  "pr",
-				Usage: "GitHub pull request number",
-			},
-			&cli.StringSliceFlag{
-				Name:  "var",
-				Usage: "template variable",
-			},
-			&cli.BoolFlag{
-				Name:  "dry-run",
-				Usage: "output a comment to standard error output instead of posting to GitHub",
-			},
-			&cli.BoolFlag{
-				Name:    "skip-no-token",
-				Aliases: []string{"n"},
-				Usage:   "works like dry-run if the GitHub Access Token isn't set",
-				EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
-			},
-			&cli.BoolFlag{
-				Name:    "silent",
-				Aliases: []string{"s"},
-				Usage:   "suppress the output of dry-run and skip-no-token",
-			},
-		},
-	}
-}
-
 func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
@@ -124,7 +60,7 @@ func getExecCommenter(ctx context.Context, opts option.ExecOptions) api.Commente
 	return comment.New(ctx, opts.Token)
 }
 
-func (runner Runner) execAction(c *cli.Context) error {
+func (runner *Runner) execAction(c *cli.Context) error {
 	opts := option.ExecOptions{}
 	if err := parseExecOptions(&opts, c); err != nil {
 		return err
@@ -144,7 +80,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 
 	var pt api.Platform
 	if p, f := platform.Get(); f {
-		pt = p
+		pt = &p
 	}
 
 	cfgReader := config.Reader{
@@ -164,7 +100,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
 		Commenter: getExecCommenter(c.Context, opts),
-		Renderer: template.Renderer{
+		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Executor: execute.Executor{
@@ -172,7 +108,7 @@ func (runner Runner) execAction(c *cli.Context) error {
 			Stderr: runner.Stderr,
 			Env:    os.Environ(),
 		},
-		Expr:     expr.Expr{},
+		Expr:     &expr.Expr{},
 		Platform: pt,
 		Config:   cfg,
 	}
