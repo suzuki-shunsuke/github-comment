@@ -84,6 +84,7 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
+	commentHidden := false
 	for _, nodeID := range nodeIDs {
 		if err := commenter.HideComment(ctx, nodeID); err != nil {
 			logE.WithError(err).WithFields(logrus.Fields{
@@ -91,9 +92,13 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 			}).Error("hide an old comment")
 			continue
 		}
+		commentHidden = true
 		logE.WithFields(logrus.Fields{
 			"node_id": nodeID,
-		}).Debug("hide an old comment")
+		}).Info("hide an old comment")
+	}
+	if !commentHidden {
+		logE.Info("no comment is hidden")
 	}
 }
 
