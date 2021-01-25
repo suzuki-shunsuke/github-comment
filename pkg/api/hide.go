@@ -70,6 +70,10 @@ func (ctrl *HideController) getParamListHiddenComments(opts option.HideOptions) 
 		return param, errors.New("invalid hide-key: " + opts.HideKey)
 	}
 
+	if err := option.ValidateHide(opts); err != nil {
+		return param, fmt.Errorf("opts is invalid: %w", err)
+	}
+
 	return ParamListHiddenComments{
 		PRNumber:  opts.PRNumber,
 		Org:       opts.Org,
