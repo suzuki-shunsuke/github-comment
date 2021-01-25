@@ -31,12 +31,12 @@ func (ctrl *HideController) Hide(ctx context.Context, opts option.HideOptions) e
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
-	cmt, err := ctrl.getCommentParams(opts)
+	param, err := ctrl.getParamListHiddenComments(opts)
 	if err != nil {
 		return err
 	}
 	nodeIDs, err := listHiddenComments(
-		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, cmt, nil)
+		ctx, ctrl.Commenter, ctrl.Expr, ctrl.Getenv, param, nil)
 	if err != nil {
 		return err
 	}
@@ -48,11 +48,11 @@ func (ctrl *HideController) Hide(ctx context.Context, opts option.HideOptions) e
 	return nil
 }
 
-func (ctrl *HideController) getCommentParams(opts option.HideOptions) (comment.Comment, error) {
-	cmt := comment.Comment{}
+func (ctrl *HideController) getParamListHiddenComments(opts option.HideOptions) (ParamListHiddenComments, error) {
+	param := ParamListHiddenComments{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementHide(&opts); err != nil {
-			return cmt, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
+			return param, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
 
@@ -67,15 +67,16 @@ func (ctrl *HideController) getCommentParams(opts option.HideOptions) (comment.C
 
 	hideCondition, ok := ctrl.Config.Hide[opts.HideKey]
 	if !ok {
-		return cmt, errors.New("invalid hide-key: " + opts.HideKey)
+		return param, errors.New("invalid hide-key: " + opts.HideKey)
 	}
 
-	return comment.Comment{
-		PRNumber:       opts.PRNumber,
-		Org:            opts.Org,
-		Repo:           opts.Repo,
-		SHA1:           opts.SHA1,
-		HideOldComment: hideCondition,
+	return ParamListHiddenComments{
+		PRNumber:  opts.PRNumber,
+		Org:       opts.Org,
+		Repo:      opts.Repo,
+		SHA1:      opts.SHA1,
+		Condition: hideCondition,
+		HideKey:   opts.HideKey,
 	}, nil
 }
 
@@ -83,6 +84,7 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
+	commentHidden := false
 	for _, nodeID := range nodeIDs {
 		if err := commenter.HideComment(ctx, nodeID); err != nil {
 			logE.WithError(err).WithFields(logrus.Fields{
@@ -90,24 +92,38 @@ func hideComments(ctx context.Context, commenter Commenter, nodeIDs []string) {
 			}).Error("hide an old comment")
 			continue
 		}
+		commentHidden = true
 		logE.WithFields(logrus.Fields{
 			"node_id": nodeID,
-		}).Debug("hide an old comment")
+		}).Info("hide an old comment")
 	}
+	if !commentHidden {
+		logE.Info("no comment is hidden")
+	}
+}
+
+type ParamListHiddenComments struct {
+	Condition string
+	HideKey   string
+	Org       string
+	Repo      string
+	SHA1      string
+	PRNumber  int
+	Vars      map[string]interface{}
 }
 
 func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	commenter Commenter, exp Expr,
 	getEnv func(string) string,
-	cmt comment.Comment,
+	param ParamListHiddenComments,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
-	if cmt.HideOldComment == "" {
-		logE.Debug("hide_old_comment isn't set")
+	if param.Condition == "" {
+		logE.Debug("the condition to hide comments isn't set")
 		return nil, nil
 	}
 	login, err := commenter.GetAuthenticatedUser(ctx)
@@ -116,22 +132,22 @@ func listHiddenComments( //nolint:funlen
 	}
 
 	comments, err := commenter.List(ctx, comment.PullRequest{
-		Org:      cmt.Org,
-		Repo:     cmt.Repo,
-		PRNumber: cmt.PRNumber,
+		Org:      param.Org,
+		Repo:     param.Repo,
+		PRNumber: param.PRNumber,
 	})
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 	logE.WithFields(logrus.Fields{
 		"count":     len(comments),
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
+		"org":       param.Org,
+		"repo":      param.Repo,
+		"pr_number": param.PRNumber,
 	}).Debug("get comments")
 
 	nodeIDs := []string{}
-	prg, err := exp.Compile(cmt.HideOldComment)
+	prg, err := exp.Compile(param.Condition)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
@@ -148,7 +164,7 @@ func listHiddenComments( //nolint:funlen
 
 		metadata := map[string]interface{}{}
 		hasMeta := extractMetaFromComment(comment.Body, metadata)
-		param := map[string]interface{}{
+		paramMap := map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
@@ -156,28 +172,25 @@ func listHiddenComments( //nolint:funlen
 				"HasMeta": hasMeta,
 			},
 			"Commit": map[string]interface{}{
-				"Org":      cmt.Org,
-				"Repo":     cmt.Repo,
-				"PRNumber": cmt.PRNumber,
-				"SHA1":     cmt.SHA1,
+				"Org":      param.Org,
+				"Repo":     param.Repo,
+				"PRNumber": param.PRNumber,
+				"SHA1":     param.SHA1,
 			},
-			"Vars": cmt.Vars,
-			"PostedComment": map[string]interface{}{
-				"Body":        cmt.Body,
-				"TemplateKey": cmt.TemplateKey,
-			},
-			"Env": getEnv,
+			"HideKey": param.HideKey,
+			"Vars":    param.Vars,
+			"Env":     getEnv,
 		}
 		for k, v := range paramExpr {
-			param[k] = v
+			paramMap[k] = v
 		}
 
 		logE.WithFields(logrus.Fields{
-			"node_id":          nodeID,
-			"hide_old_comment": cmt.HideOldComment,
-			"param":            param,
+			"node_id":   nodeID,
+			"condition": param.Condition,
+			"param":     paramMap,
 		}).Debug("judge whether an existing comment is hidden")
-		f, err := prg.Run(param)
+		f, err := prg.Run(paramMap)
 		if err != nil {
 			logE.WithError(err).WithFields(logrus.Fields{
 				"node_id": nodeID,
