@@ -37,11 +37,12 @@ $ github-comment --help
 
 Please prepare a GitHub access token. https://github.com/settings/tokens
 
-`github-comment` provides three subcommands.
+`github-comment` provides the following subcommands.
 
 * init: generate a configuration file template
 * post: create a comment
 * exec: execute a shell command and create a comment according to the command result
+* hide: hide pull request or issue comments
 
 ### post
 
@@ -139,7 +140,7 @@ https://github.com/suzuki-shunsuke/github-comment/pull/1#issuecomment-601503124
 
 ![exec-1](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/exec-1.png)
 
-Let's send the comment only if the command is failed.
+Let's send the comment only if the command failed.
 Update the above configuration.
 
 ```yaml
@@ -152,7 +153,7 @@ exec:
 
 Run the above command again, then the command wouldn't be created.
 
-If the command is failed, then the comment is created.
+If the command failed, then the comment is created.
 
 ```
 $ github-comment exec -org suzuki-shunsuke -repo github-comment -pr 1 -k hello -- curl -f https://github.com/suzuki-shunsuke/not_found
@@ -172,7 +173,7 @@ exec:
   hello:
     - when: ExitCode != 0
       template: |
-        command is failed
+        command failed
     - when: ExitCode == 0
       template: |
         command is succeeded
@@ -190,6 +191,73 @@ exec:
         Hello, world
 ```
 
+### hide
+
+[#210](https://github.com/suzuki-shunsuke/github-comment/pull/210)
+
+When github-comment is used at CI, github-comment posts a comment at every builds.
+So outdated comments would remain.
+We want to hide outdated comments.
+
+By the subcommand `hide`, we can hide outdated comments.
+From github-comment v3, github-comments injects meta data like SHA1 into comments as HTML comment.
+
+ex.
+
+```
+<!-- github-comment: {"JobID":"xxx","JobName":"plan","SHA1":"79acc0778da6660712a65fd41a48b72cb7ad16c0","TemplateKey":"default","Vars":{}} -->
+```
+
+The following meta data is injected.
+
+* JobName (support only some CI platform)
+* JobID (support only some CI platform)
+* WorkflowName (support only some CI platform)
+* TemplateKey
+* Vars
+* SHA1
+
+In `hide` command, github-comment does the following things.
+
+1. gets the list of pull request (issue) comments
+1. extracts the injected meta data from comments
+1. hide comments which match the [expr](https://github.com/antonmedv/expr/blob/master/docs/Language-Definition.md) expression
+
+The following variable is passed to the expression.
+
+* Commit:
+  * Org
+  * Repo
+  * PRNumber
+  * SHA1
+* Comment
+  * Body
+  * HasMeta
+  * Meta
+    * SHA1
+    * TemplateKey
+    * Vars
+* HideKey
+* Vars
+* Env: `func(string) string`
+
+The default condition is `Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1`.
+We can configure the condition in the configuration file.
+
+```yaml
+hide:
+  default: "true"
+  hello: 'Comment.HasMeta && (Comment.Meta.SHA1 != Commit.SHA1 && Comment.Meta.Vars.target == "hello")'
+```
+
+We can specify the template with `--hide-key (-k)` option.
+
+```
+$ github-comment hide -k hello
+```
+
+If the template isn't specified, the template `default` is used.
+
 ## Usage
 
 ```
@@ -201,18 +269,19 @@ USAGE:
    github-comment [global options] command [command options] [arguments...]
 
 VERSION:
-   2.1.0
+   3.0.0-0
 
 COMMANDS:
    post     post a comment
    exec     execute a command and post the result as a comment
    init     scaffold a configuration file if it doesn't exist
+   hide     hide issue or pull request comments
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --log-level value  log level [$GITHUB_COMMENT_LOG_LEVEL]
-   --help, -h     show help (default: false)
-   --version, -v  print the version (default: false)
+   --help, -h         show help (default: false)
+   --version, -v      print the version (default: false)
 ```
 
 ```
@@ -236,7 +305,7 @@ OPTIONS:
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
    --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
-   --help, -h                      show help (default: false)
+   --stdin-template                read standard input as the template (default: false)
 ```
 
 ```
@@ -260,7 +329,28 @@ OPTIONS:
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
    --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
-   --help, -h                      show help (default: false)
+```
+
+```
+$ github-comment help hide
+NAME:
+   github-comment hide - hide issue or pull request comments
+
+USAGE:
+   github-comment hide [command options] [arguments...]
+
+OPTIONS:
+   --org value                 GitHub organization name
+   --repo value                GitHub repository name
+   --token value               GitHub API token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
+   --config value              configuration file path
+   --hide-key value, -k value  hide condition key (default: "default")
+   --pr value                  GitHub pull request number (default: 0)
+   --sha1 value                commit sha1
+   --var value                 template variable
+   --dry-run                   output a comment to standard error output instead of posting to GitHub (default: false)
+   --skip-no-token, -n         works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                suppress the output of dry-run and skip-no-token (default: false)
 ```
 
 ## Configuration
@@ -334,9 +424,9 @@ Instead of `-template`, we can pass a template from a standard input with `-stdi
 $ echo hello | github-comment post -stdin-template
 ```
 
-## post a substitute comment when it is failed to post a too long comment
+## post a substitute comment when it failed to post a too long comment
 
-When the comment is too long, it is failed to post a comment due to GitHub API's validation.
+When the comment is too long, it failed to post a comment due to GitHub API's validation.
 
 ```json
 {
@@ -357,7 +447,7 @@ If a comment includes the long command standard output, you may encounter the er
 
 github-comment supports to post a substitute comment in that case.
 
-When it is failed to post a comment of `template`, github-comment posts a comment of `template_for_too_long` instead of `template`.
+When it failed to post a comment of `template`, github-comment posts a comment of `template_for_too_long` instead of `template`.
 
 ex.
 
@@ -422,67 +512,6 @@ The following platforms are supported.
 * AWS CodeBuild
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
-
-## Hide old comments
-
-https://github.com/suzuki-shunsuke/github-comment/issues/187
-
-When github-comment is used at CI, github-comment posts a comment at every builds.
-So many same comments would be posted.
-Sometimes old comments are noisy, so we want to hide them.
-
-By configuring `hide_old_comment`, we can hide old comments.
-`hide_old_comment` is an [expr](https://github.com/antonmedv/expr/blob/master/docs/Language-Definition.md) expression, and comments which match this condition would be hidden.
-
-```yaml
-post:
-  foo:
-    template: foo
-    hide_old_comment: Comment.Body contains "foo" # hide existing comments which includes `foo`
-exec:
-  foo:
-  - when: ExitCode != 0
-    template: foo
-    hide_old_comment: Comment.Body contains "foo" # hide existing comments which includes `foo`
-```
-
-If `hide_old_comment` isn't set, no comment is hidden.
-
-Wa can use HTML comment to hide comments.
-
-```yaml
-post:
-  foo:
-    template: |
-      {{"<!-- github-comment:foo-" | AvoidHTMLEscape}}{{env "TARGET"}}{{" -->" | AvoidHTMLEscape}}
-      foo {{env "TARGET"}}
-    hide_old_comment: |
-      Comment.Body contains "<!-- github-comment:foo-" + Env("TARGET") + " -->"
-```
-
-In case of `post` command, we can use the following variables in `hide_old_comment`.
-
-* Commit:
-  * Org
-  * Repo
-  * PRNumber
-  * SHA1
-* Comment
-  * Body
-* PostedComment:
-  * Body
-  * TemplateKey
-* Vars
-
-In addition to above variables, we can use the following variables in case of `exec` command.
-
-* Command
-  * ExitCode
-  * Stdout
-  * Stderr
-  * CombinedOutput
-  * Command
-  * JoinCommand
 
 ## Builtin Templates
 
@@ -570,7 +599,7 @@ template: |
 
   {{template "join_command" .}}
 
-  {{template "hidden_combined_output" .}}`
+  {{template "hidden_combined_output" .}}
 ```
 
 ## Configuration file path
