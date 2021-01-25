@@ -513,6 +513,11 @@ The following platforms are supported.
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
+## Complement the pull request number from CI_INFO_PR_NUMBER
+
+The environment variable `CI_INFO_PR_NUMBER` is set by [ci-info](https://github.com/suzuki-shunsuke/ci-info) by default. 
+If the pull request number can't be gotten from platform's built-in environment variables but `CI_INFO_PR_NUMBER` is set, github-comment uses `CI_INFO_PR_NUMBER`.
+
 ## Builtin Templates
 
 Some default templates are provided.
