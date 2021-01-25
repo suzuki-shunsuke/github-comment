@@ -22,11 +22,6 @@ type Options struct {
 	Silent             bool
 }
 
-type PostOptions struct {
-	Options
-	StdinTemplate bool
-}
-
 func validate(opts Options) error {
 	if opts.Org == "" {
 		return errors.New("org is required")
@@ -37,10 +32,15 @@ func validate(opts Options) error {
 	if opts.Token == "" && !opts.SkipNoToken {
 		return errors.New("token is required")
 	}
-	if opts.SHA1 == "" && opts.PRNumber == -1 {
+	if opts.SHA1 == "" && opts.PRNumber == 0 {
 		return errors.New("sha1 or pr are required")
 	}
 	return nil
+}
+
+type PostOptions struct {
+	Options
+	StdinTemplate bool
 }
 
 func ValidatePost(opts PostOptions) error {
