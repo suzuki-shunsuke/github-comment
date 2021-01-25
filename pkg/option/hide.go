@@ -11,11 +11,14 @@ type HideOptions struct {
 }
 
 func ValidateHide(opts HideOptions) error {
-	if err := validate(opts.Options); err != nil {
-		return err
+	if opts.PRNumber == 0 {
+		return errors.New("pull request or issue number is required")
 	}
 	if opts.HideKey == "" {
 		return errors.New("hide-key is required")
+	}
+	if err := validate(opts.Options); err != nil {
+		return err
 	}
 	return nil
 }
