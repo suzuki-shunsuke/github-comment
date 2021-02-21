@@ -80,7 +80,7 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen
+func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen,cyclop
 	cmt := comment.Comment{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(&opts); err != nil {

@@ -17,8 +17,5 @@ func ValidateHide(opts HideOptions) error {
 	if opts.HideKey == "" {
 		return errors.New("hide-key is required")
 	}
-	if err := validate(opts.Options); err != nil {
-		return err
-	}
-	return nil
+	return validate(opts.Options)
 }
