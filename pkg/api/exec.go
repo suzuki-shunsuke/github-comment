@@ -32,7 +32,7 @@ type ExecController struct {
 	Config    config.Config
 }
 
-func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen
+func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen,cyclop
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
