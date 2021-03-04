@@ -9,15 +9,14 @@ import (
 )
 
 type Config struct {
-	Base             Base
-	Vars             map[string]interface{}
-	Templates        map[string]string
-	Post             map[string]PostConfig
-	Exec             map[string][]ExecConfig
-	Hide             map[string]string
-	SkipNoToken      bool `yaml:"skip_no_token"`
-	Silent           bool
-	EmbeddedMetaData map[string]string `yaml:"embedded_meta_data"`
+	Base        Base
+	Vars        map[string]interface{}
+	Templates   map[string]string
+	Post        map[string]PostConfig
+	Exec        map[string][]ExecConfig
+	Hide        map[string]string
+	SkipNoToken bool `yaml:"skip_no_token"`
+	Silent      bool
 }
 
 type Base struct {
