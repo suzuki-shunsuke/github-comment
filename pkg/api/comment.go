@@ -2,10 +2,9 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strings"
 
+	"github.com/suzuki-shunsuke/github-comment-metadata/metadata"
 	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 )
 
@@ -31,56 +30,22 @@ func (ctrl *CommentController) Post(ctx context.Context, cmt comment.Comment, hi
 	return nil
 }
 
-const (
-	embeddedCommentPrefix    = "<!-- github-comment: "
-	embeddedCommentSuffix    = " -->"
-	lenEmbeddedCommentPrefix = len(embeddedCommentPrefix)
-	lenEmbeddedCommentSuffix = len(embeddedCommentSuffix)
-)
-
-func extractMetaFromComment(body string, metadata map[string]interface{}) bool {
-	for _, line := range strings.Split(body, "\n") {
-		if !strings.HasPrefix(line, embeddedCommentPrefix) {
-			continue
-		}
-		if !strings.HasSuffix(line, embeddedCommentSuffix) {
-			continue
-		}
-		if err := json.Unmarshal([]byte(line[lenEmbeddedCommentPrefix:len(line)-lenEmbeddedCommentSuffix]), &metadata); err != nil {
-			continue
-		}
-		return true
-	}
-	return false
+func extractMetaFromComment(body string, data map[string]interface{}) bool {
+	f, _ := metadata.Extract(body, data)
+	return f
 }
 
-func (ctrl *CommentController) complementMetaData(metadata map[string]interface{}) {
-	if metadata == nil {
+func (ctrl *CommentController) complementMetaData(data map[string]interface{}) {
+	if data == nil {
 		return
 	}
 	if ctrl.Platform == nil {
 		return
 	}
-	switch ctrl.Platform.CI() {
-	case "circleci":
-		metadata["JobName"] = ctrl.Getenv("CIRCLE_JOB")
-		metadata["JobID"] = ctrl.Getenv("CIRCLE_WORKFLOW_JOB_ID")
-	case "drone":
-		metadata["WorkflowName"] = ctrl.Getenv("DRONE_STATE_NAME")
-		metadata["JobName"] = ctrl.Getenv("DRONE_STEP_NAME")
-	case "github-actions":
-		metadata["WorkflowName"] = ctrl.Getenv("GITHUB_WORKFLOW")
-		metadata["JobName"] = ctrl.Getenv("GITHUB_JOB")
-	case "codebuild":
-		metadata["JobID"] = ctrl.Getenv("CODEBUILD_BUILD_ID")
-	}
+	_ = metadata.SetCIEnv(ctrl.Platform.CI(), ctrl.Getenv, data)
 }
 
-func (ctrl *CommentController) getEmbeddedComment(metadata map[string]interface{}) (string, error) {
-	ctrl.complementMetaData(metadata)
-	b, err := json.Marshal(metadata)
-	if err != nil {
-		return "", fmt.Errorf("marshal an embedded metadata to JSON: %w", err)
-	}
-	return "\n<!-- github-comment: " + string(b) + " -->", nil
+func (ctrl *CommentController) getEmbeddedComment(data map[string]interface{}) (string, error) {
+	ctrl.complementMetaData(data)
+	return metadata.Convert(data)
 }
