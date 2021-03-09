@@ -10,7 +10,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8
 	github.com/shurcooL/githubv4 v0.0.0-20201206200315-234843c633fa
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a // indirect
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0-0
 	github.com/suzuki-shunsuke/go-ci-env v1.1.0
