@@ -12,7 +12,7 @@ require (
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0-0
+	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
 	github.com/suzuki-shunsuke/go-ci-env v1.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-httpclient v1.0.0

@@ -167,7 +167,7 @@ func listHiddenComments( //nolint:funlen
 		}
 
 		metadata := map[string]interface{}{}
-		hasMeta := extractMetaFromComment(comment.Body, metadata)
+		hasMeta := extractMetaFromComment(comment.Body, &metadata)
 		paramMap := map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body": comment.Body,
