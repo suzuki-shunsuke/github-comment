@@ -30,7 +30,7 @@ func (ctrl *CommentController) Post(ctx context.Context, cmt comment.Comment, hi
 	return nil
 }
 
-func extractMetaFromComment(body string, data map[string]interface{}) bool {
+func extractMetaFromComment(body string, data *map[string]interface{}) bool {
 	f, _ := metadata.Extract(body, data)
 	return f
 }
