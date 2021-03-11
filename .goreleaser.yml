@@ -11,4 +11,4 @@ builds:
     goarch:
       - amd64
 release:
-  prerelease: auto
+  prerelease: true
