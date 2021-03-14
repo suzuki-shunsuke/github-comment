@@ -107,11 +107,6 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		return fmt.Errorf("get a current directory path: %w", err)
 	}
 
-	var pt api.Platform
-	if p, f := platform.Get(); f {
-		pt = &p
-	}
-
 	cfgReader := config.Reader{
 		ExistFile: existFile,
 	}
@@ -121,6 +116,15 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		return fmt.Errorf("find and read a configuration file: %w", err)
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
+
+	var pt api.Platform
+	p := platform.Get(platform.Param{
+		PRNumber:  cfg.Complement.PR,
+		RepoName:  cfg.Complement.Repo,
+		RepoOwner: cfg.Complement.Org,
+		SHA:       cfg.Complement.SHA1,
+	})
+	pt = &p
 
 	ctrl := api.PostController{
 		Wd:     wd,
