@@ -174,6 +174,10 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Usage: "configuration file path",
 					},
 					&cli.StringFlag{
+						Name:  "condition",
+						Usage: "hide condition",
+					},
+					&cli.StringFlag{
 						Name:    "hide-key",
 						Aliases: []string{"k"},
 						Usage:   "hide condition key",
