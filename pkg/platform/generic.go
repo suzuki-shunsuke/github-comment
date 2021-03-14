@@ -14,55 +14,51 @@ type Param struct {
 	PRNumber  []domain.ComplementEntry
 }
 
-type Client struct {
+type generic struct {
 	param Param
 }
 
-func New(param Param) Client {
-	return Client{
-		param: param,
-	}
-}
-
-func (client *Client) render(entries []domain.ComplementEntry) (string, error) {
+func (gen *generic) render(entries []domain.ComplementEntry) (string, error) {
+	var e error
 	for _, entry := range entries {
 		a, err := entry.Entry()
 		if err != nil {
-			return "", err //nolint:wrapcheck
+			e = err
+			continue
 		}
 		if a != "" {
 			return a, nil
 		}
 	}
-	return "", nil
+	return "", e
 }
 
-func (client *Client) returnString(entries []domain.ComplementEntry) string {
-	s, err := client.render(entries)
+func (gen *generic) returnString(entries []domain.ComplementEntry) string {
+	s, err := gen.render(entries)
 	if err != nil {
 		return ""
 	}
 	return s
 }
 
-func (client *Client) RepoOwner() string {
-	return client.returnString(client.param.RepoOwner)
+func (gen *generic) RepoOwner() string {
+	return gen.returnString(gen.param.RepoOwner)
 }
 
-func (client *Client) RepoName() string {
-	return client.returnString(client.param.RepoName)
+func (gen *generic) RepoName() string {
+	return gen.returnString(gen.param.RepoName)
 }
 
-func (client *Client) SHA() string {
-	return client.returnString(client.param.SHA)
+func (gen *generic) SHA() string {
+	return gen.returnString(gen.param.SHA)
 }
 
-func (client *Client) IsPR() bool {
-	return client.returnString(client.param.PRNumber) != ""
+func (gen *generic) IsPR() bool {
+	return gen.returnString(gen.param.PRNumber) != ""
 }
 
-func (client *Client) PRNumber() (int, error) {
-	s, err := client.render(client.param.PRNumber)
+func (gen *generic) PRNumber() (int, error) {
+	s, err := gen.render(gen.param.PRNumber)
 	if err != nil {
 		return 0, err
 	}

@@ -10,9 +10,8 @@ import (
 )
 
 type Platform struct {
-	platform        cienv.Platform
-	genericPlatform Client
-	compl           Param
+	platform cienv.Platform
+	generic  generic
 }
 
 func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
@@ -21,7 +20,7 @@ func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
 			return org, nil
 		}
 	}
-	return pt.genericPlatform.RepoOwner(), nil
+	return pt.generic.RepoOwner(), nil
 }
 
 func (pt *Platform) getRepoName() (string, error) { //nolint:unparam
@@ -30,7 +29,7 @@ func (pt *Platform) getRepoName() (string, error) { //nolint:unparam
 			return repo, nil
 		}
 	}
-	return pt.genericPlatform.RepoName(), nil
+	return pt.generic.RepoName(), nil
 }
 
 func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
@@ -39,7 +38,7 @@ func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
 			return sha1, nil
 		}
 	}
-	return pt.genericPlatform.SHA(), nil
+	return pt.generic.SHA(), nil
 }
 
 func (pt *Platform) getPRNumber() (int, error) {
@@ -62,7 +61,7 @@ func (pt *Platform) getPRNumber() (int, error) {
 			return a, nil
 		}
 	}
-	return pt.genericPlatform.PRNumber()
+	return pt.generic.PRNumber()
 }
 
 func (pt *Platform) complement(opts *option.Options) error {
@@ -117,10 +116,11 @@ func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
 	return pt.complement(&opts.Options)
 }
 
-func Get(cpl Param) Platform {
+func Get(param Param) Platform {
 	return Platform{
-		platform:        cienv.Get(),
-		genericPlatform: New(cpl),
-		compl:           cpl,
+		platform: cienv.Get(),
+		generic: generic{
+			param: param,
+		},
 	}
 }
