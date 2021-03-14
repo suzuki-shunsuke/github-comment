@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/antonmedv/expr v1.8.9
+	github.com/drone/envsubst v1.0.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mattn/go-colorable v0.1.8
@@ -13,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
-	github.com/suzuki-shunsuke/go-ci-env v1.1.0
+	github.com/suzuki-shunsuke/go-ci-env v1.2.0-0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-httpclient v1.0.0
 	github.com/suzuki-shunsuke/go-timeout v1.0.0

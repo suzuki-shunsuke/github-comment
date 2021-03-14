@@ -1,49 +1,45 @@
 package platform
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
-	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
-	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/go-ci-env/cienv"
 )
 
 type Platform struct {
-	platform cienv.Platform
-	compl    Complement
+	platform        cienv.Platform
+	genericPlatform Client
+	compl           Param
 }
 
-func (pt *Platform) getRepoOrg() (string, error) {
+func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
 	if pt.platform != nil {
 		if org := pt.platform.RepoOwner(); org != "" {
 			return org, nil
 		}
 	}
-	return complement(pt.compl.Org)
+	return pt.genericPlatform.RepoOwner(), nil
 }
 
-func (pt *Platform) getRepoName() (string, error) {
+func (pt *Platform) getRepoName() (string, error) { //nolint:unparam
 	if pt.platform != nil {
 		if repo := pt.platform.RepoName(); repo != "" {
 			return repo, nil
 		}
 	}
-	return complement(pt.compl.Repo)
+	return pt.genericPlatform.RepoName(), nil
 }
 
-func (pt *Platform) getSHA1() (string, error) {
+func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
 	if pt.platform != nil {
 		if sha1 := pt.platform.SHA(); sha1 != "" {
 			return sha1, nil
 		}
 	}
-	return complement(pt.compl.SHA1)
+	return pt.genericPlatform.SHA(), nil
 }
 
 func (pt *Platform) getPRNumber() (int, error) {
@@ -66,18 +62,7 @@ func (pt *Platform) getPRNumber() (int, error) {
 			return a, nil
 		}
 	}
-	prS, err := complement(pt.compl.PR)
-	if err != nil {
-		return 0, err
-	}
-	if prS != "" {
-		a, err := strconv.Atoi(prS)
-		if err != nil {
-			return 0, fmt.Errorf("get a pull request number from an environment variable: %w", err)
-		}
-		return a, nil
-	}
-	return 0, nil
+	return pt.genericPlatform.PRNumber()
 }
 
 func (pt *Platform) complement(opts *option.Options) error {
@@ -132,36 +117,10 @@ func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
 	return pt.complement(&opts.Options)
 }
 
-type Complement struct {
-	PR   []string
-	Org  []string
-	Repo []string
-	SHA1 []string
-}
-
-func complement(tpls []string) (string, error) {
-	for _, tpl := range tpls {
-		tmpl, err := template.New("_").Funcs(sprig.TxtFuncMap()).Parse(tpl)
-		if err != nil {
-			return "", fmt.Errorf("compile complement template: %w", err)
-		}
-		buf := &bytes.Buffer{}
-		if err := tmpl.Execute(buf, nil); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"template": tpl,
-			}).WithError(err).Debug("failed to parse complement template")
-			continue
-		}
-		if s := strings.TrimSpace(buf.String()); s != "" {
-			return s, nil
-		}
-	}
-	return "", nil
-}
-
-func Get(cpl Complement) Platform {
+func Get(cpl Param) Platform {
 	return Platform{
-		platform: cienv.Get(),
-		compl:    cpl,
+		platform:        cienv.Get(),
+		genericPlatform: New(cpl),
+		compl:           cpl,
 	}
 }

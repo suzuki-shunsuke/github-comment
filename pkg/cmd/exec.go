@@ -89,11 +89,11 @@ func (runner *Runner) execAction(c *cli.Context) error {
 	opts.Silent = opts.Silent || cfg.Silent
 
 	var pt api.Platform
-	p := platform.Get(platform.Complement{
-		PR:   cfg.Complement.PR,
-		Repo: cfg.Complement.Repo,
-		Org:  cfg.Complement.Org,
-		SHA1: cfg.Complement.SHA1,
+	p := platform.Get(platform.Param{
+		PRNumber:  cfg.Complement.PR,
+		RepoName:  cfg.Complement.Repo,
+		RepoOwner: cfg.Complement.Org,
+		SHA:       cfg.Complement.SHA1,
 	})
 	pt = &p
 
