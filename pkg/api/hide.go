@@ -65,13 +65,17 @@ func (ctrl *HideController) getParamListHiddenComments(opts option.HideOptions) 
 		opts.Repo = cfg.Base.Repo
 	}
 
-	hideCondition, ok := ctrl.Config.Hide[opts.HideKey]
-	if !ok {
-		return param, errors.New("invalid hide-key: " + opts.HideKey)
-	}
-
 	if err := option.ValidateHide(opts); err != nil {
 		return param, fmt.Errorf("opts is invalid: %w", err)
+	}
+
+	hideCondition := opts.Condition
+	if hideCondition == "" {
+		a, ok := ctrl.Config.Hide[opts.HideKey]
+		if !ok {
+			return param, errors.New("invalid hide-key: " + opts.HideKey)
+		}
+		hideCondition = a
 	}
 
 	return ParamListHiddenComments{
