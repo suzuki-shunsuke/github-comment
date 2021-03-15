@@ -94,6 +94,13 @@ func (pt *Platform) complement(opts *option.Options) error {
 		return err
 	}
 	opts.PRNumber = pr
+
+	vars := pt.generic.Vars()
+	for k, v := range opts.Vars {
+		vars[k] = v
+	}
+	opts.Vars = vars
+
 	return nil
 }
 
