@@ -543,6 +543,10 @@ complement:
   sha1:
   - type: envsubst
     value: '${GOOGLE_CLOUD_BUILD_COMMIT_SHA}'
+  vars:
+    yoo: # the variable "yoo" is added to "vars"
+    - type: template
+      value: '{{env "YOO"}}'
 ```
 
 The following types are supported.

@@ -88,6 +88,7 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 		RepoName:  cfg.Complement.Repo,
 		RepoOwner: cfg.Complement.Org,
 		SHA:       cfg.Complement.SHA1,
+		Vars:      cfg.Complement.Vars,
 	})
 	pt = &p
 
