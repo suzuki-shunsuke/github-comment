@@ -258,6 +258,12 @@ $ github-comment hide -k hello
 
 If the template isn't specified, the template `default` is used.
 
+We can specify the condition with `-condition` option.
+
+```
+$ github-comment hide -condition 'Comment.Body contains "foo"'
+```
+
 ## Usage
 
 ```
@@ -344,6 +350,7 @@ OPTIONS:
    --repo value                GitHub repository name
    --token value               GitHub API token [$GITHUB_TOKEN, $GITHUB_ACCESS_TOKEN]
    --config value              configuration file path
+   --condition value           hide condition
    --hide-key value, -k value  hide condition key (default: "default")
    --pr value                  GitHub pull request number (default: 0)
    --sha1 value                commit sha1
