@@ -85,7 +85,7 @@ steps:
         - tag
 
   - name: release
-    image: goreleaser/goreleaser:v0.161.0
+    image: goreleaser/goreleaser:v0.161.1
     commands:
       - goreleaser release
     environment:
@@ -97,7 +97,7 @@ steps:
         - tag
 
   - name: release (skip publish)
-    image: goreleaser/goreleaser:v0.161.0
+    image: goreleaser/goreleaser:v0.161.1
     commands:
       - goreleaser release --snapshot
     volumes: *volumes
