@@ -49,7 +49,7 @@ steps:
       - name: gopath
         path: /go
   - name: golangci-lint
-    image: golangci/golangci-lint:v1.38.0-alpine
+    image: golangci/golangci-lint:v1.39.0-alpine
     commands:
       - golangci-lint run
     volumes: *volumes
