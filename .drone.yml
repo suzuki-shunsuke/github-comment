@@ -48,11 +48,6 @@ steps:
     volumes: &volumes
       - name: gopath
         path: /go
-  - name: golangci-lint
-    image: golangci/golangci-lint:v1.38.0-alpine
-    commands:
-      - golangci-lint run
-    volumes: *volumes
   - name: test
     image: golang:1.16.3
     commands:
