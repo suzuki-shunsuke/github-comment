@@ -47,7 +47,7 @@ func (pt *Platform) getPRNumber() (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("get a pull request number from an environment variable: %w", err)
 		}
-		if pr != 0 {
+		if pr > 0 {
 			return pr, nil
 		}
 	}
@@ -57,7 +57,7 @@ func (pt *Platform) getPRNumber() (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("get a pull request number from an environment variable: %w", err)
 		}
-		if a != 0 {
+		if a > 0 {
 			return a, nil
 		}
 	}
@@ -86,7 +86,7 @@ func (pt *Platform) complement(opts *option.Options) error {
 		}
 		opts.SHA1 = sha1
 	}
-	if opts.PRNumber != 0 {
+	if opts.PRNumber > 0 {
 		return nil
 	}
 	pr, err := pt.getPRNumber()
