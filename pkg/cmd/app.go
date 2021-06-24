@@ -221,5 +221,5 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 			},
 		},
 	}
-	return app.RunContext(ctx, args)
+	return app.RunContext(ctx, args) //nolint:wrapcheck
 }

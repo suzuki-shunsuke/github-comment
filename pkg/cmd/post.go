@@ -23,8 +23,8 @@ import (
 func parseVarsFlag(varsSlice []string) (map[string]string, error) {
 	vars := make(map[string]string, len(varsSlice))
 	for _, v := range varsSlice {
-		a := strings.SplitN(v, ":", 2)
-		if len(a) < 2 { //nolint:gomnd
+		a := strings.SplitN(v, ":", 2) //nolint:gomnd
+		if len(a) < 2 {                //nolint:gomnd
 			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
 		}
 		vars[a[0]] = a[1]
@@ -143,5 +143,5 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Post(c.Context, opts)
+	return ctrl.Post(c.Context, opts) //nolint:wrapcheck
 }

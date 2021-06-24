@@ -47,5 +47,5 @@ func (ctrl *CommentController) complementMetaData(data map[string]interface{}) {
 
 func (ctrl *CommentController) getEmbeddedComment(data map[string]interface{}) (string, error) {
 	ctrl.complementMetaData(data)
-	return metadata.Convert(data)
+	return metadata.Convert(data) //nolint:wrapcheck
 }

@@ -104,5 +104,5 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 		Config:    cfg,
 		Expr:      &expr.Expr{},
 	}
-	return ctrl.Hide(c.Context, opts)
+	return ctrl.Hide(c.Context, opts) //nolint:wrapcheck
 }

@@ -79,5 +79,5 @@ func (ctrl InitController) Run(ctx context.Context) error {
 	if ctrl.Fsys.Exist(dst) {
 		return nil
 	}
-	return ctrl.Fsys.Write(dst, []byte(strings.Trim(cfgTemplate, "\n")))
+	return ctrl.Fsys.Write(dst, []byte(strings.Trim(cfgTemplate, "\n"))) //nolint:wrapcheck
 }
