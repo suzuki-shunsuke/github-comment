@@ -11,5 +11,5 @@ func (runner *Runner) initAction(c *cli.Context) error {
 	ctrl := api.InitController{
 		Fsys: &fsys.Fsys{},
 	}
-	return ctrl.Run(c.Context)
+	return ctrl.Run(c.Context) //nolint:wrapcheck
 }

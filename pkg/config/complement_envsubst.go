@@ -15,7 +15,7 @@ func (entry *ComplementEnvsubstEntry) Type() string {
 }
 
 func (entry *ComplementEnvsubstEntry) Entry() (string, error) {
-	return envsubst.EvalEnv(entry.Value)
+	return envsubst.EvalEnv(entry.Value) //nolint:wrapcheck
 }
 
 func newComplementEnvsubstEntry(m map[string]interface{}, entry *ComplementEnvsubstEntry) error {

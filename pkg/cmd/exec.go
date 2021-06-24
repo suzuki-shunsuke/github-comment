@@ -117,5 +117,5 @@ func (runner *Runner) execAction(c *cli.Context) error {
 		Platform: pt,
 		Config:   cfg,
 	}
-	return ctrl.Exec(c.Context, opts)
+	return ctrl.Exec(c.Context, opts) //nolint:wrapcheck
 }
