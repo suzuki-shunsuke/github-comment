@@ -32,6 +32,24 @@ func parseVarsFlag(varsSlice []string) (map[string]string, error) {
 	return vars, nil
 }
 
+func parseVarFilesFlag(varsSlice []string) (map[string]string, error) {
+	vars := make(map[string]string, len(varsSlice))
+	for _, v := range varsSlice {
+		a := strings.SplitN(v, ":", 2) //nolint:gomnd
+		if len(a) < 2 {                //nolint:gomnd
+			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
+		}
+		name := a[0]
+		filePath := a[1]
+		b, err := os.ReadFile(filePath)
+		if err != nil {
+			return nil, fmt.Errorf("read the value of the variable %s from the file %s: %w", name, filePath, err)
+		}
+		vars[name] = string(b)
+	}
+	return vars, nil
+}
+
 // parsePostOptions parses the command line arguments of the subcommand "post".
 func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.Org = c.String("org")
@@ -50,6 +68,13 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
+	}
+	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
+	if err != nil {
+		return err
+	}
+	for k, v := range varFiles {
+		vars[k] = v
 	}
 	opts.Vars = vars
 	return nil
