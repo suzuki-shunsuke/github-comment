@@ -266,7 +266,7 @@ $ github-comment hide -condition 'Comment.Body contains "foo"'
 
 ## Usage
 
-```
+```console
 $ github-comment help
 NAME:
    github-comment - post a comment to GitHub
@@ -275,7 +275,7 @@ USAGE:
    github-comment [global options] command [command options] [arguments...]
 
 VERSION:
-   3.0.0-0
+   3.1.0
 
 COMMANDS:
    post     post a comment
@@ -290,7 +290,7 @@ GLOBAL OPTIONS:
    --version, -v      print the version (default: false)
 ```
 
-```
+```console
 $ github-comment help post
 NAME:
    github-comment post - post a comment
@@ -308,13 +308,14 @@ OPTIONS:
    --config value                  configuration file path
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
+   --var-file value                template variable name and file path
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
    --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
    --stdin-template                read standard input as the template (default: false)
 ```
 
-```
+```console
 $ github-comment help exec
 NAME:
    github-comment exec - execute a command and post the result as a comment
@@ -332,12 +333,13 @@ OPTIONS:
    --config value                  configuration file path
    --pr value                      GitHub pull request number (default: 0)
    --var value                     template variable
+   --var-file value                template variable name and file path
    --dry-run                       output a comment to standard error output instead of posting to GitHub (default: false)
    --skip-no-token, -n             works like dry-run if the GitHub Access Token isn't set (default: false) [$GITHUB_COMMENT_SKIP_NO_TOKEN]
    --silent, -s                    suppress the output of dry-run and skip-no-token (default: false)
 ```
 
-```
+```console
 $ github-comment help hide
 NAME:
    github-comment hide - hide issue or pull request comments
