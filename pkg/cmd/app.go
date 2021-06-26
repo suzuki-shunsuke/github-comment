@@ -89,7 +89,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 					},
 				},
 			},
-			{ //nolint:dupl
+			{
 				Name:   "exec",
 				Usage:  "execute a command and post the result as a comment",
 				Action: runner.execAction,
@@ -133,6 +133,10 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:  "var",
 						Usage: "template variable",
 					},
+					&cli.StringSliceFlag{
+						Name:  "var-file",
+						Usage: "template variable name and file path",
+					},
 					&cli.BoolFlag{
 						Name:  "dry-run",
 						Usage: "output a comment to standard error output instead of posting to GitHub",
@@ -155,7 +159,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 				Usage:  "scaffold a configuration file if it doesn't exist",
 				Action: runner.initAction,
 			},
-			{ //nolint:dupl
+			{
 				Name:   "hide",
 				Usage:  "hide issue or pull request comments",
 				Action: runner.hideAction,

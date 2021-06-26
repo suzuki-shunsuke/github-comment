@@ -81,6 +81,9 @@ func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool
 
 func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
 	err := commenter.create(ctx, cmt, false)
+	if err == nil {
+		return nil
+	}
 	if cmt.BodyForTooLong == "" {
 		return err
 	}
