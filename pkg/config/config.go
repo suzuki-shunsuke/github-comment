@@ -27,10 +27,11 @@ type Base struct {
 
 type PostConfig struct {
 	Template           string
-	TemplateForTooLong string `yaml:"template_for_too_long"`
+	TemplateForTooLong string
+	EmbeddedVarNames   []string
 }
 
-func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { //nolint:cyclop
 	var val interface{}
 	if err := unmarshal(&val); err != nil {
 		return err
@@ -53,6 +54,21 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				return fmt.Errorf("invalid config. template_for_too_long should be string: %+v", tpl)
 			}
 			pc.TemplateForTooLong = t
+		}
+		if tpl, ok := m["embedded_var_names"]; ok {
+			t, ok := tpl.([]interface{})
+			if !ok {
+				return fmt.Errorf("invalid config. embedded_var_names should be []interface{}: %+v", tpl)
+			}
+			names := make([]string, len(t))
+			for i, name := range t {
+				s, ok := name.(string)
+				if !ok {
+					return fmt.Errorf("invalid config. embedded_var_names[%d] should be string: %+v", i, name)
+				}
+				names[i] = s
+			}
+			pc.EmbeddedVarNames = names
 		}
 		return nil
 	}
