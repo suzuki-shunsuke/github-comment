@@ -164,7 +164,9 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	}
 	embeddedMetadata := make(map[string]interface{}, len(opts.EmbeddedVarNames))
 	for _, name := range opts.EmbeddedVarNames {
-		embeddedMetadata[name] = cfg.Vars[name]
+		if v, ok := cfg.Vars[name]; ok {
+			embeddedMetadata[name] = v
+		}
 	}
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
 		"SHA1":        opts.SHA1,

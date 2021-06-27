@@ -228,7 +228,9 @@ func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParam
 
 	embeddedMetadata := make(map[string]interface{}, len(embeddedVarNames))
 	for _, name := range embeddedVarNames {
-		embeddedMetadata[name] = cmtParams.Vars[name]
+		if v, ok := cmtParams.Vars[name]; ok {
+			embeddedMetadata[name] = v
+		}
 	}
 
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
