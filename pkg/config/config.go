@@ -78,8 +78,9 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { /
 type ExecConfig struct {
 	When               string
 	Template           string
-	TemplateForTooLong string `yaml:"template_for_too_long"`
-	DontComment        bool   `yaml:"dont_comment"`
+	TemplateForTooLong string   `yaml:"template_for_too_long"`
+	DontComment        bool     `yaml:"dont_comment"`
+	EmbeddedVarNames   []string `yaml:"embedded_var_names"`
 }
 
 type ExistFile func(string) bool
