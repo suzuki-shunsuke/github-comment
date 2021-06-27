@@ -17,6 +17,7 @@ type Options struct {
 	HideOldComment     string
 	LogLevel           string
 	Vars               map[string]string
+	EmbeddedVarNames   []string
 	DryRun             bool
 	SkipNoToken        bool
 	Silent             bool

@@ -189,12 +189,11 @@ func (ctrl *ExecController) getExecConfig(
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl *ExecController) getComment(
-	execConfigs []config.ExecConfig, cmtParams ExecCommentParams, templates map[string]string,
-) (comment.Comment, bool, error) {
+func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParams ExecCommentParams, templates map[string]string) (comment.Comment, bool, error) { //nolint:funlen
 	cmt := comment.Comment{}
 	tpl := cmtParams.Template
 	tplForTooLong := ""
+	var embeddedVarNames []string
 	if tpl == "" {
 		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
@@ -208,6 +207,7 @@ func (ctrl *ExecController) getComment(
 		}
 		tpl = execConfig.Template
 		tplForTooLong = execConfig.TemplateForTooLong
+		embeddedVarNames = execConfig.EmbeddedVarNames
 	}
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
@@ -226,10 +226,17 @@ func (ctrl *ExecController) getComment(
 		Platform:  ctrl.Platform,
 	}
 
+	embeddedMetadata := make(map[string]interface{}, len(embeddedVarNames))
+	for _, name := range embeddedVarNames {
+		if v, ok := cmtParams.Vars[name]; ok {
+			embeddedMetadata[name] = v
+		}
+	}
+
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
 		"SHA1":        cmtParams.SHA1,
 		"TemplateKey": cmtParams.TemplateKey,
-		"Vars":        cmtParams.Vars,
+		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
 		return cmt, false, err

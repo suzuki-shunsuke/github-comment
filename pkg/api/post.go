@@ -115,6 +115,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
+		opts.EmbeddedVarNames = tpl.EmbeddedVarNames
 	}
 
 	if cfg.Vars == nil {
@@ -161,10 +162,16 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		Getenv:    ctrl.Getenv,
 		Platform:  ctrl.Platform,
 	}
+	embeddedMetadata := make(map[string]interface{}, len(opts.EmbeddedVarNames))
+	for _, name := range opts.EmbeddedVarNames {
+		if v, ok := cfg.Vars[name]; ok {
+			embeddedMetadata[name] = v
+		}
+	}
 	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
 		"SHA1":        opts.SHA1,
 		"TemplateKey": opts.TemplateKey,
-		"Vars":        cfg.Vars,
+		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
 		return cmt, err

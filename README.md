@@ -217,6 +217,8 @@ The following meta data is injected.
 * Vars
 * SHA1
 
+From github-comment v4, only variables specified by `embedded_var_names` are embedded into the comment.
+
 In `hide` command, github-comment does the following things.
 
 1. gets the list of pull request (issue) comments
