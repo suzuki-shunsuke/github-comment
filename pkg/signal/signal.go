@@ -12,7 +12,7 @@ import (
 
 var once sync.Once //nolint:gochecknoglobals
 
-// Handle calls the function "callback" when the sinal is sent.
+// Handle calls the function "callback" when the signal is sent.
 // This is useful to support canceling by signal.
 // Usage:
 //   c, cancel := context.WithCancel(ctx)
