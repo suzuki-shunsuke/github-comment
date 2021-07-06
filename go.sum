@@ -192,7 +192,6 @@ github.com/suzuki-shunsuke/go-jsoneq v0.1.2 h1:A4czEbmFqSELTbrEtXVo4dSgfz2e2Z0y6
 github.com/suzuki-shunsuke/go-jsoneq v0.1.2/go.mod h1:ETXAwfruZTqMMKDxc9CYoS34CNSsnzcdcVIAW3+RujI=
 github.com/suzuki-shunsuke/go-timeout v1.0.0 h1:SWiJc8HuLWK4N01x76XUg75rbbwDiHiFoyPbwHcNI4Q=
 github.com/suzuki-shunsuke/go-timeout v1.0.0/go.mod h1:ZX3QIig4tvTVXnZUJE3ivC9qy5TJy9Uk5sIcvwjwSNE=
-github.com/suzuki-shunsuke/gomic v0.6.0 h1:oSmoXR1nmt7X05TssjBTcX9BCTNnFCcNlA5yshaTjsk=
 github.com/suzuki-shunsuke/gomic v0.6.0/go.mod h1:/+uhQJ1H5f9ythus/MbXOotAZDmkN1QOjKlsSiH2v+I=
 github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
