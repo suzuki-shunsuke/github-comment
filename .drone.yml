@@ -11,7 +11,7 @@ steps:
     commands:
       - shellcheck scripts/* githooks/*
   - name: shfmt
-    image: mvdan/shfmt:v3.3.0-alpine
+    image: mvdan/shfmt:v3.3.1-alpine
     commands:
       - shfmt -d .
 ---
