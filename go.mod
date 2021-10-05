@@ -20,6 +20,6 @@ require (
 	github.com/suzuki-shunsuke/go-timeout v1.0.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/oauth2 v0.0.0-20210113205817-d3ed898aa8a3
+	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	gopkg.in/yaml.v2 v2.4.0
 )
