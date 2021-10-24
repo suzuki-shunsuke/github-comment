@@ -35,10 +35,14 @@ tasks:
     short: r
     description: release the new version
     usage: release the new version
-    script: "bash scripts/release.sh {{.version}}"
+    script: |
+      git tag "{{.version}}"
+      git push origin "{{.version}}"
     args:
       - name: version
         required: true
+        validate:
+          - regexp: "^v\\d+\\.\\d+.\\d+(-\\d+)?$"
   - name: ci-local
     description: run the Drone pipeline at localhost (drone-cli is required)
     usage: run the Drone pipeline at localhost (drone-cli is required)

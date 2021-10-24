@@ -4,21 +4,31 @@ import (
 	"context"
 	"io"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/constant"
 	"github.com/urfave/cli/v2"
 )
 
 type Runner struct {
-	Stdin  io.Reader
-	Stdout io.Writer
-	Stderr io.Writer
+	Stdin   io.Reader
+	Stdout  io.Writer
+	Stderr  io.Writer
+	LDFlags *LDFlags
+}
+
+type LDFlags struct {
+	Version string
+	Commit  string
+	Date    string
+}
+
+func (flags *LDFlags) AppVersion() string {
+	return flags.Version + " (" + flags.Commit + ")"
 }
 
 func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 	app := cli.App{
 		Name:    "github-comment",
 		Usage:   "post a comment to GitHub",
-		Version: constant.Version,
+		Version: runner.LDFlags.AppVersion(),
 		Commands: []*cli.Command{
 			{
 				Name:   "post",
