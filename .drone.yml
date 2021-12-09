@@ -42,14 +42,14 @@ image_pull_secrets:
   - dockerconfig
 steps:
   - name: download go modules
-    image: golang:1.17.4
+    image: golang:1.17.5
     commands:
       - go mod download
     volumes: &volumes
       - name: gopath
         path: /go
   - name: test
-    image: golang:1.17.4
+    image: golang:1.17.5
     commands:
       - mkdir -p bin
       - curl -L -o bin/cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-0.6.3-linux-amd64
@@ -61,7 +61,7 @@ steps:
         from_secret: cc_test_reporter_id
     volumes: *volumes
   - name: dry-run
-    image: golang:1.17.4
+    image: golang:1.17.5
     commands:
       - bash scripts/test-dry-run.sh
     volumes: *volumes
