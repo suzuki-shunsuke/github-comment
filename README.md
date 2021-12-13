@@ -27,13 +27,15 @@ $ github-comment exec -- go test ./...
 
 Please download a binary from the [release page](https://github.com/suzuki-shunsuke/github-comment/releases).
 
-Or you can install github-comment with [Homebrew](https://brew.sh/).
+You can install github-comment with [Homebrew](https://brew.sh/) too.
 
-```
+```console
 $ brew install suzuki-shunsuke/github-comment/github-comment
 ```
 
-```
+You can install tfcmt with [aqua](https://aquaproj.github.io/) too.
+
+```console
 $ github-comment --version
 $ github-comment --help
 ```
