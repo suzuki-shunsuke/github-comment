@@ -33,7 +33,7 @@ You can install github-comment with [Homebrew](https://brew.sh/) too.
 $ brew install suzuki-shunsuke/github-comment/github-comment
 ```
 
-You can install tfcmt with [aqua](https://aquaproj.github.io/) too.
+You can install github-comment with [aqua](https://aquaproj.github.io/) too.
 
 ```console
 $ github-comment --version
