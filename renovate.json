@@ -1,7 +1,7 @@
 {
   "extends": [
     "config:base",
-    "github>suzuki-shunsuke/aqua-renovate-config"
+    "github>aquaproj/aqua-renovate-config"
   ],
   "automerge": true,
   "packageRules": [
