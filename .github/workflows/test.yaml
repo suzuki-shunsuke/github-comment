@@ -13,11 +13,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.16.5'
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+          go-version: '1.17.5'
+
+      - uses: int128/aqua-action@v1
         with:
-          version: v1.41
+          version: v0.8.7 # renovate: depName=aquaproj/aqua
+
+      - uses: suzuki-shunsuke/github-action-golangci-lint@v0.1.1
       - name: dry run
         run: bash scripts/test-dry-run.sh
 
