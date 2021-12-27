@@ -3,5 +3,5 @@ registries:
     ref: v0.12.1 # renovate: depName=suzuki-shunsuke/aqua-registry
 
 packages:
-  - name: golangci/golangci-lint@v1.41.0
+  - name: golangci/golangci-lint@v1.43.0
   - name: reviewdog/reviewdog@v0.13.0
