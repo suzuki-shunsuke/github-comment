@@ -26,10 +26,13 @@ jobs:
       - name: remove changes
         # Sometimes it is failed to release by goreleaser due to changes of go.sum
         run: git checkout -- .
+        if: startsWith(github.ref, 'refs/tags/')
       - name: fetch tags to release
         run: git fetch --tags
+        if: startsWith(github.ref, 'refs/tags/')
       - name: Unshallow
         run: git fetch --prune --unshallow
+        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Generate token
         id: generate_token

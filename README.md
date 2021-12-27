@@ -79,7 +79,7 @@ The template is rendered with [Go's text/template](https://golang.org/pkg/text/t
 
 You can write the template in the configuration file.
 
-.github-comment.yml
+github-comment.yaml
 
 ```yaml
 post:
@@ -657,7 +657,7 @@ template: |
 ## Configuration file path
 
 The configuration file path can be specified with the `--config (-c)` option.
-If the confgiuration file path isn't specified, the file named `.github-comment.yml` or `.github-comment.yaml` would be searched from the current directory to the root directory.
+If the confgiuration file path isn't specified, the file named `^\.?github-comment\.ya?ml$` would be searched from the current directory to the root directory.
 
 ## Blog
 
