@@ -90,7 +90,7 @@ type Reader struct {
 }
 
 func (reader Reader) find(wd string) (string, bool) {
-	names := []string{".github-comment.yml", ".github-comment.yaml"}
+	names := []string{"github-comment.yaml", "github-comment.yml", ".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
 			p := filepath.Join(wd, name)

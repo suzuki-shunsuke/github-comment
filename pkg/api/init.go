@@ -75,7 +75,7 @@ type InitController struct {
 }
 
 func (ctrl InitController) Run(ctx context.Context) error {
-	dst := ".github-comment.yml"
+	dst := "github-comment.yaml"
 	if ctrl.Fsys.Exist(dst) {
 		return nil
 	}
