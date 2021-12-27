@@ -14,3 +14,5 @@ linters:
     - godot
     - exhaustivestruct
     - godox
+    - varnamelen
+    - ireturn
