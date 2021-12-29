@@ -36,6 +36,10 @@ $ brew install suzuki-shunsuke/github-comment/github-comment
 You can install github-comment with [aqua](https://aquaproj.github.io/) too.
 
 ```console
+$ aqua g suzuki-shunsuke/github-comment >> aqua.yaml
+```
+
+```console
 $ github-comment --version
 $ github-comment --help
 ```
