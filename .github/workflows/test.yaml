@@ -19,7 +19,7 @@ jobs:
         with:
           aqua_version: v0.10.0
 
-      - uses: suzuki-shunsuke/github-action-golangci-lint@v0.1.1
+      - uses: suzuki-shunsuke/github-action-golangci-lint@v0.1.2
       - name: dry run
         run: bash scripts/test-dry-run.sh
 
