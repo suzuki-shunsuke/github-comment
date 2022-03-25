@@ -217,7 +217,7 @@ func (commenter Commenter) GetAuthenticatedUser(ctx context.Context) (string, er
 		ResponseBody: &user,
 	})
 	if err != nil {
-		return "", fmt.Errorf("get an unauthenticated user by GitHub API: %w", err)
+		return "", fmt.Errorf("get an authenticated user by GitHub API: %w", err)
 	}
 	return user.Login, nil
 }
