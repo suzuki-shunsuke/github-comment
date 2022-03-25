@@ -7,13 +7,13 @@
 
 CLI to create and hide GitHub comments by GitHub REST API
 
-```
+```console
 $ github-comment post -template test
 ```
 
 ![post-test](https://cdn.jsdelivr.net/gh/suzuki-shunsuke/artifact@master/github-comment/post-test.png)
 
-```
+```console
 $ github-comment exec -- go test ./...
 ```
 
@@ -36,7 +36,7 @@ $ brew install suzuki-shunsuke/github-comment/github-comment
 You can install github-comment with [aqua](https://aquaproj.github.io/) too.
 
 ```console
-$ aqua g suzuki-shunsuke/github-comment >> aqua.yaml
+$ aqua g -i suzuki-shunsuke/github-comment
 ```
 
 ```console
@@ -59,7 +59,7 @@ Please prepare a GitHub access token. https://github.com/settings/tokens
 
 Let's create a simple comment. **Please change the parameter properly**.
 
-```
+```console
 $ github-comment post -token <your GitHub personal access token> -org suzuki-shunsuke -repo github-comment -pr 1 -template test
 ```
 
@@ -71,7 +71,7 @@ You can pass the API token from the environment variable `GITHUB_TOKEN` or `GITH
 Then we sent a comment `test` to the pull request https://github.com/suzuki-shunsuke/github-comment/pull/1 .
 Instead of pull request, we can send a comment to a commit
 
-```
+```console
 $ github-comment post -org suzuki-shunsuke -repo github-comment -sha1 36b1ade9740768f3645c240d487b53bee9e42702 -template test
 ```
 
@@ -98,7 +98,7 @@ post:
 If the argument `-template` is given, the configuration file is ignored.
 We can define multiple templates in the configuration file and specify the template by the argument `-template-key (-k)`.
 
-```
+```console
 $ github-comment post -k hello
 ```
 
@@ -140,7 +140,7 @@ exec:
 
 Then run a command and send the result as a comment.
 
-```
+```console
 $ github-comment exec -org suzuki-shunsuke -repo github-comment -pr 1 -k hello -- bash -c "echo foo; echo bar >&2; echo zoo"
 bar
 foo
@@ -166,7 +166,7 @@ Run the above command again, then the command wouldn't be created.
 
 If the command failed, then the comment is created.
 
-```
+```console
 $ github-comment exec -org suzuki-shunsuke -repo github-comment -pr 1 -k hello -- curl -f https://github.com/suzuki-shunsuke/not_found
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -213,7 +213,7 @@ We want to hide outdated comments.
 By the subcommand `hide`, we can hide outdated comments.
 From github-comment v3, github-comments injects meta data like SHA1 into comments as HTML comment.
 
-ex.
+e.g.
 
 ```
 <!-- github-comment: {"JobID":"xxx","JobName":"plan","SHA1":"79acc0778da6660712a65fd41a48b72cb7ad16c0","TemplateKey":"default","Vars":{}} -->
@@ -265,7 +265,7 @@ hide:
 
 We can specify the template with `--hide-key (-k)` option.
 
-```
+```console
 $ github-comment hide -k hello
 ```
 
@@ -273,7 +273,7 @@ If the template isn't specified, the template `default` is used.
 
 We can specify the condition with `-condition` option.
 
-```
+```console
 $ github-comment hide -condition 'Comment.Body contains "foo"'
 ```
 
@@ -432,9 +432,9 @@ post:
 
 The variable can be passed with the option `-var <variable name>:<variable value>` too.
 
-ex.
+e.g.
 
-```
+```console
 $ github-comment post -var name:foo
 ```
 
@@ -442,7 +442,7 @@ $ github-comment post -var name:foo
 
 Instead of `-template`, we can pass a template from a standard input with `-stdin-template`.
 
-```
+```console
 $ echo hello | github-comment post -stdin-template
 ```
 
@@ -471,7 +471,7 @@ github-comment supports to post a substitute comment in that case.
 
 When it failed to post a comment of `template`, github-comment posts a comment of `template_for_too_long` instead of `template`.
 
-ex.
+e.g.
 
 ```yaml
 post:
@@ -517,7 +517,7 @@ So github-comment supports to skip to send a comment with an environment variabl
 
 Set the environment variable `GITHUB_COMMENT_SKIP` to `true`.
 
-```
+```console
 $ export GITHUB_COMMENT_SKIP=true
 $ github-comment post -template test # Do nothing
 $ github-comment exec -- echo hello # a command is run but a comment isn't sent
@@ -665,7 +665,10 @@ If the confgiuration file path isn't specified, the file named `^\.?github-comme
 
 ## Blog
 
-Written in Japanese. https://techblog.szksh.cloud/github-comment/
+Written in Japanese. 
+
+* [2021-12-28 github-comment で PR にコメントをして CI の結果を分かりやすくする](https://zenn.dev/shunsuke_suzuki/articles/improve-cicd-with-github-comment)
+* [2020-07-31 github-comment - GitHub にコメントを投稿する CLI](https://techblog.szksh.cloud/github-comment/)
 
 ## License
 
