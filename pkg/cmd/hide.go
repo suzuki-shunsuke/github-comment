@@ -33,15 +33,15 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 	return nil
 }
 
-func getHideCommenter(ctx context.Context, opts option.HideOptions) api.Commenter {
+func getHideCommenter(ctx context.Context, opts *option.HideOptions) api.Commenter {
 	if opts.DryRun {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
 	}
 	if opts.SkipNoToken && opts.Token == "" {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
@@ -61,8 +61,8 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 			return nil
 		}
 	}
-	opts := option.HideOptions{}
-	if err := parseHideOptions(&opts, c); err != nil {
+	opts := &option.HideOptions{}
+	if err := parseHideOptions(opts, c); err != nil {
 		return err
 	}
 
@@ -83,14 +83,14 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
 	var pt api.Platform
-	p := platform.Get(platform.Param{
+	p := platform.Get(&platform.Param{
 		PRNumber:  cfg.Complement.PR,
 		RepoName:  cfg.Complement.Repo,
 		RepoOwner: cfg.Complement.Org,
 		SHA:       cfg.Complement.SHA1,
 		Vars:      cfg.Complement.Vars,
 	})
-	pt = &p
+	pt = p
 
 	ctrl := api.HideController{
 		Wd:     wd,

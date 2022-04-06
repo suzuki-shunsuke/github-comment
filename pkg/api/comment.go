@@ -10,8 +10,8 @@ import (
 
 // Commenter is API to post a comment to GitHub
 type Commenter interface {
-	Create(ctx context.Context, cmt comment.Comment) error
-	List(ctx context.Context, pr comment.PullRequest) ([]comment.IssueComment, error)
+	Create(ctx context.Context, cmt *comment.Comment) error
+	List(ctx context.Context, pr *comment.PullRequest) ([]*comment.IssueComment, error)
 	HideComment(ctx context.Context, nodeID string) error
 	GetAuthenticatedUser(ctx context.Context) (string, error)
 }
@@ -23,7 +23,7 @@ type CommentController struct {
 	Platform  Platform
 }
 
-func (ctrl *CommentController) Post(ctx context.Context, cmt comment.Comment, hiddenParam map[string]interface{}) error {
+func (ctrl *CommentController) Post(ctx context.Context, cmt *comment.Comment, hiddenParam map[string]interface{}) error {
 	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
 		return fmt.Errorf("failed to create an issue comment: %w", err)
 	}

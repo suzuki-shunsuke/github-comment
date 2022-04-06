@@ -27,11 +27,11 @@ type PostController struct {
 	Commenter Commenter
 	Renderer  Renderer
 	Platform  Platform
-	Config    config.Config
+	Config    *config.Config
 	Expr      Expr
 }
 
-func (ctrl *PostController) Post(ctx context.Context, opts option.PostOptions) error {
+func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
 	cmt, err := ctrl.getCommentParams(opts)
 	if err != nil {
 		return err
@@ -80,17 +80,16 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.Comment, error) { //nolint:funlen,cyclop
-	cmt := comment.Comment{}
+func (ctrl *PostController) getCommentParams(opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop
 	if ctrl.Platform != nil {
-		if err := ctrl.Platform.ComplementPost(&opts); err != nil {
-			return cmt, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
+		if err := ctrl.Platform.ComplementPost(opts); err != nil {
+			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
 	if opts.Template == "" && opts.StdinTemplate {
 		tpl, err := ctrl.readTemplateFromStdin()
 		if err != nil {
-			return cmt, err
+			return nil, err
 		}
 		opts.Template = tpl
 	}
@@ -105,13 +104,13 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	}
 
 	if err := option.ValidatePost(opts); err != nil {
-		return cmt, fmt.Errorf("opts is invalid: %w", err)
+		return nil, fmt.Errorf("opts is invalid: %w", err)
 	}
 
 	if opts.Template == "" {
 		tpl, err := ctrl.readTemplateFromConfig(cfg, opts.TemplateKey)
 		if err != nil {
-			return cmt, err
+			return nil, err
 		}
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
@@ -129,7 +128,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 	if ctrl.Platform != nil {
 		ci = ctrl.Platform.CI()
 	}
-	templates := template.GetTemplates(template.ParamGetTemplates{
+	templates := template.GetTemplates(&template.ParamGetTemplates{
 		Templates: cfg.Templates,
 		CI:        ci,
 	})
@@ -142,7 +141,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		Vars:        cfg.Vars,
 	})
 	if err != nil {
-		return cmt, fmt.Errorf("render a template for post: %w", err)
+		return nil, fmt.Errorf("render a template for post: %w", err)
 	}
 	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, templates, PostTemplateParams{
 		PRNumber:    opts.PRNumber,
@@ -153,7 +152,7 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		Vars:        cfg.Vars,
 	})
 	if err != nil {
-		return cmt, fmt.Errorf("render a template template_for_too_long for post: %w", err)
+		return nil, fmt.Errorf("render a template template_for_too_long for post: %w", err)
 	}
 
 	cmtCtrl := CommentController{
@@ -174,13 +173,13 @@ func (ctrl *PostController) getCommentParams(opts option.PostOptions) (comment.C
 		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
-		return cmt, err
+		return nil, err
 	}
 
 	tpl += embeddedComment
 	tplForTooLong += embeddedComment
 
-	return comment.Comment{
+	return &comment.Comment{
 		PRNumber:       opts.PRNumber,
 		Org:            opts.Org,
 		Repo:           opts.Repo,
@@ -204,9 +203,9 @@ func (ctrl *PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl *PostController) readTemplateFromConfig(cfg config.Config, key string) (config.PostConfig, error) {
+func (ctrl *PostController) readTemplateFromConfig(cfg *config.Config, key string) (*config.PostConfig, error) {
 	if t, ok := cfg.Post[key]; ok {
 		return t, nil
 	}
-	return config.PostConfig{}, errors.New("the template " + key + " isn't found")
+	return nil, errors.New("the template " + key + " isn't found")
 }

@@ -10,8 +10,8 @@ type ExecOptions struct {
 	SkipComment bool
 }
 
-func ValidateExec(opts ExecOptions) error {
-	if err := validate(opts.Options); err != nil {
+func ValidateExec(opts *ExecOptions) error {
+	if err := validate(&opts.Options); err != nil {
 		return err
 	}
 	if opts.TemplateKey == "" {

@@ -13,7 +13,7 @@ type Mock struct {
 	Login  string
 }
 
-func (mock Mock) Create(ctx context.Context, cmt Comment) error {
+func (mock *Mock) Create(ctx context.Context, cmt *Comment) error {
 	if mock.Silent {
 		return nil
 	}
@@ -25,11 +25,11 @@ func (mock Mock) Create(ctx context.Context, cmt Comment) error {
 	return nil
 }
 
-func (mock Mock) HideComment(ctx context.Context, nodeID string) error {
+func (mock *Mock) HideComment(ctx context.Context, nodeID string) error {
 	return nil
 }
 
-func (mock Mock) List(ctx context.Context, pr PullRequest) ([]IssueComment, error) {
+func (mock *Mock) List(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
 	return nil, nil
 }
 

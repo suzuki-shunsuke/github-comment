@@ -16,7 +16,7 @@ type Param struct {
 }
 
 type generic struct {
-	param Param
+	param *Param
 }
 
 func (gen *generic) render(entries []domain.ComplementEntry) (string, error) {

@@ -33,8 +33,8 @@ type Commenter struct {
 	V4Client *githubv4.Client
 }
 
-func New(ctx context.Context, token string) Commenter {
-	return Commenter{
+func New(ctx context.Context, token string) *Commenter {
+	return &Commenter{
 		Token:      token,
 		HTTPClient: httpclient.New("https://api.github.com"),
 		V4Client: githubv4.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(
@@ -51,14 +51,14 @@ type ValidationError struct {
 	Message string `json:"message"`
 }
 
-func (commenter Commenter) getPath(cmt Comment) string {
+func (commenter *Commenter) getPath(cmt *Comment) string {
 	if cmt.PRNumber != 0 {
 		return "/repos/" + cmt.Org + "/" + cmt.Repo + "/issues/" + strconv.Itoa(cmt.PRNumber) + "/comments"
 	}
 	return "/repos/" + cmt.Org + "/" + cmt.Repo + "/commits/" + cmt.SHA1 + "/comments"
 }
 
-func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool) error {
+func (commenter *Commenter) create(ctx context.Context, cmt *Comment, tooLong bool) error {
 	body := cmt.Body
 	if tooLong {
 		body = cmt.BodyForTooLong
@@ -79,7 +79,7 @@ func (commenter Commenter) create(ctx context.Context, cmt Comment, tooLong bool
 	return nil
 }
 
-func (commenter Commenter) Create(ctx context.Context, cmt Comment) error {
+func (commenter *Commenter) Create(ctx context.Context, cmt *Comment) error {
 	err := commenter.create(ctx, cmt, false)
 	if err == nil {
 		return nil
@@ -120,13 +120,13 @@ type IssueComment struct {
 	ViewerCanMinimize bool
 }
 
-func (commenter Commenter) listIssueComment(ctx context.Context, pr PullRequest) ([]IssueComment, error) { //nolint:dupl
+func (commenter *Commenter) listIssueComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
 	// https://github.com/shurcooL/githubv4#pagination
 	var q struct {
 		Repository struct {
 			Issue struct {
 				Comments struct {
-					Nodes    []IssueComment
+					Nodes    []*IssueComment
 					PageInfo struct {
 						EndCursor   githubv4.String
 						HasNextPage bool
@@ -142,7 +142,7 @@ func (commenter Commenter) listIssueComment(ctx context.Context, pr PullRequest)
 		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
 	}
 
-	var allComments []IssueComment
+	var allComments []*IssueComment
 	for {
 		if err := commenter.V4Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("list issue comments by GitHub API: %w", err)
@@ -156,13 +156,13 @@ func (commenter Commenter) listIssueComment(ctx context.Context, pr PullRequest)
 	return allComments, nil
 }
 
-func (commenter Commenter) listPRComment(ctx context.Context, pr PullRequest) ([]IssueComment, error) { //nolint:dupl
+func (commenter *Commenter) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
 	// https://github.com/shurcooL/githubv4#pagination
 	var q struct {
 		Repository struct {
 			PullRequest struct {
 				Comments struct {
-					Nodes    []IssueComment
+					Nodes    []*IssueComment
 					PageInfo struct {
 						EndCursor   githubv4.String
 						HasNextPage bool
@@ -178,7 +178,7 @@ func (commenter Commenter) listPRComment(ctx context.Context, pr PullRequest) ([
 		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
 	}
 
-	var allComments []IssueComment
+	var allComments []*IssueComment
 	for {
 		if err := commenter.V4Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("list issue comments by GitHub API: %w", err)
@@ -192,7 +192,7 @@ func (commenter Commenter) listPRComment(ctx context.Context, pr PullRequest) ([
 	return allComments, nil
 }
 
-func (commenter Commenter) List(ctx context.Context, pr PullRequest) ([]IssueComment, error) {
+func (commenter *Commenter) List(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
 	cmts, prErr := commenter.listPRComment(ctx, pr)
 	if prErr == nil {
 		return cmts, nil
@@ -204,7 +204,7 @@ func (commenter Commenter) List(ctx context.Context, pr PullRequest) ([]IssueCom
 	return nil, fmt.Errorf("get pull request or issue comments: %w, %v", prErr, err)
 }
 
-func (commenter Commenter) GetAuthenticatedUser(ctx context.Context) (string, error) {
+func (commenter *Commenter) GetAuthenticatedUser(ctx context.Context) (string, error) {
 	user := struct {
 		Login string `json:"login"`
 	}{}

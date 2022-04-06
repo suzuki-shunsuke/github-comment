@@ -31,7 +31,7 @@ type Params struct {
 	Stdin io.Reader
 }
 
-func (executor Executor) Run(ctx context.Context, params Params) (Result, error) {
+func (executor *Executor) Run(ctx context.Context, params *Params) (*Result, error) {
 	cmd := exec.Command(params.Cmd, params.Args...) //nolint:gosec
 	cmd.Stdin = params.Stdin
 	stdout := &bytes.Buffer{}
@@ -47,7 +47,7 @@ func (executor Executor) Run(ctx context.Context, params Params) (Result, error)
 	runner := timeout.NewRunner(0)
 	err := runner.Run(ctx, cmd)
 	ec := cmd.ProcessState.ExitCode()
-	result := Result{
+	result := &Result{
 		ExitCode:       ec,
 		Cmd:            cmd.String(),
 		Stdout:         stdout.String(),
