@@ -31,6 +31,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return ""
 				},
 				Renderer: &template.Renderer{},
+				Config:   &config.Config{},
 			},
 			opts: &option.PostOptions{
 				Options: option.Options{
@@ -59,6 +60,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return ""
 				},
 				Renderer: &template.Renderer{},
+				Config:   &config.Config{},
 			},
 			opts: &option.PostOptions{
 				Options: option.Options{
@@ -132,6 +134,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 						return ""
 					},
 				},
+				Config: &config.Config{},
 			},
 			opts: &option.PostOptions{
 				Options: option.Options{

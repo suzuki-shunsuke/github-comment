@@ -23,7 +23,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 			title:       "no exec configs",
 			ctrl:        &ExecController{},
 			execConfigs: []*config.ExecConfig{},
-			exp:         &config.ExecConfig{},
+			exp:         nil,
 		},
 		{
 			title: "no exec config matches",
@@ -35,7 +35,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 					When: "false",
 				},
 			},
-			exp: &config.ExecConfig{},
+			exp: nil,
 		},
 		{
 			title: "first matched config is returned",
