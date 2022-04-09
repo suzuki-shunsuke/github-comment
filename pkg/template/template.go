@@ -16,7 +16,7 @@ type ParamGetTemplates struct {
 	CombinedOutput string
 }
 
-func GetTemplates(param ParamGetTemplates) map[string]string {
+func GetTemplates(param *ParamGetTemplates) map[string]string {
 	buildLinks := map[string]string{
 		"circleci":       `[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})`,
 		"codebuild":      `[Build link]({{env "CODEBUILD_BUILD_URL"}})`,

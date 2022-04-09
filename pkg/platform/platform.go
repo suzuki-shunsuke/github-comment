@@ -11,7 +11,7 @@ import (
 
 type Platform struct {
 	platform cienv.Platform
-	generic  generic
+	generic  *generic
 }
 
 func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
@@ -123,10 +123,10 @@ func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
 	return pt.complement(&opts.Options)
 }
 
-func Get(param Param) Platform {
-	return Platform{
+func Get(param *Param) *Platform {
+	return &Platform{
 		platform: cienv.Get(),
-		generic: generic{
+		generic: &generic{
 			param: param,
 		},
 	}

@@ -23,11 +23,11 @@ type HideController struct {
 	Stderr    io.Writer
 	Commenter Commenter
 	Platform  Platform
-	Config    config.Config
+	Config    *config.Config
 	Expr      Expr
 }
 
-func (ctrl *HideController) Hide(ctx context.Context, opts option.HideOptions) error {
+func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) error {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
@@ -48,11 +48,11 @@ func (ctrl *HideController) Hide(ctx context.Context, opts option.HideOptions) e
 	return nil
 }
 
-func (ctrl *HideController) getParamListHiddenComments(opts option.HideOptions) (ParamListHiddenComments, error) {
-	param := ParamListHiddenComments{}
+func (ctrl *HideController) getParamListHiddenComments(opts *option.HideOptions) (*ParamListHiddenComments, error) {
+	param := &ParamListHiddenComments{}
 	if ctrl.Platform != nil {
-		if err := ctrl.Platform.ComplementHide(&opts); err != nil {
-			return param, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
+		if err := ctrl.Platform.ComplementHide(opts); err != nil {
+			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
 
@@ -78,7 +78,7 @@ func (ctrl *HideController) getParamListHiddenComments(opts option.HideOptions) 
 		hideCondition = a
 	}
 
-	return ParamListHiddenComments{
+	return &ParamListHiddenComments{
 		PRNumber:  opts.PRNumber,
 		Org:       opts.Org,
 		Repo:      opts.Repo,
@@ -124,7 +124,7 @@ func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	commenter Commenter, exp Expr,
 	getEnv func(string) string,
-	param ParamListHiddenComments,
+	param *ParamListHiddenComments,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
 	logE := logrus.WithFields(logrus.Fields{
@@ -139,7 +139,7 @@ func listHiddenComments( //nolint:funlen
 		logE.WithError(err).Warn("get an authenticated user")
 	}
 
-	comments, err := commenter.List(ctx, comment.PullRequest{
+	comments, err := commenter.List(ctx, &comment.PullRequest{
 		Org:      param.Org,
 		Repo:     param.Repo,
 		PRNumber: param.PRNumber,
@@ -213,7 +213,7 @@ func listHiddenComments( //nolint:funlen
 	return nodeIDs, nil
 }
 
-func isExcludedComment(cmt comment.IssueComment, login string) bool {
+func isExcludedComment(cmt *comment.IssueComment, login string) bool {
 	if !cmt.ViewerCanMinimize {
 		return true
 	}

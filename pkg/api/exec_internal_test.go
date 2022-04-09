@@ -12,37 +12,37 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 	t.Parallel()
 	data := []struct {
 		title       string
-		ctrl        ExecController
-		execConfigs []config.ExecConfig
-		cmtParams   ExecCommentParams
-		exp         config.ExecConfig
+		ctrl        *ExecController
+		execConfigs []*config.ExecConfig
+		cmtParams   *ExecCommentParams
+		exp         *config.ExecConfig
 		f           bool
 		isErr       bool
 	}{
 		{
 			title:       "no exec configs",
-			ctrl:        ExecController{},
-			execConfigs: []config.ExecConfig{},
-			exp:         config.ExecConfig{},
+			ctrl:        &ExecController{},
+			execConfigs: []*config.ExecConfig{},
+			exp:         nil,
 		},
 		{
 			title: "no exec config matches",
-			ctrl: ExecController{
+			ctrl: &ExecController{
 				Expr: &expr.Expr{},
 			},
-			execConfigs: []config.ExecConfig{
+			execConfigs: []*config.ExecConfig{
 				{
 					When: "false",
 				},
 			},
-			exp: config.ExecConfig{},
+			exp: nil,
 		},
 		{
 			title: "first matched config is returned",
-			ctrl: ExecController{
+			ctrl: &ExecController{
 				Expr: &expr.Expr{},
 			},
-			execConfigs: []config.ExecConfig{
+			execConfigs: []*config.ExecConfig{
 				{
 					When:        "true",
 					Template:    "foo",
@@ -53,7 +53,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 					Template: "bar",
 				},
 			},
-			exp: config.ExecConfig{
+			exp: &config.ExecConfig{
 				When:        "true",
 				Template:    "foo",
 				DontComment: true,

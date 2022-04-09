@@ -80,15 +80,15 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	return nil
 }
 
-func getPostCommenter(ctx context.Context, opts option.PostOptions) api.Commenter {
+func getPostCommenter(ctx context.Context, opts *option.PostOptions) api.Commenter {
 	if opts.DryRun {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
 	}
 	if opts.SkipNoToken && opts.Token == "" {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
@@ -121,8 +121,8 @@ func (runner *Runner) postAction(c *cli.Context) error {
 			return nil
 		}
 	}
-	opts := option.PostOptions{}
-	if err := parsePostOptions(&opts, c); err != nil {
+	opts := &option.PostOptions{}
+	if err := parsePostOptions(opts, c); err != nil {
 		return err
 	}
 
@@ -142,15 +142,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform
-	p := platform.Get(platform.Param{
-		PRNumber:  cfg.Complement.PR,
-		RepoName:  cfg.Complement.Repo,
-		RepoOwner: cfg.Complement.Org,
-		SHA:       cfg.Complement.SHA1,
-		Vars:      cfg.Complement.Vars,
-	})
-	pt = &p
+	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
 	ctrl := api.PostController{
 		Wd:     wd,

@@ -29,12 +29,12 @@ type ExecController struct {
 	Executor  Executor
 	Expr      Expr
 	Platform  Platform
-	Config    config.Config
+	Config    *config.Config
 }
 
-func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) error { //nolint:funlen,cyclop
+func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
 	if ctrl.Platform != nil {
-		if err := ctrl.Platform.ComplementExec(&opts); err != nil {
+		if err := ctrl.Platform.ComplementExec(opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
 		}
 	}
@@ -48,7 +48,7 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) e
 		opts.Repo = cfg.Base.Repo
 	}
 
-	result, execErr := ctrl.Executor.Run(ctx, execute.Params{
+	result, execErr := ctrl.Executor.Run(ctx, &execute.Params{
 		Cmd:   opts.Args[0],
 		Args:  opts.Args[1:],
 		Stdin: ctrl.Stdin,
@@ -82,13 +82,13 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts option.ExecOptions) e
 		ci = ctrl.Platform.CI()
 	}
 	joinCommand := strings.Join(opts.Args, " ")
-	templates := template.GetTemplates(template.ParamGetTemplates{
+	templates := template.GetTemplates(&template.ParamGetTemplates{
 		Templates:      cfg.Templates,
 		CI:             ci,
 		JoinCommand:    joinCommand,
 		CombinedOutput: result.CombinedOutput,
 	})
-	if err := ctrl.post(ctx, execConfigs, ExecCommentParams{
+	if err := ctrl.post(ctx, execConfigs, &ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    joinCommand,
@@ -136,7 +136,7 @@ type ExecCommentParams struct {
 }
 
 type Executor interface {
-	Run(ctx context.Context, params execute.Params) (execute.Result, error)
+	Run(ctx context.Context, params *execute.Params) (*execute.Result, error)
 }
 
 type Expr interface {
@@ -144,15 +144,15 @@ type Expr interface {
 	Compile(expression string) (expr.Program, error)
 }
 
-func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOptions) ([]config.ExecConfig, error) {
-	var execConfigs []config.ExecConfig
+func (ctrl *ExecController) getExecConfigs(cfg *config.Config, opts *option.ExecOptions) ([]*config.ExecConfig, error) {
+	var execConfigs []*config.ExecConfig
 	if opts.Template == "" && opts.TemplateKey != "" {
 		a, ok := cfg.Exec[opts.TemplateKey]
 		if !ok {
 			if opts.TemplateKey != "default" {
 				return nil, errors.New("template isn't found: " + opts.TemplateKey)
 			}
-			execConfigs = []config.ExecConfig{
+			execConfigs = []*config.ExecConfig{
 				{
 					When: "ExitCode != 0",
 					Template: `{{template "status" .}} {{template "link" .}}
@@ -172,38 +172,37 @@ func (ctrl *ExecController) getExecConfigs(cfg config.Config, opts option.ExecOp
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
 func (ctrl *ExecController) getExecConfig(
-	execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
-) (config.ExecConfig, bool, error) {
+	execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
+) (*config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
 		if err != nil {
-			return execConfig, false, fmt.Errorf("test a condition is matched: %w", err)
+			return nil, false, fmt.Errorf("test a condition is matched: %w", err)
 		}
 		if !f {
 			continue
 		}
 		return execConfig, true, nil
 	}
-	return config.ExecConfig{}, false, nil
+	return nil, false, nil
 }
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParams ExecCommentParams, templates map[string]string) (comment.Comment, bool, error) { //nolint:funlen
-	cmt := comment.Comment{}
+func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*comment.Comment, bool, error) { //nolint:funlen
 	tpl := cmtParams.Template
 	tplForTooLong := ""
 	var embeddedVarNames []string
 	if tpl == "" {
 		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
-			return cmt, false, err
+			return nil, false, err
 		}
 		if !f {
-			return cmt, false, nil
+			return nil, false, nil
 		}
 		if execConfig.DontComment {
-			return cmt, false, nil
+			return nil, false, nil
 		}
 		tpl = execConfig.Template
 		tplForTooLong = execConfig.TemplateForTooLong
@@ -212,11 +211,11 @@ func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParam
 
 	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
 	if err != nil {
-		return cmt, false, fmt.Errorf("render a comment template: %w", err)
+		return nil, false, fmt.Errorf("render a comment template: %w", err)
 	}
 	bodyForTooLong, err := ctrl.Renderer.Render(tplForTooLong, templates, cmtParams)
 	if err != nil {
-		return cmt, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
+		return nil, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
 	}
 
 	cmtCtrl := CommentController{
@@ -239,13 +238,13 @@ func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParam
 		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
-		return cmt, false, err
+		return nil, false, err
 	}
 
 	body += embeddedComment
 	bodyForTooLong += embeddedComment
 
-	return comment.Comment{
+	return &comment.Comment{
 		PRNumber:       cmtParams.PRNumber,
 		Org:            cmtParams.Org,
 		Repo:           cmtParams.Repo,
@@ -258,7 +257,7 @@ func (ctrl *ExecController) getComment(execConfigs []config.ExecConfig, cmtParam
 }
 
 func (ctrl *ExecController) post(
-	ctx context.Context, execConfigs []config.ExecConfig, cmtParams ExecCommentParams,
+	ctx context.Context, execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
 	templates map[string]string,
 ) error {
 	cmt, f, err := ctrl.getComment(execConfigs, cmtParams, templates)

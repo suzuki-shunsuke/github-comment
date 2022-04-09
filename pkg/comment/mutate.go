@@ -7,7 +7,7 @@ import (
 	"github.com/shurcooL/githubv4"
 )
 
-func (commenter Commenter) HideComment(ctx context.Context, nodeID string) error {
+func (commenter *Commenter) HideComment(ctx context.Context, nodeID string) error {
 	var m struct {
 		MinimizeComment struct {
 			MinimizedComment struct {

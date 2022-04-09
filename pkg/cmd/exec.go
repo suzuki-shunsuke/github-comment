@@ -53,15 +53,15 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func getExecCommenter(ctx context.Context, opts option.ExecOptions) api.Commenter {
+func getExecCommenter(ctx context.Context, opts *option.ExecOptions) api.Commenter {
 	if opts.DryRun {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
 	}
 	if opts.SkipNoToken && opts.Token == "" {
-		return comment.Mock{
+		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}
@@ -70,8 +70,8 @@ func getExecCommenter(ctx context.Context, opts option.ExecOptions) api.Commente
 }
 
 func (runner *Runner) execAction(c *cli.Context) error {
-	opts := option.ExecOptions{}
-	if err := parseExecOptions(&opts, c); err != nil {
+	opts := &option.ExecOptions{}
+	if err := parseExecOptions(opts, c); err != nil {
 		return err
 	}
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
@@ -97,15 +97,7 @@ func (runner *Runner) execAction(c *cli.Context) error {
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 	opts.Silent = opts.Silent || cfg.Silent
 
-	var pt api.Platform
-	p := platform.Get(platform.Param{
-		PRNumber:  cfg.Complement.PR,
-		RepoName:  cfg.Complement.Repo,
-		RepoOwner: cfg.Complement.Org,
-		SHA:       cfg.Complement.SHA1,
-		Vars:      cfg.Complement.Vars,
-	})
-	pt = &p
+	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
 	ctrl := api.ExecController{
 		Wd:        wd,
@@ -117,7 +109,7 @@ func (runner *Runner) execAction(c *cli.Context) error {
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
-		Executor: execute.Executor{
+		Executor: &execute.Executor{
 			Stdout: runner.Stdout,
 			Stderr: runner.Stderr,
 			Env:    os.Environ(),

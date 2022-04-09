@@ -9,15 +9,15 @@ import (
 )
 
 type Config struct {
-	Base        Base
+	Base        *Base
 	Vars        map[string]interface{}
 	Templates   map[string]string
-	Post        map[string]PostConfig
-	Exec        map[string][]ExecConfig
+	Post        map[string]*PostConfig
+	Exec        map[string][]*ExecConfig
 	Hide        map[string]string
 	SkipNoToken bool `yaml:"skip_no_token"`
 	Silent      bool
-	Complement  Complement
+	Complement  *Complement
 }
 
 type Base struct {
@@ -89,7 +89,7 @@ type Reader struct {
 	ExistFile ExistFile
 }
 
-func (reader Reader) find(wd string) (string, bool) {
+func (reader *Reader) find(wd string) (string, bool) {
 	names := []string{"github-comment.yaml", "github-comment.yml", ".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
@@ -105,23 +105,23 @@ func (reader Reader) find(wd string) (string, bool) {
 	}
 }
 
-func (reader Reader) read(p string) (Config, error) {
-	cfg := Config{}
+func (reader *Reader) read(p string) (*Config, error) {
 	f, err := os.Open(p)
 	if err != nil {
-		return cfg, fmt.Errorf("open a configuration file "+p+": %w", err)
+		return nil, fmt.Errorf("open a configuration file "+p+": %w", err)
 	}
 	defer f.Close()
-	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		return cfg, fmt.Errorf("decode a configuration file as YAML: %w", err)
+	cfg := &Config{}
+	if err := yaml.NewDecoder(f).Decode(cfg); err != nil {
+		return nil, fmt.Errorf("decode a configuration file as YAML: %w", err)
 	}
 	return cfg, nil
 }
 
 const defaultHideCondition = "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1"
 
-func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
-	cfg := Config{
+func (reader *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
+	cfg := &Config{
 		Hide: map[string]string{
 			"default": defaultHideCondition,
 		},
@@ -133,9 +133,9 @@ func (reader Reader) FindAndRead(cfgPath, wd string) (Config, error) {
 		}
 		cfgPath = p
 	}
-	cfg, err := reader.read(cfgPath)
+	cfg, err := reader.read(cfgPath) //nolint:ifshort
 	if err != nil {
-		return cfg, err
+		return nil, err
 	}
 	if cfg.Hide == nil {
 		cfg.Hide = map[string]string{

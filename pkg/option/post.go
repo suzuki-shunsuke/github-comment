@@ -23,7 +23,7 @@ type Options struct {
 	Silent             bool
 }
 
-func validate(opts Options) error {
+func validate(opts *Options) error {
 	if opts.Org == "" {
 		return errors.New("org is required")
 	}
@@ -44,8 +44,8 @@ type PostOptions struct {
 	StdinTemplate bool
 }
 
-func ValidatePost(opts PostOptions) error {
-	if err := validate(opts.Options); err != nil {
+func ValidatePost(opts *PostOptions) error {
+	if err := validate(&opts.Options); err != nil {
 		return err
 	}
 	if opts.Template == "" && opts.TemplateKey == "" {

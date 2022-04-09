@@ -15,14 +15,14 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	t.Parallel()
 	data := []struct {
 		title string
-		ctrl  PostController
-		exp   comment.Comment
+		ctrl  *PostController
+		exp   *comment.Comment
 		isErr bool
-		opts  option.PostOptions
+		opts  *option.PostOptions
 	}{
 		{
 			title: "if there is a standard input, treat it as the template",
-			ctrl: PostController{
+			ctrl: &PostController{
 				HasStdin: func() bool {
 					return true
 				},
@@ -31,8 +31,9 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return ""
 				},
 				Renderer: &template.Renderer{},
+				Config:   &config.Config{},
 			},
-			opts: option.PostOptions{
+			opts: &option.PostOptions{
 				Options: option.Options{
 					Org:      "suzuki-shunsuke",
 					Repo:     "github-comment",
@@ -41,7 +42,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				},
 				StdinTemplate: true,
 			},
-			exp: comment.Comment{
+			exp: &comment.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -50,7 +51,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "if template is passed as argument, standard input is ignored",
-			ctrl: PostController{
+			ctrl: &PostController{
 				HasStdin: func() bool {
 					return true
 				},
@@ -59,8 +60,9 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return ""
 				},
 				Renderer: &template.Renderer{},
+				Config:   &config.Config{},
 			},
-			opts: option.PostOptions{
+			opts: &option.PostOptions{
 				Options: option.Options{
 					Org:      "suzuki-shunsuke",
 					Repo:     "github-comment",
@@ -69,7 +71,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					Template: "foo",
 				},
 			},
-			exp: comment.Comment{
+			exp: &comment.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -78,15 +80,15 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "read template from config",
-			ctrl: PostController{
+			ctrl: &PostController{
 				HasStdin: func() bool {
 					return false
 				},
 				Getenv: func(k string) string {
 					return ""
 				},
-				Config: config.Config{
-					Post: map[string]config.PostConfig{
+				Config: &config.Config{
+					Post: map[string]*config.PostConfig{
 						"default": {
 							Template: "hello",
 						},
@@ -98,7 +100,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					},
 				},
 			},
-			opts: option.PostOptions{
+			opts: &option.PostOptions{
 				Options: option.Options{
 					Org:         "suzuki-shunsuke",
 					Repo:        "github-comment",
@@ -107,7 +109,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					PRNumber:    1,
 				},
 			},
-			exp: comment.Comment{
+			exp: &comment.Comment{
 				Org:         "suzuki-shunsuke",
 				Repo:        "github-comment",
 				PRNumber:    1,
@@ -117,7 +119,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "template is rendered properly",
-			ctrl: PostController{
+			ctrl: &PostController{
 				HasStdin: func() bool {
 					return false
 				},
@@ -132,8 +134,9 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 						return ""
 					},
 				},
+				Config: &config.Config{},
 			},
-			opts: option.PostOptions{
+			opts: &option.PostOptions{
 				Options: option.Options{
 					Org:      "suzuki-shunsuke",
 					Repo:     "github-comment",
@@ -142,7 +145,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					Template: `{{Env "FOO"}} {{.Org}} {{.Repo}} {{.PRNumber}}`,
 				},
 			},
-			exp: comment.Comment{
+			exp: &comment.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -151,7 +154,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "config.base",
-			ctrl: PostController{
+			ctrl: &PostController{
 				HasStdin: func() bool {
 					return true
 				},
@@ -159,22 +162,22 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Getenv: func(k string) string {
 					return ""
 				},
-				Config: config.Config{
-					Base: config.Base{
+				Config: &config.Config{
+					Base: &config.Base{
 						Org:  "suzuki-shunsuke",
 						Repo: "github-comment",
 					},
 				},
 				Renderer: &template.Renderer{},
 			},
-			opts: option.PostOptions{
+			opts: &option.PostOptions{
 				Options: option.Options{
 					Token:    "xxx",
 					PRNumber: 1,
 				},
 				StdinTemplate: true,
 			},
-			exp: comment.Comment{
+			exp: &comment.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
