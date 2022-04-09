@@ -97,15 +97,7 @@ func (runner *Runner) execAction(c *cli.Context) error {
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 	opts.Silent = opts.Silent || cfg.Silent
 
-	var pt api.Platform
-	p := platform.Get(&platform.Param{
-		PRNumber:  cfg.Complement.PR,
-		RepoName:  cfg.Complement.Repo,
-		RepoOwner: cfg.Complement.Org,
-		SHA:       cfg.Complement.SHA1,
-		Vars:      cfg.Complement.Vars,
-	})
-	pt = p
+	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
 	ctrl := api.ExecController{
 		Wd:        wd,

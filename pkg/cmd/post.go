@@ -142,18 +142,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform
-	if cfg.Complement == nil {
-		pt = platform.Get(&platform.Param{})
-	} else {
-		pt = platform.Get(&platform.Param{
-			PRNumber:  cfg.Complement.PR,
-			RepoName:  cfg.Complement.Repo,
-			RepoOwner: cfg.Complement.Org,
-			SHA:       cfg.Complement.SHA1,
-			Vars:      cfg.Complement.Vars,
-		})
-	}
+	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
 	ctrl := api.PostController{
 		Wd:     wd,

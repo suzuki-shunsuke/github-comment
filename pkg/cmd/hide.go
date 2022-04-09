@@ -82,15 +82,7 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform
-	p := platform.Get(&platform.Param{
-		PRNumber:  cfg.Complement.PR,
-		RepoName:  cfg.Complement.Repo,
-		RepoOwner: cfg.Complement.Org,
-		SHA:       cfg.Complement.SHA1,
-		Vars:      cfg.Complement.Vars,
-	})
-	pt = p
+	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
 	ctrl := api.HideController{
 		Wd:     wd,
