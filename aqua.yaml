@@ -4,4 +4,4 @@ registries:
 
 packages:
   - name: golangci/golangci-lint@v1.45.2
-  - name: reviewdog/reviewdog@v0.14.0
+  - name: reviewdog/reviewdog@v0.14.1
