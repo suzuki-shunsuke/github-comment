@@ -9,15 +9,17 @@ import (
 )
 
 type Config struct {
-	Base        *Base
-	Vars        map[string]interface{}
-	Templates   map[string]string
-	Post        map[string]*PostConfig
-	Exec        map[string][]*ExecConfig
-	Hide        map[string]string
-	SkipNoToken bool `yaml:"skip_no_token"`
-	Silent      bool
-	Complement  *Complement
+	Base               *Base
+	GHEBaseURL         string `yaml:"ghe_base_url"`
+	GHEGraphQLEndpoint string `yaml:"ghe_graphql_endpoint"`
+	Vars               map[string]interface{}
+	Templates          map[string]string
+	Post               map[string]*PostConfig
+	Exec               map[string][]*ExecConfig
+	Hide               map[string]string
+	SkipNoToken        bool `yaml:"skip_no_token"`
+	Silent             bool
+	Complement         *Complement
 }
 
 type Base struct {

@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
@@ -53,22 +51,6 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func getExecCommenter(ctx context.Context, opts *option.ExecOptions) api.Commenter {
-	if opts.DryRun {
-		return &comment.Mock{
-			Stderr: os.Stderr,
-			Silent: opts.Silent,
-		}
-	}
-	if opts.SkipNoToken && opts.Token == "" {
-		return &comment.Mock{
-			Stderr: os.Stderr,
-			Silent: opts.Silent,
-		}
-	}
-	return comment.New(ctx, opts.Token)
-}
-
 func (runner *Runner) execAction(c *cli.Context) error {
 	opts := &option.ExecOptions{}
 	if err := parseExecOptions(opts, c); err != nil {
@@ -99,13 +81,18 @@ func (runner *Runner) execAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
+	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	if err != nil {
+		return fmt.Errorf("initialize commenter: %w", err)
+	}
+
 	ctrl := api.ExecController{
 		Wd:        wd,
 		Getenv:    os.Getenv,
 		Stdin:     runner.Stdin,
 		Stdout:    runner.Stdout,
 		Stderr:    runner.Stderr,
-		Commenter: getExecCommenter(c.Context, opts),
+		Commenter: commenter,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},

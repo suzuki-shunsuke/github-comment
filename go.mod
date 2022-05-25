@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/antonmedv/expr v1.9.0
 	github.com/drone/envsubst v1.0.3
+	github.com/google/go-github/v44 v44.1.0
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mattn/go-colorable v0.1.12
@@ -19,7 +20,7 @@ require (
 	github.com/suzuki-shunsuke/go-httpclient v1.0.0
 	github.com/suzuki-shunsuke/go-timeout v1.0.0
 	github.com/urfave/cli/v2 v2.8.1
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/oauth2 v0.0.0-20210113205817-d3ed898aa8a3
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	gopkg.in/yaml.v2 v2.4.0
 )

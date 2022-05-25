@@ -17,7 +17,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func parseVarsFlag(varsSlice []string) (map[string]string, error) {
@@ -80,21 +80,21 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	return nil
 }
 
-func getPostCommenter(ctx context.Context, opts *option.PostOptions) api.Commenter {
+func getCommenter(ctx context.Context, opts *option.Options, cfg *config.Config) (api.Commenter, error) {
 	if opts.DryRun {
 		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
-		}
+		}, nil
 	}
 	if opts.SkipNoToken && opts.Token == "" {
 		return &comment.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
-		}
+		}, nil
 	}
 
-	return comment.New(ctx, opts.Token)
+	return comment.New(ctx, opts.Token, cfg.GHEBaseURL, cfg.GHEGraphQLEndpoint) //nolint:wrapcheck
 }
 
 func setLogLevel(logLevel string) {
@@ -144,15 +144,20 @@ func (runner *Runner) postAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
+	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	if err != nil {
+		return fmt.Errorf("initialize commenter: %w", err)
+	}
+
 	ctrl := api.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
-			return !terminal.IsTerminal(0)
+			return !term.IsTerminal(0)
 		},
 		Stdin:     runner.Stdin,
 		Stderr:    runner.Stderr,
-		Commenter: getPostCommenter(c.Context, opts),
+		Commenter: commenter,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
