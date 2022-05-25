@@ -1,19 +1,17 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // parseHideOptions parses the command line arguments of the subcommand "hide".
@@ -31,23 +29,6 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 	opts.Condition = c.String("condition")
 	opts.SHA1 = c.String("sha1")
 	return nil
-}
-
-func getHideCommenter(ctx context.Context, opts *option.HideOptions) api.Commenter {
-	if opts.DryRun {
-		return &comment.Mock{
-			Stderr: os.Stderr,
-			Silent: opts.Silent,
-		}
-	}
-	if opts.SkipNoToken && opts.Token == "" {
-		return &comment.Mock{
-			Stderr: os.Stderr,
-			Silent: opts.Silent,
-		}
-	}
-
-	return comment.New(ctx, opts.Token)
 }
 
 // hideAction is an entrypoint of the subcommand "hide".
@@ -84,14 +65,19 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
+	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	if err != nil {
+		return fmt.Errorf("initialize commenter: %w", err)
+	}
+
 	ctrl := api.HideController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
-			return !terminal.IsTerminal(0)
+			return !term.IsTerminal(0)
 		},
 		Stderr:    runner.Stderr,
-		Commenter: getHideCommenter(c.Context, opts),
+		Commenter: commenter,
 		Platform:  pt,
 		Config:    cfg,
 		Expr:      &expr.Expr{},

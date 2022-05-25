@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
 	"strings"
 
+	"github.com/google/go-github/v44/github"
 	"github.com/shurcooL/githubv4"
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 	"golang.org/x/oauth2"
@@ -27,20 +26,31 @@ type Comment struct {
 }
 
 type Commenter struct {
-	HTTPClient httpclient.Client
-	Token      string
-
+	client   *github.Client
 	V4Client *githubv4.Client
 }
 
-func New(ctx context.Context, token string) *Commenter {
-	return &Commenter{
-		Token:      token,
-		HTTPClient: httpclient.New("https://api.github.com"),
-		V4Client: githubv4.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		))),
+func New(ctx context.Context, token, gheBaseURL, gheGraphQLEndpoint string) (*Commenter, error) {
+	httpClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	))
+	commenter := &Commenter{}
+	if gheBaseURL == "" {
+		commenter.client = github.NewClient(httpClient)
+	} else {
+		client, err := github.NewEnterpriseClient(gheBaseURL, gheBaseURL, httpClient)
+		if err != nil {
+			return nil, fmt.Errorf("initialize GitHub Enterprise API Client: %w", err)
+		}
+		commenter.client = client
 	}
+	if gheGraphQLEndpoint == "" {
+		commenter.V4Client = githubv4.NewClient(httpClient)
+	} else {
+		commenter.V4Client = githubv4.NewEnterpriseClient(gheGraphQLEndpoint, httpClient)
+	}
+
+	return commenter, nil
 }
 
 type ValidationErrors struct {
@@ -51,30 +61,23 @@ type ValidationError struct {
 	Message string `json:"message"`
 }
 
-func (commenter *Commenter) getPath(cmt *Comment) string {
-	if cmt.PRNumber != 0 {
-		return "/repos/" + cmt.Org + "/" + cmt.Repo + "/issues/" + strconv.Itoa(cmt.PRNumber) + "/comments"
-	}
-	return "/repos/" + cmt.Org + "/" + cmt.Repo + "/commits/" + cmt.SHA1 + "/comments"
-}
-
 func (commenter *Commenter) create(ctx context.Context, cmt *Comment, tooLong bool) error {
 	body := cmt.Body
 	if tooLong {
 		body = cmt.BodyForTooLong
 	}
-	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{ //nolint:bodyclose
-		Method: http.MethodPost,
-		Path:   commenter.getPath(cmt),
-		Header: http.Header{
-			"Authorization": []string{"token " + commenter.Token},
-		},
-		RequestBody: map[string]string{
-			"body": body,
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("send a comment by GitHub API: %w", err)
+	if cmt.PRNumber != 0 {
+		if _, _, err := commenter.client.Issues.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
+			Body: github.String(body),
+		}); err != nil {
+			return fmt.Errorf("send a comment to issue or pull request by GitHub API: %w", err)
+		}
+	} else {
+		if _, _, err := commenter.client.Repositories.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
+			Body: github.String(body),
+		}); err != nil {
+			return fmt.Errorf("send a comment to commit by GitHub API: %w", err)
+		}
 	}
 	return nil
 }
@@ -205,19 +208,9 @@ func (commenter *Commenter) List(ctx context.Context, pr *PullRequest) ([]*Issue
 }
 
 func (commenter *Commenter) GetAuthenticatedUser(ctx context.Context) (string, error) {
-	user := struct {
-		Login string `json:"login"`
-	}{}
-	_, err := commenter.HTTPClient.Call(ctx, httpclient.CallParams{ //nolint:bodyclose
-		Method: http.MethodGet,
-		Path:   "/user",
-		Header: http.Header{
-			"Authorization": []string{"token " + commenter.Token},
-		},
-		ResponseBody: &user,
-	})
+	user, _, err := commenter.client.Users.Get(ctx, "")
 	if err != nil {
 		return "", fmt.Errorf("get an authenticated user by GitHub API: %w", err)
 	}
-	return user.Login, nil
+	return user.GetLogin(), nil
 }
