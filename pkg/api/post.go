@@ -43,6 +43,64 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
 
+	if opts.UpdateCondition != "" {
+		prg, err := ctrl.Expr.Compile(opts.UpdateCondition)
+		if err != nil {
+			return err //nolint:wrapcheck
+		}
+
+		comments, err := ctrl.Commenter.List(ctx, &comment.PullRequest{
+			Org:      cmt.Org,
+			Repo:     cmt.Repo,
+			PRNumber: cmt.PRNumber,
+		})
+		if err != nil {
+			return err
+		}
+		logrus.WithFields(logrus.Fields{
+			"org":       cmt.Org,
+			"repo":      cmt.Repo,
+			"pr_number": cmt.PRNumber,
+		}).Debug("get comments")
+
+		for _, comnt := range comments {
+			metadata := map[string]interface{}{}
+			hasMeta := extractMetaFromComment(comnt.Body, &metadata)
+			paramMap := map[string]interface{}{
+				"Comment": map[string]interface{}{
+					"Body":    comnt.Body,
+					"Meta":    metadata,
+					"HasMeta": hasMeta,
+				},
+				"Commit": map[string]interface{}{
+					"Org":      cmt.Org,
+					"Repo":     cmt.Repo,
+					"PRNumber": cmt.PRNumber,
+					"SHA1":     cmt.SHA1,
+				},
+				"Vars": cmt.Vars,
+				"Env":  ctrl.Getenv,
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"node_id":   comnt.ID,
+				"condition": opts.UpdateCondition,
+				"param":     paramMap,
+			}).Debug("judge whether an existing comment is ready for editing")
+			f, err := prg.Run(paramMap)
+			if err != nil {
+				logrus.WithError(err).WithFields(logrus.Fields{
+					"node_id": comnt.ID,
+				}).Error("judge whether an existing comment is hidden")
+				continue
+			}
+			if !f {
+				continue
+			}
+			cmt.CommentID = comnt.DatabaseId
+		}
+	}
+
 	cmtCtrl := CommentController{
 		Commenter: ctrl.Commenter,
 		Expr:      ctrl.Expr,
@@ -115,6 +173,9 @@ func (ctrl *PostController) getCommentParams(opts *option.PostOptions) (*comment
 		opts.Template = tpl.Template
 		opts.TemplateForTooLong = tpl.TemplateForTooLong
 		opts.EmbeddedVarNames = tpl.EmbeddedVarNames
+		if opts.UpdateCondition == "" {
+			opts.UpdateCondition = tpl.UpdateCondition
+		}
 	}
 
 	if cfg.Vars == nil {

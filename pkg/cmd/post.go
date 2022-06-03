@@ -65,6 +65,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.Silent = c.Bool("silent")
 	opts.StdinTemplate = c.Bool("stdin-template")
 	opts.LogLevel = c.String("log-level")
+	opts.UpdateCondition = c.String("update-condition")
 	vars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
 		return err
