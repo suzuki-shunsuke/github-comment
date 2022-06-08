@@ -51,7 +51,7 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 	return cmtCtrl.Post(ctx, cmt, nil)
 }
 
-func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *option.PostOptions, cmt *comment.Comment) error {
+func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *option.PostOptions, cmt *comment.Comment) error { //nolint:funlen
 	prg, err := ctrl.Expr.Compile(opts.UpdateCondition)
 	if err != nil {
 		return err //nolint:wrapcheck
@@ -68,7 +68,7 @@ func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *optio
 		PRNumber: cmt.PRNumber,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("list issue or pull request comments: %w", err)
 	}
 	logrus.WithFields(logrus.Fields{
 		"org":       cmt.Org,
@@ -153,7 +153,7 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop
+func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop,gocognit
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
