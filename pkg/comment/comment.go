@@ -74,23 +74,27 @@ func (commenter *Commenter) create(ctx context.Context, cmt *Comment, tooLong bo
 			}); err != nil {
 				return fmt.Errorf("edit a comment to issue or pull request by GitHub API: %w", err)
 			}
-		} else if _, _, err := commenter.client.Issues.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
+			return nil
+		}
+		if _, _, err := commenter.client.Issues.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
 			Body: github.String(body),
 		}); err != nil {
 			return fmt.Errorf("send a comment to issue or pull request by GitHub API: %w", err)
 		}
-	} else {
-		if cmt.CommentID != 0 {
-			if _, _, err := commenter.client.Repositories.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
-				Body: github.String(body),
-			}); err != nil {
-				return fmt.Errorf("send a comment to commit by GitHub API: %w", err)
-			}
-		} else if _, _, err := commenter.client.Repositories.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
+		return nil
+	}
+	if cmt.CommentID != 0 {
+		if _, _, err := commenter.client.Repositories.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
 			Body: github.String(body),
 		}); err != nil {
 			return fmt.Errorf("send a comment to commit by GitHub API: %w", err)
 		}
+		return nil
+	}
+	if _, _, err := commenter.client.Repositories.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
+		Body: github.String(body),
+	}); err != nil {
+		return fmt.Errorf("send a comment to commit by GitHub API: %w", err)
 	}
 	return nil
 }
@@ -126,7 +130,7 @@ type PullRequest struct {
 // `graphql:"IssueComment(isMinimized: false, viewerCanMinimize: true)"`
 type IssueComment struct {
 	ID         string
-	DatabaseId int64
+	DatabaseID int64
 	Body       string
 	Author     struct {
 		Login string

@@ -32,7 +32,7 @@ type PostController struct {
 }
 
 func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
-	cmt, err := ctrl.getCommentParams(opts)
+	cmt, err := ctrl.getCommentParams(ctx, opts)
 	if err != nil {
 		return err
 	}
@@ -43,70 +43,85 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
 
-	if opts.UpdateCondition != "" {
-		prg, err := ctrl.Expr.Compile(opts.UpdateCondition)
-		if err != nil {
-			return err //nolint:wrapcheck
-		}
-
-		comments, err := ctrl.Commenter.List(ctx, &comment.PullRequest{
-			Org:      cmt.Org,
-			Repo:     cmt.Repo,
-			PRNumber: cmt.PRNumber,
-		})
-		if err != nil {
-			return err
-		}
-		logrus.WithFields(logrus.Fields{
-			"org":       cmt.Org,
-			"repo":      cmt.Repo,
-			"pr_number": cmt.PRNumber,
-		}).Debug("get comments")
-
-		for _, comnt := range comments {
-			metadata := map[string]interface{}{}
-			hasMeta := extractMetaFromComment(comnt.Body, &metadata)
-			paramMap := map[string]interface{}{
-				"Comment": map[string]interface{}{
-					"Body":    comnt.Body,
-					"Meta":    metadata,
-					"HasMeta": hasMeta,
-				},
-				"Commit": map[string]interface{}{
-					"Org":      cmt.Org,
-					"Repo":     cmt.Repo,
-					"PRNumber": cmt.PRNumber,
-					"SHA1":     cmt.SHA1,
-				},
-				"Vars": cmt.Vars,
-				"Env":  ctrl.Getenv,
-			}
-
-			logrus.WithFields(logrus.Fields{
-				"node_id":   comnt.ID,
-				"condition": opts.UpdateCondition,
-				"param":     paramMap,
-			}).Debug("judge whether an existing comment is ready for editing")
-			f, err := prg.Run(paramMap)
-			if err != nil {
-				logrus.WithError(err).WithFields(logrus.Fields{
-					"node_id": comnt.ID,
-				}).Error("judge whether an existing comment is hidden")
-				continue
-			}
-			if !f {
-				continue
-			}
-			cmt.CommentID = comnt.DatabaseId
-		}
-	}
-
 	cmtCtrl := CommentController{
 		Commenter: ctrl.Commenter,
 		Expr:      ctrl.Expr,
 		Getenv:    ctrl.Getenv,
 	}
 	return cmtCtrl.Post(ctx, cmt, nil)
+}
+
+func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *option.PostOptions, cmt *comment.Comment) error {
+	prg, err := ctrl.Expr.Compile(opts.UpdateCondition)
+	if err != nil {
+		return err //nolint:wrapcheck
+	}
+
+	login, err := ctrl.Commenter.GetAuthenticatedUser(ctx)
+	if err != nil {
+		logrus.WithError(err).Warn("get an authenticated user")
+	}
+
+	comments, err := ctrl.Commenter.List(ctx, &comment.PullRequest{
+		Org:      cmt.Org,
+		Repo:     cmt.Repo,
+		PRNumber: cmt.PRNumber,
+	})
+	if err != nil {
+		return err
+	}
+	logrus.WithFields(logrus.Fields{
+		"org":       cmt.Org,
+		"repo":      cmt.Repo,
+		"pr_number": cmt.PRNumber,
+	}).Debug("get comments")
+
+	for _, comnt := range comments {
+		if comnt.IsMinimized {
+			// ignore minimized comments
+			continue
+		}
+		if login != "" && comnt.Author.Login != login {
+			// ignore other users' comments
+			continue
+		}
+
+		metadata := map[string]interface{}{}
+		hasMeta := extractMetaFromComment(comnt.Body, &metadata)
+		paramMap := map[string]interface{}{
+			"Comment": map[string]interface{}{
+				"Body":    comnt.Body,
+				"Meta":    metadata,
+				"HasMeta": hasMeta,
+			},
+			"Commit": map[string]interface{}{
+				"Org":      cmt.Org,
+				"Repo":     cmt.Repo,
+				"PRNumber": cmt.PRNumber,
+				"SHA1":     cmt.SHA1,
+			},
+			"Vars": cmt.Vars,
+			"Env":  ctrl.Getenv,
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"node_id":   comnt.ID,
+			"condition": opts.UpdateCondition,
+			"param":     paramMap,
+		}).Debug("judge whether an existing comment is ready for editing")
+		f, err := prg.Run(paramMap)
+		if err != nil {
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"node_id": comnt.ID,
+			}).Error("judge whether an existing comment is hidden")
+			continue
+		}
+		if !f {
+			continue
+		}
+		cmt.CommentID = comnt.DatabaseID
+	}
+	return nil
 }
 
 // Reader is API to find and read the configuration file of github-comment
@@ -138,7 +153,7 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl *PostController) getCommentParams(opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop
+func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
@@ -240,7 +255,7 @@ func (ctrl *PostController) getCommentParams(opts *option.PostOptions) (*comment
 	tpl += embeddedComment
 	tplForTooLong += embeddedComment
 
-	return &comment.Comment{
+	cmt := &comment.Comment{
 		PRNumber:       opts.PRNumber,
 		Org:            opts.Org,
 		Repo:           opts.Repo,
@@ -250,7 +265,13 @@ func (ctrl *PostController) getCommentParams(opts *option.PostOptions) (*comment
 		HideOldComment: opts.HideOldComment,
 		Vars:           cfg.Vars,
 		TemplateKey:    opts.TemplateKey,
-	}, nil
+	}
+	if opts.UpdateCondition != "" && opts.PRNumber != 0 {
+		if err := ctrl.setUpdatedCommentID(ctx, opts, cmt); err != nil {
+			return nil, err
+		}
+	}
+	return cmt, nil
 }
 
 func (ctrl *PostController) readTemplateFromStdin() (string, error) {
