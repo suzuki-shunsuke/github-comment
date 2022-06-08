@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -185,11 +186,12 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 			},
 		},
 	}
+	ctx := context.Background()
 	for _, d := range data {
 		d := d
 		t.Run(d.title, func(t *testing.T) {
 			t.Parallel()
-			cmt, err := d.ctrl.getCommentParams(d.opts)
+			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
 			if d.isErr {
 				require.NotNil(t, err)
 				return
