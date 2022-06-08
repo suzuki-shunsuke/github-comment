@@ -31,6 +31,10 @@ type PostConfig struct {
 	Template           string
 	TemplateForTooLong string
 	EmbeddedVarNames   []string
+	// UpdateCondition Update the comment that matches with the condition.
+	// If multiple comments match, the latest comment is updated
+	// If no comment matches, aa new comment is created
+	UpdateCondition string
 }
 
 func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { //nolint:cyclop
@@ -71,6 +75,13 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { /
 				names[i] = s
 			}
 			pc.EmbeddedVarNames = names
+		}
+		if tpl, ok := m["update"]; ok {
+			t, ok := tpl.(string)
+			if !ok {
+				return fmt.Errorf("invalid config. update should be string: %+v", tpl)
+			}
+			pc.UpdateCondition = t
 		}
 		return nil
 	}

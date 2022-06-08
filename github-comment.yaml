@@ -3,8 +3,10 @@ post:
   default: |
     CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
   hello:
+    # update: 'Comment.HasMeta && Comment.Meta.TemplateKey == "hello"'
     template: |
       $Hello: {{Env "HELLO"}} {{ "hello!" | upper | repeat 5 }}
+
 exec:
   hello:
     - when: ExitCode != 0

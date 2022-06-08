@@ -41,7 +41,8 @@ func validate(opts *Options) error {
 
 type PostOptions struct {
 	Options
-	StdinTemplate bool
+	StdinTemplate   bool
+	UpdateCondition string
 }
 
 func ValidatePost(opts *PostOptions) error {
