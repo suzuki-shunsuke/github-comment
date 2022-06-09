@@ -51,8 +51,8 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 	return cmtCtrl.Post(ctx, cmt, nil)
 }
 
-func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *option.PostOptions, cmt *comment.Comment) error { //nolint:funlen
-	prg, err := ctrl.Expr.Compile(opts.UpdateCondition)
+func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *comment.Comment, updateCondition string) error { //nolint:funlen
+	prg, err := ctrl.Expr.Compile(updateCondition)
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
@@ -106,7 +106,7 @@ func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, opts *optio
 
 		logrus.WithFields(logrus.Fields{
 			"node_id":   comnt.ID,
-			"condition": opts.UpdateCondition,
+			"condition": updateCondition,
 			"param":     paramMap,
 		}).Debug("judge whether an existing comment is ready for editing")
 		f, err := prg.Run(paramMap)
@@ -267,7 +267,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 		TemplateKey:    opts.TemplateKey,
 	}
 	if opts.UpdateCondition != "" && opts.PRNumber != 0 {
-		if err := ctrl.setUpdatedCommentID(ctx, opts, cmt); err != nil {
+		if err := ctrl.setUpdatedCommentID(ctx, cmt, opts.UpdateCondition); err != nil {
 			return nil, err
 		}
 	}
