@@ -182,8 +182,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.7.3 h1:dAm0YRdRQlWojc3CrCRgPBzG5f941d0zvAKu7qY4e+I=
-github.com/stretchr/testify v1.7.3/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
+github.com/stretchr/testify v1.7.4 h1:wZRexSlwd7ZXfKINDLsO4r7WBt3gTKONc6K/VesHvHM=
+github.com/stretchr/testify v1.7.4/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/suzuki-shunsuke/flute/v2 v2.0.0 h1:cDpi+h9wceJuOEjOxTvZNQXsIS+lv2Ism4ZdfYgMOnU=
 github.com/suzuki-shunsuke/flute/v2 v2.0.0/go.mod h1:wsUAUZbz+DSjv+XDv/gZeEX/mMu1y9kzIXCN5Slu6NY=
 github.com/suzuki-shunsuke/github-comment-metadata v0.1.0 h1:89uGvBINoWZ4p2dGj7S695bm/L1H175eMp/D47ltSPs=
