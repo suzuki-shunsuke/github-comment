@@ -11,7 +11,6 @@ import (
 
 type Platform struct {
 	platform cienv.Platform
-	generic  *generic
 }
 
 func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
@@ -20,7 +19,7 @@ func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
 			return org, nil
 		}
 	}
-	return pt.generic.RepoOwner(), nil
+	return "", nil
 }
 
 func (pt *Platform) getRepoName() (string, error) { //nolint:unparam
@@ -29,7 +28,7 @@ func (pt *Platform) getRepoName() (string, error) { //nolint:unparam
 			return repo, nil
 		}
 	}
-	return pt.generic.RepoName(), nil
+	return "", nil
 }
 
 func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
@@ -38,7 +37,7 @@ func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
 			return sha1, nil
 		}
 	}
-	return pt.generic.SHA(), nil
+	return "", nil
 }
 
 func (pt *Platform) getPRNumber() (int, error) {
@@ -61,7 +60,7 @@ func (pt *Platform) getPRNumber() (int, error) {
 			return a, nil
 		}
 	}
-	return pt.generic.PRNumber()
+	return 0, nil
 }
 
 func (pt *Platform) complement(opts *option.Options) error {
@@ -94,13 +93,6 @@ func (pt *Platform) complement(opts *option.Options) error {
 		return err
 	}
 	opts.PRNumber = pr
-
-	vars := pt.generic.Vars()
-	for k, v := range opts.Vars {
-		vars[k] = v
-	}
-	opts.Vars = vars
-
 	return nil
 }
 
@@ -123,11 +115,8 @@ func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
 	return pt.complement(&opts.Options)
 }
 
-func Get(param *Param) *Platform {
+func Get() *Platform {
 	return &Platform{
 		platform: cienv.Get(),
-		generic: &generic{
-			param: param,
-		},
 	}
 }
