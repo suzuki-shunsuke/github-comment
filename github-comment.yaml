@@ -1,7 +1,7 @@
 ---
 post:
   default: |
-    CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
+    foo
   hello:
     # update: 'Comment.HasMeta && Comment.Meta.TemplateKey == "hello"'
     template: |
