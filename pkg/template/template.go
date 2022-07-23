@@ -70,13 +70,20 @@ func avoidHTMLEscape(text string) template.HTML {
 
 func (renderer *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
+
+	// delete some functions for security reason
+	funcs := sprig.FuncMap()
+	delete(funcs, "env")
+	delete(funcs, "expandenv")
+	delete(funcs, "getHostByName")
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env":             renderer.Getenv,
 		"AvoidHTMLEscape": avoidHTMLEscape,
-	}).Funcs(sprig.FuncMap()).Parse(tpl)
+	}).Funcs(funcs).Parse(tpl)
 	if err != nil {
 		return "", fmt.Errorf("parse a template: %w", err)
 	}
+
 	buf := &bytes.Buffer{}
 	if err := tmpl.Execute(buf, params); err != nil {
 		return "", fmt.Errorf("render a template with params: %w", err)
