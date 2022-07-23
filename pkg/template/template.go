@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
 	"strings"
 
 	"github.com/Masterminds/sprig/v3"
@@ -18,10 +19,25 @@ type ParamGetTemplates struct {
 
 func GetTemplates(param *ParamGetTemplates) map[string]string {
 	buildLinks := map[string]string{
-		"circleci":       `[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})`,
-		"codebuild":      `[Build link]({{env "CODEBUILD_BUILD_URL"}})`,
-		"drone":          `[build]({{env "DRONE_BUILD_LINK"}}) [step]({{env "DRONE_BUILD_LINK"}}/{{env "DRONE_STAGE_NUMBER"}}/{{env "DRONE_STEP_NUMBER"}})`,
-		"github-actions": `[Build link](https://github.com/{{env "GITHUB_REPOSITORY"}}/actions/runs/{{env "GITHUB_RUN_ID"}})`,
+		"circleci": fmt.Sprintf(
+			`[workflow](https://circleci.com/workflow-run/%s) [job](%s) (job: %s)`,
+			os.Getenv("CIRCLE_WORKFLOW_ID"),
+			os.Getenv("CIRCLE_BUILD_URL"),
+			os.Getenv("CIRCLE_JOB"),
+		),
+		"codebuild": fmt.Sprintf(`[Build link](%s)`, os.Getenv("CODEBUILD_BUILD_URL")),
+		"drone": fmt.Sprintf(
+			`[build](%s) [step](%s/%s/%s)`,
+			os.Getenv("DRONE_BUILD_LINK"),
+			os.Getenv("DRONE_BUILD_LINK"),
+			os.Getenv("DRONE_STAGE_NUMBER"),
+			os.Getenv("DRONE_STEP_NUMBER"),
+		),
+		"github-actions": fmt.Sprintf(
+			`[Build link](https://github.com/%s/actions/runs/%s)`,
+			os.Getenv("GITHUB_REPOSITORY"),
+			os.Getenv("GITHUB_RUN_ID"),
+		),
 	}
 
 	builtinTemplates := map[string]string{
@@ -77,7 +93,6 @@ func (renderer *Renderer) Render(tpl string, templates map[string]string, params
 	delete(funcs, "expandenv")
 	delete(funcs, "getHostByName")
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env":             renderer.Getenv,
 		"AvoidHTMLEscape": avoidHTMLEscape,
 	}).Funcs(funcs).Parse(tpl)
 	if err != nil {
