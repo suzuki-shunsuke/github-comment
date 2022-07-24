@@ -36,6 +36,10 @@ func (pt *Platform) getSHA1() (string, error) { //nolint:unparam
 		if sha1 := pt.platform.SHA(); sha1 != "" {
 			return sha1, nil
 		}
+	} else {
+		if sha := os.Getenv("COMMIT_SHA"); sha != "" {
+			return sha, nil
+		}
 	}
 	return "", nil
 }
@@ -48,6 +52,16 @@ func (pt *Platform) getPRNumber() (int, error) {
 		}
 		if pr > 0 {
 			return pr, nil
+		}
+	}
+
+	if prS := os.Getenv("_PR_NUMBER"); prS != "" {
+		a, err := strconv.Atoi(prS)
+		if err != nil {
+			return 0, fmt.Errorf("get a pull request number from an environment variable: %w", err)
+		}
+		if a > 0 {
+			return a, nil
 		}
 	}
 
@@ -106,6 +120,9 @@ func (pt *Platform) ComplementHide(opts *option.HideOptions) error {
 
 func (pt *Platform) CI() string {
 	if pt.platform == nil {
+		if os.Getenv("PROJECT_ID") != "" && os.Getenv("COMMIT_SHA") != "" && os.Getenv("BUILD_ID") != "" {
+			return "cloud-build"
+		}
 		return ""
 	}
 	return pt.platform.CI()
