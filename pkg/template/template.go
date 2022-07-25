@@ -28,7 +28,7 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 		"drone":          `[build]({{env "DRONE_BUILD_LINK"}}) [step]({{env "DRONE_BUILD_LINK"}}/{{env "DRONE_STAGE_NUMBER"}}/{{env "DRONE_STEP_NUMBER"}})`,
 		"github-actions": `[Build link](https://github.com/{{env "GITHUB_REPOSITORY"}}/actions/runs/{{env "GITHUB_RUN_ID"}})`,
 		"google-cloud-build": fmt.Sprintf(
-			"https://console.cloud.google.com/cloud-build/builds;region=%s/%s?project=%s",
+			"[Build link](https://console.cloud.google.com/cloud-build/builds;region=%s/%s?project=%s)",
 			cloudBuildRegion,
 			os.Getenv("BUILD_ID"),
 			os.Getenv("PROJECT_ID"),
