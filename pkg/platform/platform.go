@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/go-ci-env/cienv"
+	"github.com/suzuki-shunsuke/go-ci-env/v3/cienv"
 )
 
 type Platform struct {
@@ -116,7 +116,7 @@ func (pt *Platform) CI() string {
 	if pt.platform == nil {
 		return ""
 	}
-	return pt.platform.CI()
+	return pt.platform.ID()
 }
 
 func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
@@ -124,8 +124,11 @@ func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
 }
 
 func Get(param *Param) *Platform {
+	cienv.Add(func(param *cienv.Param) cienv.Platform {
+		return NewGoogleCloudBuild(param)
+	})
 	return &Platform{
-		platform: cienv.Get(),
+		platform: cienv.Get(nil),
 		generic: &generic{
 			param: param,
 		},
