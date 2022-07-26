@@ -143,7 +143,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					Repo:     "github-comment",
 					Token:    "xxx",
 					PRNumber: 1,
-					Template: `{{Env "FOO"}} {{.Org}} {{.Repo}} {{.PRNumber}}`,
+					Template: `{{.Org}} {{.Repo}} {{.PRNumber}}`,
 				},
 			},
 			exp: &comment.Comment{
