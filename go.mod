@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.7.5
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
-	github.com/suzuki-shunsuke/go-ci-env v1.1.0
+	github.com/suzuki-shunsuke/go-ci-env/v3 v3.0.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-httpclient v1.0.0
 	github.com/suzuki-shunsuke/go-timeout v1.0.0

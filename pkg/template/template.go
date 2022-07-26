@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
 	"strings"
 
 	"github.com/Masterminds/sprig/v3"
@@ -17,11 +18,21 @@ type ParamGetTemplates struct {
 }
 
 func GetTemplates(param *ParamGetTemplates) map[string]string {
+	cloudBuildRegion := os.Getenv("_REGION")
+	if cloudBuildRegion == "" {
+		cloudBuildRegion = "global"
+	}
 	buildLinks := map[string]string{
 		"circleci":       `[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})`,
 		"codebuild":      `[Build link]({{env "CODEBUILD_BUILD_URL"}})`,
 		"drone":          `[build]({{env "DRONE_BUILD_LINK"}}) [step]({{env "DRONE_BUILD_LINK"}}/{{env "DRONE_STAGE_NUMBER"}}/{{env "DRONE_STEP_NUMBER"}})`,
 		"github-actions": `[Build link](https://github.com/{{env "GITHUB_REPOSITORY"}}/actions/runs/{{env "GITHUB_RUN_ID"}})`,
+		"google-cloud-build": fmt.Sprintf(
+			"[Build link](https://console.cloud.google.com/cloud-build/builds;region=%s/%s?project=%s)",
+			cloudBuildRegion,
+			os.Getenv("BUILD_ID"),
+			os.Getenv("PROJECT_ID"),
+		),
 	}
 
 	builtinTemplates := map[string]string{
