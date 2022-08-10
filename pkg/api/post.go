@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
@@ -21,14 +21,14 @@ type PostController struct {
 	Getenv func(string) string
 	// HasStdin returns true if there is the standard input
 	// If thre is the standard input, it is treated as the comment template
-	HasStdin  func() bool
-	Stdin     io.Reader
-	Stderr    io.Writer
-	Commenter Commenter
-	Renderer  Renderer
-	Platform  Platform
-	Config    *config.Config
-	Expr      Expr
+	HasStdin func() bool
+	Stdin    io.Reader
+	Stderr   io.Writer
+	GitHub   GitHub
+	Renderer Renderer
+	Platform Platform
+	Config   *config.Config
+	Expr     Expr
 }
 
 func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
@@ -44,25 +44,25 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 	}).Debug("comment meta data")
 
 	cmtCtrl := CommentController{
-		Commenter: ctrl.Commenter,
-		Expr:      ctrl.Expr,
-		Getenv:    ctrl.Getenv,
+		GitHub: ctrl.GitHub,
+		Expr:   ctrl.Expr,
+		Getenv: ctrl.Getenv,
 	}
 	return cmtCtrl.Post(ctx, cmt, nil)
 }
 
-func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *comment.Comment, updateCondition string) error { //nolint:funlen
+func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Comment, updateCondition string) error { //nolint:funlen
 	prg, err := ctrl.Expr.Compile(updateCondition)
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
 
-	login, err := ctrl.Commenter.GetAuthenticatedUser(ctx)
+	login, err := ctrl.GitHub.GetAuthenticatedUser(ctx)
 	if err != nil {
 		logrus.WithError(err).Warn("get an authenticated user")
 	}
 
-	comments, err := ctrl.Commenter.List(ctx, &comment.PullRequest{
+	comments, err := ctrl.GitHub.ListComments(ctx, &github.PullRequest{
 		Org:      cmt.Org,
 		Repo:     cmt.Repo,
 		PRNumber: cmt.PRNumber,
@@ -153,12 +153,27 @@ type Platform interface {
 	CI() string
 }
 
-func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*comment.Comment, error) { //nolint:funlen,cyclop,gocognit
+func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
+
+	if opts.PRNumber == 0 && opts.SHA1 != "" {
+		prNum, err := ctrl.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
+		if err != nil {
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"org":  opts.Org,
+				"repo": opts.Repo,
+				"sha":  opts.SHA1,
+			}).Warn("list associated prs")
+		}
+		if prNum > 0 {
+			opts.PRNumber = prNum
+		}
+	}
+
 	if opts.Template == "" && opts.StdinTemplate {
 		tpl, err := ctrl.readTemplateFromStdin()
 		if err != nil {
@@ -232,10 +247,10 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 	}
 
 	cmtCtrl := CommentController{
-		Commenter: ctrl.Commenter,
-		Expr:      ctrl.Expr,
-		Getenv:    ctrl.Getenv,
-		Platform:  ctrl.Platform,
+		GitHub:   ctrl.GitHub,
+		Expr:     ctrl.Expr,
+		Getenv:   ctrl.Getenv,
+		Platform: ctrl.Platform,
 	}
 	embeddedMetadata := make(map[string]interface{}, len(opts.EmbeddedVarNames))
 	for _, name := range opts.EmbeddedVarNames {
@@ -255,7 +270,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 	tpl += embeddedComment
 	tplForTooLong += embeddedComment
 
-	cmt := &comment.Comment{
+	cmt := &github.Comment{
 		PRNumber:       opts.PRNumber,
 		Org:            opts.Org,
 		Repo:           opts.Repo,

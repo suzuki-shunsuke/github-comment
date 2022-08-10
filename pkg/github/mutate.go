@@ -1,4 +1,4 @@
-package comment
+package github
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/shurcooL/githubv4"
 )
 
-func (commenter *Commenter) HideComment(ctx context.Context, nodeID string) error {
+func (client *Client) HideComment(ctx context.Context, nodeID string) error {
 	var m struct {
 		MinimizeComment struct {
 			MinimizedComment struct {
@@ -21,7 +21,7 @@ func (commenter *Commenter) HideComment(ctx context.Context, nodeID string) erro
 		Classifier: githubv4.ReportedContentClassifiersOutdated,
 		SubjectID:  nodeID,
 	}
-	if err := commenter.V4Client.Mutate(ctx, &m, input, nil); err != nil {
+	if err := client.ghV4.Mutate(ctx, &m, input, nil); err != nil {
 		return fmt.Errorf("hide an old comment: %w", err)
 	}
 	return nil

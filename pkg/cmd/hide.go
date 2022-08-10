@@ -65,7 +65,7 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
-	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	gh, err := getGitHub(c.Context, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -76,11 +76,11 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 		HasStdin: func() bool {
 			return !term.IsTerminal(0)
 		},
-		Stderr:    runner.Stderr,
-		Commenter: commenter,
-		Platform:  pt,
-		Config:    cfg,
-		Expr:      &expr.Expr{},
+		Stderr:   runner.Stderr,
+		GitHub:   gh,
+		Platform: pt,
+		Config:   cfg,
+		Expr:     &expr.Expr{},
 	}
 	return ctrl.Hide(c.Context, opts) //nolint:wrapcheck
 }

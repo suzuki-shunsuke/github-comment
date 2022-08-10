@@ -8,34 +8,48 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
 type ExecController struct {
-	Wd        string
-	Stdin     io.Reader
-	Stdout    io.Writer
-	Stderr    io.Writer
-	Getenv    func(string) string
-	Reader    Reader
-	Commenter Commenter
-	Renderer  Renderer
-	Executor  Executor
-	Expr      Expr
-	Platform  Platform
-	Config    *config.Config
+	Wd       string
+	Stdin    io.Reader
+	Stdout   io.Writer
+	Stderr   io.Writer
+	Getenv   func(string) string
+	Reader   Reader
+	GitHub   GitHub
+	Renderer Renderer
+	Executor Executor
+	Expr     Expr
+	Platform Platform
+	Config   *config.Config
 }
 
 func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
+		}
+	}
+
+	if opts.PRNumber == 0 && opts.SHA1 != "" {
+		prNum, err := ctrl.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
+		if err != nil {
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"org":  opts.Org,
+				"repo": opts.Repo,
+				"sha":  opts.SHA1,
+			}).Warn("list associated prs")
+		}
+		if prNum > 0 {
+			opts.PRNumber = prNum
 		}
 	}
 
@@ -189,7 +203,7 @@ func (ctrl *ExecController) getExecConfig(
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*comment.Comment, bool, error) { //nolint:funlen
+func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*github.Comment, bool, error) { //nolint:funlen
 	tpl := cmtParams.Template
 	tplForTooLong := ""
 	var embeddedVarNames []string
@@ -219,10 +233,10 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 	}
 
 	cmtCtrl := CommentController{
-		Commenter: ctrl.Commenter,
-		Expr:      ctrl.Expr,
-		Getenv:    ctrl.Getenv,
-		Platform:  ctrl.Platform,
+		GitHub:   ctrl.GitHub,
+		Expr:     ctrl.Expr,
+		Getenv:   ctrl.Getenv,
+		Platform: ctrl.Platform,
 	}
 
 	embeddedMetadata := make(map[string]interface{}, len(embeddedVarNames))
@@ -244,7 +258,7 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 	body += embeddedComment
 	bodyForTooLong += embeddedComment
 
-	return &comment.Comment{
+	return &github.Comment{
 		PRNumber:       cmtParams.PRNumber,
 		Org:            cmtParams.Org,
 		Repo:           cmtParams.Repo,
@@ -275,9 +289,9 @@ func (ctrl *ExecController) post(
 	}).Debug("comment meta data")
 
 	cmtCtrl := CommentController{
-		Commenter: ctrl.Commenter,
-		Expr:      ctrl.Expr,
-		Getenv:    ctrl.Getenv,
+		GitHub: ctrl.GitHub,
+		Expr:   ctrl.Expr,
+		Getenv: ctrl.Getenv,
 	}
 	return cmtCtrl.Post(ctx, cmt, map[string]interface{}{
 		"Command": map[string]interface{}{
