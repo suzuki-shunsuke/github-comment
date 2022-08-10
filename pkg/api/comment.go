@@ -5,27 +5,28 @@ import (
 	"fmt"
 
 	"github.com/suzuki-shunsuke/github-comment-metadata/metadata"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
+	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 )
 
-// Commenter is API to post a comment to GitHub
-type Commenter interface {
-	Create(ctx context.Context, cmt *comment.Comment) error
-	List(ctx context.Context, pr *comment.PullRequest) ([]*comment.IssueComment, error)
+// GitHub is API to post a comment to GitHub
+type GitHub interface {
+	CreateComment(ctx context.Context, cmt *github.Comment) error
+	ListComments(ctx context.Context, pr *github.PullRequest) ([]*github.IssueComment, error)
 	HideComment(ctx context.Context, nodeID string) error
 	GetAuthenticatedUser(ctx context.Context) (string, error)
+	PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error)
 }
 
 type CommentController struct {
-	Commenter Commenter
-	Expr      Expr
-	Getenv    func(string) string
-	Platform  Platform
+	GitHub   GitHub
+	Expr     Expr
+	Getenv   func(string) string
+	Platform Platform
 }
 
-func (ctrl *CommentController) Post(ctx context.Context, cmt *comment.Comment, hiddenParam map[string]interface{}) error {
-	if err := ctrl.Commenter.Create(ctx, cmt); err != nil {
-		return fmt.Errorf("failed to create an issue comment: %w", err)
+func (ctrl *CommentController) Post(ctx context.Context, cmt *github.Comment, hiddenParam map[string]interface{}) error {
+	if err := ctrl.GitHub.CreateComment(ctx, cmt); err != nil {
+		return fmt.Errorf("send a comment: %w", err)
 	}
 	return nil
 }
