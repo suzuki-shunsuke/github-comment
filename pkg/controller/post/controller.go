@@ -1,4 +1,4 @@
-package api
+package post
 
 import (
 	"context"
@@ -8,13 +8,15 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
+	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/domain"
 	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
-type PostController struct {
+type Controller struct {
 	// Wd is a path to the working directory
 	Wd string
 	// Getenv returns the environment variable. os.Getenv
@@ -24,14 +26,14 @@ type PostController struct {
 	HasStdin func() bool
 	Stdin    io.Reader
 	Stderr   io.Writer
-	GitHub   GitHub
-	Renderer Renderer
-	Platform Platform
+	GitHub   domain.GitHub
+	Renderer domain.Renderer
+	Platform domain.Platform
 	Config   *config.Config
-	Expr     Expr
+	Expr     domain.Expr
 }
 
-func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
+func (ctrl *Controller) Post(ctx context.Context, opts *option.PostOptions) error {
 	cmt, err := ctrl.getCommentParams(ctx, opts)
 	if err != nil {
 		return err
@@ -43,15 +45,15 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
 
-	cmtCtrl := CommentController{
+	cmtCtrl := comment.Controller{
 		GitHub: ctrl.GitHub,
 		Expr:   ctrl.Expr,
 		Getenv: ctrl.Getenv,
 	}
-	return cmtCtrl.Post(ctx, cmt, nil)
+	return cmtCtrl.Post(ctx, cmt, nil) //nolint:wrapcheck
 }
 
-func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Comment, updateCondition string) error { //nolint:funlen
+func (ctrl *Controller) setUpdatedCommentID(ctx context.Context, cmt *github.Comment, updateCondition string) error { //nolint:funlen
 	prg, err := ctrl.Expr.Compile(updateCondition)
 	if err != nil {
 		return err //nolint:wrapcheck
@@ -87,7 +89,7 @@ func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *github
 		}
 
 		metadata := map[string]interface{}{}
-		hasMeta := extractMetaFromComment(comnt.Body, &metadata)
+		hasMeta := comment.ExtractMetaFromComment(comnt.Body, &metadata)
 		paramMap := map[string]interface{}{
 			"Comment": map[string]interface{}{
 				"Body":    comnt.Body,
@@ -129,11 +131,7 @@ type Reader interface {
 	FindAndRead(cfgPath, wd string) (config.Config, error)
 }
 
-type Renderer interface {
-	Render(tpl string, templates map[string]string, params interface{}) (string, error)
-}
-
-type PostTemplateParams struct {
+type TemplateParams struct {
 	// PRNumber is the pull request number where the comment is posted
 	PRNumber int
 	// Org is the GitHub Organization or User name
@@ -146,14 +144,7 @@ type PostTemplateParams struct {
 	Vars        map[string]interface{}
 }
 
-type Platform interface {
-	ComplementPost(opts *option.PostOptions) error
-	ComplementExec(opts *option.ExecOptions) error
-	ComplementHide(opts *option.HideOptions) error
-	CI() string
-}
-
-func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
+func (ctrl *Controller) getCommentParams(ctx context.Context, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
@@ -223,7 +214,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 		Templates: cfg.Templates,
 		CI:        ci,
 	})
-	tpl, err := ctrl.Renderer.Render(opts.Template, templates, PostTemplateParams{
+	tpl, err := ctrl.Renderer.Render(opts.Template, templates, TemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
@@ -234,7 +225,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 	if err != nil {
 		return nil, fmt.Errorf("render a template for post: %w", err)
 	}
-	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, templates, PostTemplateParams{
+	tplForTooLong, err := ctrl.Renderer.Render(opts.TemplateForTooLong, templates, TemplateParams{
 		PRNumber:    opts.PRNumber,
 		Org:         opts.Org,
 		Repo:        opts.Repo,
@@ -246,7 +237,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 		return nil, fmt.Errorf("render a template template_for_too_long for post: %w", err)
 	}
 
-	cmtCtrl := CommentController{
+	cmtCtrl := comment.Controller{
 		GitHub:   ctrl.GitHub,
 		Expr:     ctrl.Expr,
 		Getenv:   ctrl.Getenv,
@@ -258,13 +249,13 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 			embeddedMetadata[name] = v
 		}
 	}
-	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+	embeddedComment, err := cmtCtrl.GetEmbeddedComment(map[string]interface{}{
 		"SHA1":        opts.SHA1,
 		"TemplateKey": opts.TemplateKey,
 		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	tpl += embeddedComment
@@ -289,7 +280,7 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 	return cmt, nil
 }
 
-func (ctrl *PostController) readTemplateFromStdin() (string, error) {
+func (ctrl *Controller) readTemplateFromStdin() (string, error) {
 	if !ctrl.HasStdin() {
 		return "", nil
 	}
@@ -300,7 +291,7 @@ func (ctrl *PostController) readTemplateFromStdin() (string, error) {
 	return string(b), nil
 }
 
-func (ctrl *PostController) readTemplateFromConfig(cfg *config.Config, key string) (*config.PostConfig, error) {
+func (ctrl *Controller) readTemplateFromConfig(cfg *config.Config, key string) (*config.PostConfig, error) {
 	if t, ok := cfg.Post[key]; ok {
 		return t, nil
 	}

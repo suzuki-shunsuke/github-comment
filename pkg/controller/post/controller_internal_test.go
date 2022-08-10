@@ -1,4 +1,4 @@
-package api
+package post
 
 import (
 	"context"
@@ -12,18 +12,18 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
 
-func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
+func TestController_getCommentParams(t *testing.T) { //nolint:funlen
 	t.Parallel()
 	data := []struct {
 		title string
-		ctrl  *PostController
+		ctrl  *Controller
 		exp   *github.Comment
 		isErr bool
 		opts  *option.PostOptions
 	}{
 		{
 			title: "if there is a standard input, treat it as the template",
-			ctrl: &PostController{
+			ctrl: &Controller{
 				HasStdin: func() bool {
 					return true
 				},
@@ -52,7 +52,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "if template is passed as argument, standard input is ignored",
-			ctrl: &PostController{
+			ctrl: &Controller{
 				HasStdin: func() bool {
 					return true
 				},
@@ -81,7 +81,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "read template from config",
-			ctrl: &PostController{
+			ctrl: &Controller{
 				HasStdin: func() bool {
 					return false
 				},
@@ -120,7 +120,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "template is rendered properly",
-			ctrl: &PostController{
+			ctrl: &Controller{
 				HasStdin: func() bool {
 					return false
 				},
@@ -155,7 +155,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "config.base",
-			ctrl: &PostController{
+			ctrl: &Controller{
 				HasStdin: func() bool {
 					return true
 				},
@@ -204,17 +204,17 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	}
 }
 
-func TestPostController_readTemplateFromStdin(t *testing.T) {
+func TestController_readTemplateFromStdin(t *testing.T) {
 	t.Parallel()
 	data := []struct {
 		title string
-		ctrl  PostController
+		ctrl  Controller
 		exp   string
 		isErr bool
 	}{
 		{
 			title: "no standard input",
-			ctrl: PostController{
+			ctrl: Controller{
 				HasStdin: func() bool {
 					return false
 				},
@@ -222,7 +222,7 @@ func TestPostController_readTemplateFromStdin(t *testing.T) {
 		},
 		{
 			title: "standard input",
-			ctrl: PostController{
+			ctrl: Controller{
 				HasStdin: func() bool {
 					return true
 				},

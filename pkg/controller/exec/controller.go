@@ -1,4 +1,4 @@
-package api
+package exec
 
 import (
 	"context"
@@ -8,31 +8,57 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/domain"
 	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
-	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
-type ExecController struct {
+type Controller struct {
 	Wd       string
 	Stdin    io.Reader
 	Stdout   io.Writer
 	Stderr   io.Writer
 	Getenv   func(string) string
 	Reader   Reader
-	GitHub   GitHub
-	Renderer Renderer
+	GitHub   domain.GitHub
+	Renderer domain.Renderer
 	Executor Executor
-	Expr     Expr
-	Platform Platform
+	Expr     domain.Expr
+	Platform domain.Platform
 	Config   *config.Config
 }
 
-func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
+// Reader is API to find and read the configuration file of github-comment
+type Reader interface {
+	FindAndRead(cfgPath, wd string) (config.Config, error)
+}
+
+func (ctrl *Controller) Exec(ctx context.Context, opts *option.ExecOptions) error {
+	result, execErr := ctrl.Executor.Run(ctx, &execute.Params{
+		Cmd:   opts.Args[0],
+		Args:  opts.Args[1:],
+		Stdin: ctrl.Stdin,
+	})
+
+	if err := ctrl.comment(ctx, opts, result); err != nil {
+		logrus.WithError(err).Error("create or update a comment")
+	}
+
+	if execErr != nil {
+		return ecerror.Wrap(execErr, result.ExitCode)
+	}
+	return nil
+}
+
+func (ctrl *Controller) comment(ctx context.Context, opts *option.ExecOptions, result *execute.Result) error { //nolint:funlen,cyclop
+	if opts.Skipped() {
+		return nil
+	}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
@@ -62,19 +88,6 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		opts.Repo = cfg.Base.Repo
 	}
 
-	result, execErr := ctrl.Executor.Run(ctx, &execute.Params{
-		Cmd:   opts.Args[0],
-		Args:  opts.Args[1:],
-		Stdin: ctrl.Stdin,
-	})
-
-	if opts.SkipComment {
-		if execErr != nil {
-			return ecerror.Wrap(execErr, result.ExitCode)
-		}
-		return nil
-	}
-
 	execConfigs, err := ctrl.getExecConfigs(cfg, opts)
 	if err != nil {
 		return fmt.Errorf("get config: %w", err)
@@ -102,7 +115,7 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		JoinCommand:    joinCommand,
 		CombinedOutput: result.CombinedOutput,
 	})
-	if err := ctrl.post(ctx, execConfigs, &ExecCommentParams{
+	if err := ctrl.post(ctx, execConfigs, &CommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    joinCommand,
@@ -122,13 +135,10 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
 		}
 	}
-	if execErr != nil {
-		return ecerror.Wrap(execErr, result.ExitCode)
-	}
 	return nil
 }
 
-type ExecCommentParams struct {
+type CommentParams struct {
 	Stdout         string
 	Stderr         string
 	CombinedOutput string
@@ -153,12 +163,7 @@ type Executor interface {
 	Run(ctx context.Context, params *execute.Params) (*execute.Result, error)
 }
 
-type Expr interface {
-	Match(expression string, params interface{}) (bool, error)
-	Compile(expression string) (expr.Program, error)
-}
-
-func (ctrl *ExecController) getExecConfigs(cfg *config.Config, opts *option.ExecOptions) ([]*config.ExecConfig, error) {
+func (ctrl *Controller) getExecConfigs(cfg *config.Config, opts *option.ExecOptions) ([]*config.ExecConfig, error) {
 	var execConfigs []*config.ExecConfig
 	if opts.Template == "" && opts.TemplateKey != "" {
 		a, ok := cfg.Exec[opts.TemplateKey]
@@ -185,8 +190,8 @@ func (ctrl *ExecController) getExecConfigs(cfg *config.Config, opts *option.Exec
 
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
-func (ctrl *ExecController) getExecConfig(
-	execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
+func (ctrl *Controller) getExecConfig(
+	execConfigs []*config.ExecConfig, cmtParams *CommentParams,
 ) (*config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
 		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
@@ -203,7 +208,7 @@ func (ctrl *ExecController) getExecConfig(
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*github.Comment, bool, error) { //nolint:funlen
+func (ctrl *Controller) getComment(execConfigs []*config.ExecConfig, cmtParams *CommentParams, templates map[string]string) (*github.Comment, bool, error) { //nolint:funlen
 	tpl := cmtParams.Template
 	tplForTooLong := ""
 	var embeddedVarNames []string
@@ -232,7 +237,7 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 		return nil, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
 	}
 
-	cmtCtrl := CommentController{
+	cmtCtrl := comment.Controller{
 		GitHub:   ctrl.GitHub,
 		Expr:     ctrl.Expr,
 		Getenv:   ctrl.Getenv,
@@ -246,13 +251,13 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 		}
 	}
 
-	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+	embeddedComment, err := cmtCtrl.GetEmbeddedComment(map[string]interface{}{
 		"SHA1":        cmtParams.SHA1,
 		"TemplateKey": cmtParams.TemplateKey,
 		"Vars":        embeddedMetadata,
 	})
 	if err != nil {
-		return nil, false, err
+		return nil, false, err //nolint:wrapcheck
 	}
 
 	body += embeddedComment
@@ -270,8 +275,8 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 	}, true, nil
 }
 
-func (ctrl *ExecController) post(
-	ctx context.Context, execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
+func (ctrl *Controller) post(
+	ctx context.Context, execConfigs []*config.ExecConfig, cmtParams *CommentParams,
 	templates map[string]string,
 ) error {
 	cmt, f, err := ctrl.getComment(execConfigs, cmtParams, templates)
@@ -288,12 +293,12 @@ func (ctrl *ExecController) post(
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
 
-	cmtCtrl := CommentController{
+	cmtCtrl := comment.Controller{
 		GitHub: ctrl.GitHub,
 		Expr:   ctrl.Expr,
 		Getenv: ctrl.Getenv,
 	}
-	return cmtCtrl.Post(ctx, cmt, map[string]interface{}{
+	return cmtCtrl.Post(ctx, cmt, map[string]interface{}{ //nolint:wrapcheck
 		"Command": map[string]interface{}{
 			"ExitCode":       cmtParams.ExitCode,
 			"JoinCommand":    cmtParams.JoinCommand,

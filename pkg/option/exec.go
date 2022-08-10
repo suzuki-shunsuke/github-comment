@@ -10,6 +10,13 @@ type ExecOptions struct {
 	SkipComment bool
 }
 
+func (opts *ExecOptions) Skipped() bool {
+	if opts.SkipComment {
+		return true
+	}
+	return opts.Token == "" && opts.SkipNoToken
+}
+
 func ValidateExec(opts *ExecOptions) error {
 	if err := validate(&opts.Options); err != nil {
 		return err

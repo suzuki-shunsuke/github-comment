@@ -1,13 +1,16 @@
-package cmd
+package hide
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/pkg/cmd/util"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/controller/hide"
+	"github.com/suzuki-shunsuke/github-comment/pkg/domain"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/pkg/log"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/urfave/cli/v2"
@@ -47,14 +50,14 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 		return err
 	}
 
-	setLogLevel(opts.LogLevel)
+	log.SetLevel(opts.LogLevel, runner.logE)
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)
 	}
 
 	cfgReader := config.Reader{
-		ExistFile: existFile,
+		ExistFile: util.ExistFile,
 	}
 
 	cfg, err := cfgReader.FindAndRead(opts.ConfigPath, wd)
@@ -63,20 +66,20 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
+	var pt domain.Platform = platform.Get(util.GetPlatformParam(cfg.Complement))
 
-	gh, err := getGitHub(c.Context, &opts.Options, cfg)
+	gh, err := util.GetGitHub(c.Context, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
-	ctrl := api.HideController{
+	ctrl := &hide.Controller{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
 			return !term.IsTerminal(0)
 		},
-		Stderr:   runner.Stderr,
+		Stderr:   runner.stdio.Stderr,
 		GitHub:   gh,
 		Platform: pt,
 		Config:   cfg,

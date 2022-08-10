@@ -1,4 +1,4 @@
-package api
+package exec
 
 import (
 	"testing"
@@ -8,26 +8,26 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
 )
 
-func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
+func TestController_getExecConfig(t *testing.T) { //nolint:funlen
 	t.Parallel()
 	data := []struct {
 		title       string
-		ctrl        *ExecController
+		ctrl        *Controller
 		execConfigs []*config.ExecConfig
-		cmtParams   *ExecCommentParams
+		cmtParams   *CommentParams
 		exp         *config.ExecConfig
 		f           bool
 		isErr       bool
 	}{
 		{
 			title:       "no exec configs",
-			ctrl:        &ExecController{},
+			ctrl:        &Controller{},
 			execConfigs: []*config.ExecConfig{},
 			exp:         nil,
 		},
 		{
 			title: "no exec config matches",
-			ctrl: &ExecController{
+			ctrl: &Controller{
 				Expr: &expr.Expr{},
 			},
 			execConfigs: []*config.ExecConfig{
@@ -39,7 +39,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 		},
 		{
 			title: "first matched config is returned",
-			ctrl: &ExecController{
+			ctrl: &Controller{
 				Expr: &expr.Expr{},
 			},
 			execConfigs: []*config.ExecConfig{

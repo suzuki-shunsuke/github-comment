@@ -1,4 +1,4 @@
-package api
+package initcmd
 
 import (
 	"context"
@@ -70,11 +70,11 @@ type Fsys interface {
 	Write(path string, content []byte) error
 }
 
-type InitController struct {
+type Controller struct {
 	Fsys Fsys
 }
 
-func (ctrl InitController) Run(ctx context.Context) error {
+func (ctrl *Controller) Run(ctx context.Context) error {
 	dst := "github-comment.yaml"
 	if ctrl.Fsys.Exist(dst) {
 		return nil

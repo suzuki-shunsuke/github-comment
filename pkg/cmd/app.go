@@ -2,16 +2,31 @@ package cmd
 
 import (
 	"context"
-	"io"
 
+	"github.com/sirupsen/logrus"
+	"github.com/suzuki-shunsuke/github-comment/pkg/cmd/exec"
+	"github.com/suzuki-shunsuke/github-comment/pkg/cmd/hide"
+	"github.com/suzuki-shunsuke/github-comment/pkg/cmd/initcmd"
+	"github.com/suzuki-shunsuke/github-comment/pkg/cmd/post"
+	"github.com/suzuki-shunsuke/github-comment/pkg/domain"
+	"github.com/suzuki-shunsuke/go-osenv/osenv"
 	"github.com/urfave/cli/v2"
 )
 
 type Runner struct {
-	Stdin   io.Reader
-	Stdout  io.Writer
-	Stderr  io.Writer
-	LDFlags *LDFlags
+	stdio   *domain.Stdio
+	ldFlags *LDFlags
+	logE    *logrus.Entry
+	osEnv   osenv.OSEnv
+}
+
+func New(stdio *domain.Stdio, logE *logrus.Entry, osEnv osenv.OSEnv, ldFlags *LDFlags) *Runner {
+	return &Runner{
+		stdio:   stdio,
+		logE:    logE,
+		osEnv:   osEnv,
+		ldFlags: ldFlags,
+	}
 }
 
 type LDFlags struct {
@@ -24,218 +39,15 @@ func (flags *LDFlags) AppVersion() string {
 	return flags.Version + " (" + flags.Commit + ")"
 }
 
-func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
+type command interface {
+	Command() *cli.Command
+}
+
+func (runner *Runner) Run(ctx context.Context, args []string) error {
 	app := cli.App{
 		Name:    "github-comment",
 		Usage:   "post a comment to GitHub",
-		Version: runner.LDFlags.AppVersion(),
-		Commands: []*cli.Command{
-			{
-				Name:   "post",
-				Usage:  "post a comment",
-				Action: runner.postAction,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
-					},
-					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
-					},
-					&cli.StringFlag{
-						Name:    "token",
-						Usage:   "GitHub API token",
-						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-					},
-					&cli.StringFlag{
-						Name:  "sha1",
-						Usage: "commit sha1",
-					},
-					&cli.StringFlag{
-						Name:  "template",
-						Usage: "comment template",
-					},
-					&cli.StringFlag{
-						Name:    "template-key",
-						Aliases: []string{"k"},
-						Usage:   "comment template key",
-						Value:   "default",
-					},
-					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
-					},
-					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
-					},
-					&cli.StringSliceFlag{
-						Name:  "var",
-						Usage: "template variable",
-					},
-					&cli.StringSliceFlag{
-						Name:  "var-file",
-						Usage: "template variable name and file path",
-					},
-					&cli.BoolFlag{
-						Name:  "dry-run",
-						Usage: "output a comment to standard error output instead of posting to GitHub",
-					},
-					&cli.BoolFlag{
-						Name:    "skip-no-token",
-						Aliases: []string{"n"},
-						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
-					},
-					&cli.BoolFlag{
-						Name:    "silent",
-						Aliases: []string{"s"},
-						Usage:   "suppress the output of dry-run and skip-no-token",
-					},
-					&cli.BoolFlag{
-						Name:  "stdin-template",
-						Usage: "read standard input as the template",
-					},
-					&cli.StringFlag{
-						Name:    "update-condition",
-						Aliases: []string{"u"},
-						Usage:   "update the comment that matches with the condition",
-					},
-				},
-			},
-			{
-				Name:   "exec",
-				Usage:  "execute a command and post the result as a comment",
-				Action: runner.execAction,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
-					},
-					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
-					},
-					&cli.StringFlag{
-						Name:    "token",
-						Usage:   "GitHub API token",
-						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-					},
-					&cli.StringFlag{
-						Name:  "sha1",
-						Usage: "commit sha1",
-					},
-					&cli.StringFlag{
-						Name:  "template",
-						Usage: "comment template",
-					},
-					&cli.StringFlag{
-						Name:    "template-key",
-						Aliases: []string{"k"},
-						Usage:   "comment template key",
-						Value:   "default",
-					},
-					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
-					},
-					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
-					},
-					&cli.StringSliceFlag{
-						Name:  "var",
-						Usage: "template variable",
-					},
-					&cli.StringSliceFlag{
-						Name:  "var-file",
-						Usage: "template variable name and file path",
-					},
-					&cli.BoolFlag{
-						Name:  "dry-run",
-						Usage: "output a comment to standard error output instead of posting to GitHub",
-					},
-					&cli.BoolFlag{
-						Name:    "skip-no-token",
-						Aliases: []string{"n"},
-						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
-					},
-					&cli.BoolFlag{
-						Name:    "silent",
-						Aliases: []string{"s"},
-						Usage:   "suppress the output of dry-run and skip-no-token",
-					},
-				},
-			},
-			{
-				Name:   "init",
-				Usage:  "scaffold a configuration file if it doesn't exist",
-				Action: runner.initAction,
-			},
-			{
-				Name:   "hide",
-				Usage:  "hide issue or pull request comments",
-				Action: runner.hideAction,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
-					},
-					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
-					},
-					&cli.StringFlag{
-						Name:    "token",
-						Usage:   "GitHub API token",
-						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
-					},
-					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
-					},
-					&cli.StringFlag{
-						Name:  "condition",
-						Usage: "hide condition",
-					},
-					&cli.StringFlag{
-						Name:    "hide-key",
-						Aliases: []string{"k"},
-						Usage:   "hide condition key",
-						Value:   "default",
-					},
-					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
-					},
-					&cli.StringFlag{
-						Name:  "sha1",
-						Usage: "commit sha1",
-					},
-					&cli.StringSliceFlag{
-						Name:  "var",
-						Usage: "template variable",
-					},
-					&cli.BoolFlag{
-						Name:  "dry-run",
-						Usage: "output a comment to standard error output instead of posting to GitHub",
-					},
-					&cli.BoolFlag{
-						Name:    "skip-no-token",
-						Aliases: []string{"n"},
-						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
-					},
-					&cli.BoolFlag{
-						Name:    "silent",
-						Aliases: []string{"s"},
-						Usage:   "suppress the output of dry-run and skip-no-token",
-					},
-				},
-			},
-		},
+		Version: runner.ldFlags.AppVersion(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "log-level",
@@ -244,5 +56,16 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 			},
 		},
 	}
+	cmds := []command{
+		post.New(runner.stdio, runner.logE, runner.osEnv),
+		exec.New(runner.stdio, runner.logE, runner.osEnv),
+		initcmd.New(runner.stdio, runner.logE, runner.osEnv),
+		hide.New(runner.stdio, runner.logE, runner.osEnv),
+	}
+	app.Commands = make([]*cli.Command, len(cmds))
+	for i, cmd := range cmds {
+		app.Commands[i] = cmd.Command()
+	}
+	runner.osEnv = osenv.New()
 	return app.RunContext(ctx, args) //nolint:wrapcheck
 }

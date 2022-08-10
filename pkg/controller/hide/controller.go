@@ -1,4 +1,4 @@
-package api
+package hide
 
 import (
 	"context"
@@ -7,12 +7,14 @@ import (
 	"io"
 
 	"github.com/sirupsen/logrus"
+	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/domain"
 	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 )
 
-type HideController struct {
+type Controller struct {
 	// Wd is a path to the working directory
 	Wd string
 	// Getenv returns the environment variable. os.Getenv
@@ -21,13 +23,13 @@ type HideController struct {
 	// If thre is the standard input, it is treated as the comment template
 	HasStdin func() bool
 	Stderr   io.Writer
-	GitHub   GitHub
-	Platform Platform
+	GitHub   domain.GitHub
+	Platform domain.Platform
 	Config   *config.Config
-	Expr     Expr
+	Expr     domain.Expr
 }
 
-func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) error {
+func (ctrl *Controller) Hide(ctx context.Context, opts *option.HideOptions) error {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
@@ -48,7 +50,7 @@ func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) 
 	return nil
 }
 
-func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop
+func (ctrl *Controller) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop
 	param := &ParamListHiddenComments{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementHide(opts); err != nil {
@@ -102,7 +104,7 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 	}, nil
 }
 
-func hideComments(ctx context.Context, commenter GitHub, nodeIDs []string) {
+func hideComments(ctx context.Context, commenter domain.GitHub, nodeIDs []string) {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
@@ -136,7 +138,7 @@ type ParamListHiddenComments struct {
 
 func listHiddenComments( //nolint:funlen
 	ctx context.Context,
-	gh GitHub, exp Expr,
+	gh domain.GitHub, exp domain.Expr,
 	getEnv func(string) string,
 	param *ParamListHiddenComments,
 	paramExpr map[string]interface{},
@@ -173,10 +175,10 @@ func listHiddenComments( //nolint:funlen
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	for _, comment := range comments {
-		nodeID := comment.ID
+	for _, cmt := range comments {
+		nodeID := cmt.ID
 		// TODO remove these filters
-		if isExcludedComment(comment, login) {
+		if isExcludedComment(cmt, login) {
 			logE.WithFields(logrus.Fields{
 				"node_id": nodeID,
 				"login":   login,
@@ -185,10 +187,10 @@ func listHiddenComments( //nolint:funlen
 		}
 
 		metadata := map[string]interface{}{}
-		hasMeta := extractMetaFromComment(comment.Body, &metadata)
+		hasMeta := comment.ExtractMetaFromComment(cmt.Body, &metadata)
 		paramMap := map[string]interface{}{
 			"Comment": map[string]interface{}{
-				"Body": comment.Body,
+				"Body": cmt.Body,
 				// "CreatedAt": comment.CreatedAt,
 				"Meta":    metadata,
 				"HasMeta": hasMeta,
