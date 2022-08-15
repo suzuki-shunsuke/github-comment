@@ -81,18 +81,18 @@ func (runner *Runner) execAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
 
-	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	gh, err := getGitHub(c.Context, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
 	ctrl := api.ExecController{
-		Wd:        wd,
-		Getenv:    os.Getenv,
-		Stdin:     runner.Stdin,
-		Stdout:    runner.Stdout,
-		Stderr:    runner.Stderr,
-		Commenter: commenter,
+		Wd:     wd,
+		Getenv: os.Getenv,
+		Stdin:  runner.Stdin,
+		Stdout: runner.Stdout,
+		Stderr: runner.Stderr,
+		GitHub: gh,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
