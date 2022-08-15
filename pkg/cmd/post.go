@@ -10,9 +10,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
@@ -81,21 +81,25 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	return nil
 }
 
-func getCommenter(ctx context.Context, opts *option.Options, cfg *config.Config) (api.Commenter, error) {
+func getGitHub(ctx context.Context, opts *option.Options, cfg *config.Config) (api.GitHub, error) {
 	if opts.DryRun {
-		return &comment.Mock{
+		return &github.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}, nil
 	}
 	if opts.SkipNoToken && opts.Token == "" {
-		return &comment.Mock{
+		return &github.Mock{
 			Stderr: os.Stderr,
 			Silent: opts.Silent,
 		}, nil
 	}
 
-	return comment.New(ctx, opts.Token, cfg.GHEBaseURL, cfg.GHEGraphQLEndpoint) //nolint:wrapcheck
+	return github.New(ctx, &github.ParamNew{ //nolint:wrapcheck
+		Token:              opts.Token,
+		GHEBaseURL:         cfg.GHEBaseURL,
+		GHEGraphQLEndpoint: cfg.GHEGraphQLEndpoint,
+	})
 }
 
 func setLogLevel(logLevel string) {
@@ -145,7 +149,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get()
 
-	commenter, err := getCommenter(c.Context, &opts.Options, cfg)
+	gh, err := getGitHub(c.Context, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -156,9 +160,9 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		HasStdin: func() bool {
 			return !term.IsTerminal(0)
 		},
-		Stdin:     runner.Stdin,
-		Stderr:    runner.Stderr,
-		Commenter: commenter,
+		Stdin:  runner.Stdin,
+		Stderr: runner.Stderr,
+		GitHub: gh,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},

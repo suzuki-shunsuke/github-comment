@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/suzuki-shunsuke/github-comment/pkg/comment"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/pkg/template"
 )
@@ -17,7 +17,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	data := []struct {
 		title string
 		ctrl  *PostController
-		exp   *comment.Comment
+		exp   *github.Comment
 		isErr bool
 		opts  *option.PostOptions
 	}{
@@ -43,7 +43,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				},
 				StdinTemplate: true,
 			},
-			exp: &comment.Comment{
+			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -72,7 +72,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					Template: "foo",
 				},
 			},
-			exp: &comment.Comment{
+			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -110,7 +110,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					PRNumber:    1,
 				},
 			},
-			exp: &comment.Comment{
+			exp: &github.Comment{
 				Org:         "suzuki-shunsuke",
 				Repo:        "github-comment",
 				PRNumber:    1,
@@ -146,7 +146,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					Template: `{{.Org}} {{.Repo}} {{.PRNumber}}`,
 				},
 			},
-			exp: &comment.Comment{
+			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
@@ -178,7 +178,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				},
 				StdinTemplate: true,
 			},
-			exp: &comment.Comment{
+			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,

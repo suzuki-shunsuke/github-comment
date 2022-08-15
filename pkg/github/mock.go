@@ -1,4 +1,4 @@
-package comment
+package github
 
 import (
 	"context"
@@ -8,12 +8,13 @@ import (
 )
 
 type Mock struct {
-	Stderr io.Writer
-	Silent bool
-	Login  string
+	Stderr   io.Writer
+	Silent   bool
+	Login    string
+	PRNumber int
 }
 
-func (mock *Mock) Create(ctx context.Context, cmt *Comment) error {
+func (mock *Mock) CreateComment(ctx context.Context, cmt *Comment) error {
 	if mock.Silent {
 		return nil
 	}
@@ -29,10 +30,14 @@ func (mock *Mock) HideComment(ctx context.Context, nodeID string) error {
 	return nil
 }
 
-func (mock *Mock) List(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
+func (mock *Mock) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
 	return nil, nil
 }
 
-func (mock Mock) GetAuthenticatedUser(ctx context.Context) (string, error) {
+func (mock *Mock) GetAuthenticatedUser(ctx context.Context) (string, error) {
 	return mock.Login, nil
+}
+
+func (mock *Mock) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
+	return mock.PRNumber, nil
 }
