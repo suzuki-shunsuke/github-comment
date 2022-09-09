@@ -1,7 +1,6 @@
 package fsys
 
 import (
-	"io/ioutil"
 	"os"
 )
 
@@ -13,5 +12,5 @@ func (*Fsys) Exist(path string) bool {
 }
 
 func (*Fsys) Write(path string, content []byte) error {
-	return ioutil.WriteFile(path, content, 0o755) //nolint:gosec,gomnd,wrapcheck
+	return os.WriteFile(path, content, 0o755) //nolint:gosec,gomnd,wrapcheck
 }
