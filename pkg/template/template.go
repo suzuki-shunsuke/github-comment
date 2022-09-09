@@ -38,7 +38,8 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 			os.Getenv("DRONE_STEP_NUMBER"),
 		),
 		"github-actions": fmt.Sprintf(
-			`[Build link](https://github.com/%s/actions/runs/%s)`,
+			`[Build link](%s/%s/actions/runs/%s)`,
+      os.Getenv("GITHUB_SERVER_URL"),
 			os.Getenv("GITHUB_REPOSITORY"),
 			os.Getenv("GITHUB_RUN_ID"),
 		),
