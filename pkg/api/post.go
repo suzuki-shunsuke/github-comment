@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/pkg/config"
@@ -293,7 +292,7 @@ func (ctrl *PostController) readTemplateFromStdin() (string, error) {
 	if !ctrl.HasStdin() {
 		return "", nil
 	}
-	b, err := ioutil.ReadAll(ctrl.Stdin)
+	b, err := io.ReadAll(ctrl.Stdin)
 	if err != nil {
 		return "", fmt.Errorf("failed to read standard input: %w", err)
 	}
