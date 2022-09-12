@@ -182,11 +182,13 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 
 	cfg := ctrl.Config
 
-	if opts.Org == "" {
-		opts.Org = cfg.Base.Org
-	}
-	if opts.Repo == "" {
-		opts.Repo = cfg.Base.Repo
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
 	}
 
 	if err := option.ValidatePost(opts); err != nil {

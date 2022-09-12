@@ -55,11 +55,13 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 
 	cfg := ctrl.Config
 
-	if opts.Org == "" {
-		opts.Org = cfg.Base.Org
-	}
-	if opts.Repo == "" {
-		opts.Repo = cfg.Base.Repo
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
 	}
 
 	result, execErr := ctrl.Executor.Run(ctx, &execute.Params{

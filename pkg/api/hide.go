@@ -72,11 +72,13 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 
 	cfg := ctrl.Config
 
-	if opts.Org == "" {
-		opts.Org = cfg.Base.Org
-	}
-	if opts.Repo == "" {
-		opts.Repo = cfg.Base.Repo
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
 	}
 
 	if err := option.ValidateHide(opts); err != nil {
