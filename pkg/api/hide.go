@@ -36,7 +36,7 @@ func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) 
 		return err
 	}
 	nodeIDs, err := listHiddenComments(
-		ctx, ctrl.GitHub, ctrl.Expr, ctrl.Getenv, param, nil)
+		ctx, ctrl.GitHub, ctrl.Expr, param, nil)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,6 @@ type ParamListHiddenComments struct {
 func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	gh GitHub, exp Expr,
-	getEnv func(string) string,
 	param *ParamListHiddenComments,
 	paramExpr map[string]interface{},
 ) ([]string, error) {
@@ -203,7 +202,6 @@ func listHiddenComments( //nolint:funlen
 			},
 			"HideKey": param.HideKey,
 			"Vars":    param.Vars,
-			"Env":     getEnv,
 		}
 		for k, v := range paramExpr {
 			paramMap[k] = v

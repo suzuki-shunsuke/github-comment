@@ -19,7 +19,6 @@ type Config struct {
 	Hide               map[string]string
 	SkipNoToken        bool `yaml:"skip_no_token"`
 	Silent             bool
-	Complement         *Complement
 }
 
 type Base struct {

@@ -100,7 +100,6 @@ func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *github
 				"SHA1":     cmt.SHA1,
 			},
 			"Vars": cmt.Vars,
-			"Env":  ctrl.Getenv,
 		}
 
 		logrus.WithFields(logrus.Fields{

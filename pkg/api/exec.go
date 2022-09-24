@@ -118,7 +118,6 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
-		Env:            ctrl.Getenv,
 	}, templates); err != nil {
 		if !opts.Silent {
 			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
@@ -137,7 +136,6 @@ type ExecCommentParams struct {
 	Command        string
 	JoinCommand    string
 	ExitCode       int
-	Env            func(string) string
 	// PRNumber is the pull request number where the comment is posted
 	PRNumber int
 	// Org is the GitHub Organization or User name

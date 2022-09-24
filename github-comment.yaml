@@ -1,11 +1,11 @@
 ---
 post:
   default: |
-    CIRCLE_PULL_REQUEST: {{Env "CIRCLE_PULL_REQUEST"}}
+    foo
   hello:
     # update: 'Comment.HasMeta && Comment.Meta.TemplateKey == "hello"'
     template: |
-      $Hello: {{Env "HELLO"}} {{ "hello!" | upper | repeat 5 }}
+      $Hello: foo {{ "hello!" | upper | repeat 5 }}
 
 exec:
   hello:
@@ -18,7 +18,6 @@ exec:
         combined output: {{.CombinedOutput}}
     - when: true
       template: |
-        $Hello: {{Env "HELLO"}}
         exit code: {{.ExitCode}}
         stdout: {{.Stdout}}
         stderr: {{.Stderr}}

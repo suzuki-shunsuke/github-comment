@@ -147,7 +147,7 @@ func (runner *Runner) postAction(c *cli.Context) error {
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform = platform.Get(getPlatformParam(cfg.Complement))
+	var pt api.Platform = platform.Get()
 
 	gh, err := getGitHub(c.Context, &opts.Options, cfg)
 	if err != nil {

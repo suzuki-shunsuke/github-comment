@@ -23,12 +23,28 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 		cloudBuildRegion = "global"
 	}
 	buildLinks := map[string]string{
-		"circleci":       `[workflow](https://circleci.com/workflow-run/{{env "CIRCLE_WORKFLOW_ID" }}) [job]({{env "CIRCLE_BUILD_URL"}}) (job: {{env "CIRCLE_JOB"}})`,
-		"codebuild":      `[Build link]({{env "CODEBUILD_BUILD_URL"}})`,
-		"drone":          `[build]({{env "DRONE_BUILD_LINK"}}) [step]({{env "DRONE_BUILD_LINK"}}/{{env "DRONE_STAGE_NUMBER"}}/{{env "DRONE_STEP_NUMBER"}})`,
-		"github-actions": `[Build link]({{env "GITHUB_SERVER_URL"}}/{{env "GITHUB_REPOSITORY"}}/actions/runs/{{env "GITHUB_RUN_ID"}})`,
-		"google-cloud-build": fmt.Sprintf(
-			"[Build link](https://console.cloud.google.com/cloud-build/builds;region=%s/%s?project=%s)",
+		"circleci": fmt.Sprintf(
+			`[workflow](https://circleci.com/workflow-run/%s) [job](%s) (job: %s)`,
+			os.Getenv("CIRCLE_WORKFLOW_ID"),
+			os.Getenv("CIRCLE_BUILD_URL"),
+			os.Getenv("CIRCLE_JOB"),
+		),
+		"codebuild": fmt.Sprintf(`[Build link](%s)`, os.Getenv("CODEBUILD_BUILD_URL")),
+		"drone": fmt.Sprintf(
+			`[build](%s) [step](%s/%s/%s)`,
+			os.Getenv("DRONE_BUILD_LINK"),
+			os.Getenv("DRONE_BUILD_LINK"),
+			os.Getenv("DRONE_STAGE_NUMBER"),
+			os.Getenv("DRONE_STEP_NUMBER"),
+		),
+		"github-actions": fmt.Sprintf(
+			`[Build link](%s/%s/actions/runs/%s)`,
+			os.Getenv("GITHUB_SERVER_URL"),
+			os.Getenv("GITHUB_REPOSITORY"),
+			os.Getenv("GITHUB_RUN_ID"),
+		),
+		"cloud-build": fmt.Sprintf(
+			"https://console.cloud.google.com/cloud-build/builds;region=%s/%s?project=%s",
 			cloudBuildRegion,
 			os.Getenv("BUILD_ID"),
 			os.Getenv("PROJECT_ID"),
@@ -81,10 +97,16 @@ func avoidHTMLEscape(text string) template.HTML {
 
 func (renderer *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
+
+	// delete some functions for security reason
+	funcs := sprig.FuncMap()
+	delete(funcs, "env")
+	delete(funcs, "expandenv")
+	delete(funcs, "getHostByName")
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
 		"Env":             renderer.Getenv,
 		"AvoidHTMLEscape": avoidHTMLEscape,
-	}).Funcs(sprig.FuncMap()).Parse(tpl)
+	}).Funcs(funcs).Parse(tpl)
 	if err != nil {
 		return "", fmt.Errorf("parse a template: %w", err)
 	}
