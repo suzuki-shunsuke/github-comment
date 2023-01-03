@@ -218,6 +218,10 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:  "var",
 						Usage: "template variable",
 					},
+					&cli.StringSliceFlag{
+						Name:  "var-file",
+						Usage: "template variable name and file path",
+					},
 					&cli.BoolFlag{
 						Name:  "dry-run",
 						Usage: "output a comment to standard error output instead of posting to GitHub",
