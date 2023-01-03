@@ -7,7 +7,7 @@ image_pull_secrets:
   - dockerconfig
 steps:
   - name: shellcheck
-    image: koalaman/shellcheck-alpine:v0.7.2
+    image: koalaman/shellcheck-alpine:v0.9.0
     commands:
       - shellcheck scripts/* githooks/*
   - name: shfmt
