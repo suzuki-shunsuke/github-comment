@@ -28,6 +28,20 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 	opts.HideKey = c.String("hide-key")
 	opts.Condition = c.String("condition")
 	opts.SHA1 = c.String("sha1")
+
+	vars, err := parseVarsFlag(c.StringSlice("var"))
+	if err != nil {
+		return err
+	}
+	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
+	if err != nil {
+		return err
+	}
+	for k, v := range varFiles {
+		vars[k] = v
+	}
+	opts.Vars = vars
+
 	return nil
 }
 
