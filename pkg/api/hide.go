@@ -48,7 +48,7 @@ func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) 
 	return nil
 }
 
-func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop
+func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
 	param := &ParamListHiddenComments{}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementHide(opts); err != nil {
@@ -94,6 +94,13 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 		hideCondition = a
 	}
 
+	if cfg.Vars == nil {
+		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+	}
+	for k, v := range opts.Vars {
+		cfg.Vars[k] = v
+	}
+
 	return &ParamListHiddenComments{
 		PRNumber:  opts.PRNumber,
 		Org:       opts.Org,
@@ -101,6 +108,7 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 		SHA1:      opts.SHA1,
 		Condition: hideCondition,
 		HideKey:   opts.HideKey,
+		Vars:      cfg.Vars,
 	}, nil
 }
 
