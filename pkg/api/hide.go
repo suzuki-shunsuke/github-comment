@@ -101,6 +101,7 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 		SHA1:      opts.SHA1,
 		Condition: hideCondition,
 		HideKey:   opts.HideKey,
+		Vars:      opts.Vars,
 	}, nil
 }
 
@@ -133,7 +134,7 @@ type ParamListHiddenComments struct {
 	Repo      string
 	SHA1      string
 	PRNumber  int
-	Vars      map[string]interface{}
+	Vars      map[string]string
 }
 
 func listHiddenComments( //nolint:funlen
