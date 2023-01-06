@@ -1,12 +1,11 @@
 ---
 name: CI
+permissions: {}
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-permissions:
-  contents: read # For checkout
 env:
   AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
 jobs:
