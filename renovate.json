@@ -2,13 +2,7 @@
   "extends": [
     "config:base",
     "helpers:pinGitHubActionDigests",
-    "github>suzuki-shunsuke/renovate-config",
+    "github>suzuki-shunsuke/renovate-config#1.0.0",
     "github>aquaproj/aqua-renovate-config#1.5.1"
-  ],
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["digest"],
-      "enabled": false
-    }
   ]
 }
