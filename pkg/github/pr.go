@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v49/github"
 )
 
 func (client *Client) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
