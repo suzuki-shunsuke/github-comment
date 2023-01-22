@@ -1,8 +1,0 @@
-{
-  "extends": [
-    "config:base",
-    "helpers:pinGitHubActionDigests",
-    "github>suzuki-shunsuke/renovate-config#1.1.1",
-    "github>aquaproj/aqua-renovate-config#1.5.1"
-  ]
-}
