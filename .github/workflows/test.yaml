@@ -47,7 +47,7 @@ jobs:
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@ef3bf756c7e21e23d232b73fd7bab92c848455cf # v0.2.1
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@d066660eecb8f8a005d498a561d1938e3a843571 # v0.4.1
     if: "! github.event.pull_request.head.repo.fork"
     permissions:
       pull-requests: write
