@@ -100,27 +100,13 @@ jobs:
 
   enable-automerge:
     # Enable automerge to merge pull requests from Renovate automatically.
-    runs-on: ubuntu-latest
     needs:
       - status-check
-    permissions:
-      contents: write # For enable automerge
-      pull-requests: write # For enable automerge
-    # "! failure() && ! cancelled()" is required. success() returns false if dependent jobs are skipped. https://github.com/community/community/discussions/45058
-    # By default success() is used so we have to override success() by "! failure() && ! cancelled()"
-    if: |
-      ! failure() && ! cancelled() && github.event.pull_request.user.login == 'renovate[bot]' && contains(github.event.pull_request.body, ' **Automerge**: Enabled.')
-    steps:
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@021a2405c7f990db57f5eae5397423dcc554159c # v1
-        with:
-          app_id: ${{secrets.APP_ID}}
-          private_key: ${{secrets.APP_PRIVATE_KEY}}
-      - run: gh -R "$GITHUB_REPOSITORY" pr merge --merge --auto --delete-branch "$PR_NUMBER"
-        env:
-          GITHUB_TOKEN: ${{steps.generate_token.outputs.token}} # Use GitHub App to trigger GitHub Actions Workflow by merge commit.
-          PR_NUMBER: ${{github.event.pull_request.number}}
+    uses: suzuki-shunsuke/renovate-enable-automerge-workflow/.github/workflows/enable_automerge.yaml@feat/first-pr
+    secrets:
+      gh_app_id: ${{secrets.APP_ID}}
+      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
+    permissions: {}
 
   status-check:
     # This job is used for main branch's branch protection rule's status check.
