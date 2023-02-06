@@ -11,4 +11,4 @@ registries:
     ref: v3.127.0 # renovate: depName=aquaproj/aqua-registry
 packages:
   # Split packages per package with `import` to avoid pull requests' conflict
-  - import: aqua/*.yaml
+  - import: imports/*.yaml

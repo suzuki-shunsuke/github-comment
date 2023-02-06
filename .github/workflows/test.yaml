@@ -4,7 +4,7 @@ permissions: {}
 on: pull_request
 
 env:
-  AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
+  AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua/policy.yaml
 
 jobs:
   path-filter:
@@ -21,15 +21,15 @@ jobs:
         with:
           filters: |
             update-aqua-checksums:
-              - aqua.yaml
-              - aqua/*.yaml
-              - aqua-checksums.json
+              - aqua/aqua.yaml
+              - aqua/imports/*.yaml
+              - aqua/aqua-checksums.json
               - .github/workflows/test.yaml
             renovate-config-validator:
               - renovate.json5
             ghalint:
               - .github/workflows/*.yaml
-              - aqua/ghalint.yaml
+              - aqua/imports/ghalint.yaml
 
   update-aqua-checksums:
     # Update aqua-checksums.json and push a commit
@@ -39,7 +39,7 @@ jobs:
     permissions:
       contents: read
     with:
-      aqua_policy_config: aqua-policy.yaml
+      aqua_policy_config: aqua/policy.yaml
       aqua_version: v1.33.0
       prune: true
     secrets:
@@ -49,7 +49,7 @@ jobs:
   test:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@d066660eecb8f8a005d498a561d1938e3a843571 # v0.4.1
     with:
-      aqua_policy_config: aqua-policy.yaml
+      aqua_policy_config: aqua/policy.yaml
       aqua_version: v1.33.0
       go-version: 1.19.5
       golangci-lint-timeout: 120s
