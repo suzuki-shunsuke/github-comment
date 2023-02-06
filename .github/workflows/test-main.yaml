@@ -7,6 +7,9 @@ on:
 
 permissions: {}
 
+env:
+  AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua/policy.yaml
+
 jobs:
   test-main:
     runs-on: ubuntu-latest
