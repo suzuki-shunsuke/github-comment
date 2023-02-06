@@ -5,6 +5,6 @@
     "github>suzuki-shunsuke/renovate-config#1.1.2",
     "github>suzuki-shunsuke/renovate-config:nolimit#1.1.2",
     "github>aquaproj/aqua-renovate-config#1.5.2",
-    "github>aquaproj/aqua-renovate-config:file#1.5.2(aquaproj/imports/.*\\.ya?ml)",
+    "github>aquaproj/aqua-renovate-config:file#1.5.2(aqua/imports/.*\\.ya?ml)",
   ],
 }
