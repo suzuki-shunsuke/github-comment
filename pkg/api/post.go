@@ -152,6 +152,16 @@ type Platform interface {
 }
 
 func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
+	cfg := ctrl.Config
+
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
+	}
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementPost(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
@@ -178,17 +188,6 @@ func (ctrl *PostController) getCommentParams(ctx context.Context, opts *option.P
 			return nil, err
 		}
 		opts.Template = tpl
-	}
-
-	cfg := ctrl.Config
-
-	if cfg.Base != nil {
-		if opts.Org == "" {
-			opts.Org = cfg.Base.Org
-		}
-		if opts.Repo == "" {
-			opts.Repo = cfg.Base.Repo
-		}
 	}
 
 	if err := option.ValidatePost(opts); err != nil {

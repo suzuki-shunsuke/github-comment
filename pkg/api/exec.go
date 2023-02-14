@@ -33,6 +33,17 @@ type ExecController struct {
 }
 
 func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
+	cfg := ctrl.Config
+
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
+	}
+
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementExec(opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
@@ -50,17 +61,6 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		}
 		if prNum > 0 {
 			opts.PRNumber = prNum
-		}
-	}
-
-	cfg := ctrl.Config
-
-	if cfg.Base != nil {
-		if opts.Org == "" {
-			opts.Org = cfg.Base.Org
-		}
-		if opts.Repo == "" {
-			opts.Repo = cfg.Base.Repo
 		}
 	}
 

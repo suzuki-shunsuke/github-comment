@@ -50,6 +50,18 @@ func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) 
 
 func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
 	param := &ParamListHiddenComments{}
+
+	cfg := ctrl.Config
+
+	if cfg.Base != nil {
+		if opts.Org == "" {
+			opts.Org = cfg.Base.Org
+		}
+		if opts.Repo == "" {
+			opts.Repo = cfg.Base.Repo
+		}
+	}
+
 	if ctrl.Platform != nil {
 		if err := ctrl.Platform.ComplementHide(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
@@ -67,17 +79,6 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 		}
 		if prNum > 0 {
 			opts.PRNumber = prNum
-		}
-	}
-
-	cfg := ctrl.Config
-
-	if cfg.Base != nil {
-		if opts.Org == "" {
-			opts.Org = cfg.Base.Org
-		}
-		if opts.Repo == "" {
-			opts.Repo = cfg.Base.Repo
 		}
 	}
 
