@@ -51,7 +51,7 @@ jobs:
     with:
       aqua_policy_config: aqua/policy.yaml
       aqua_version: v2.2.2
-      go-version: 1.20.1
+      go-version: 1.20.3
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
-          go-version: 1.20.1
+          go-version: 1.20.3
 
       - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
         with:
