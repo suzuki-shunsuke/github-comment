@@ -35,12 +35,12 @@ jobs:
     # Update aqua-checksums.json and push a commit
     needs: path-filter
     if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@ce983a56c3dea928294a00d172ad1ec7253257a5 # v0.1.1
+    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@c766f4606e9aedc9c5c864f7ee28aed25284a3cf # v0.1.4
     permissions:
       contents: read
     with:
       aqua_policy_config: aqua/policy.yaml
-      aqua_version: v1.33.0
+      aqua_version: v2.2.2
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
@@ -50,7 +50,7 @@ jobs:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@d066660eecb8f8a005d498a561d1938e3a843571 # v0.4.1
     with:
       aqua_policy_config: aqua/policy.yaml
-      aqua_version: v1.33.0
+      aqua_version: v2.2.2
       go-version: 1.20.1
       golangci-lint-timeout: 120s
     permissions:
@@ -61,14 +61,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
           go-version: 1.20.1
 
       - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
         with:
-          aqua_version: v1.33.0
+          aqua_version: v2.2.2
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
         with:
-          aqua_version: v1.33.0
+          aqua_version: v2.2.2
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
