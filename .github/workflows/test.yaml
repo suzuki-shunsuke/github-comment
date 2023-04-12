@@ -47,7 +47,7 @@ jobs:
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@d066660eecb8f8a005d498a561d1938e3a843571 # v0.4.1
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@b5eca11eb556672e54d5f0ac6a4d6744630727bd # v0.4.2
     with:
       aqua_policy_config: aqua/policy.yaml
       aqua_version: v2.3.2
