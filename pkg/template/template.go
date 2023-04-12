@@ -53,7 +53,7 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 
 	builtinTemplates := map[string]string{
 		"status":       `:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:`,
-		"join_command": `{{printf "$ %q" .JoinCommand | WrapCode}}`,
+		"join_command": "```\n$ {{.JoinCommand | AvoidHTMLEscape}}\n```",
 		"hidden_combined_output": `<details>
 
 {{WrapCode .CombinedOutput}}
