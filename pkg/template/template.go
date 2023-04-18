@@ -118,6 +118,7 @@ func (renderer *Renderer) Render(tpl string, templates map[string]string, params
 	delete(funcs, "expandenv")
 	delete(funcs, "getHostByName")
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
+		"Env":             renderer.Getenv,
 		"AvoidHTMLEscape": avoidHTMLEscape,
 		"WrapCode":        wrapCode,
 	}).Funcs(funcs).Parse(tpl)
