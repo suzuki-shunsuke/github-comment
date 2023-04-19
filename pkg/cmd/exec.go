@@ -30,16 +30,9 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Silent = c.Bool("silent")
 	opts.LogLevel = c.String("log-level")
 
-	vars, err := parseVarsFlag(c.StringSlice("var"))
+	vars, err := parseVars(c)
 	if err != nil {
 		return err
-	}
-	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
-	if err != nil {
-		return err
-	}
-	for k, v := range varFiles {
-		vars[k] = v
 	}
 	opts.Vars = vars
 
