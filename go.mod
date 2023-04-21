@@ -1,4 +1,4 @@
-module github.com/suzuki-shunsuke/github-comment
+module github.com/suzuki-shunsuke/github-comment/v6
 
 go 1.19
 

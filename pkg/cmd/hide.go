@@ -5,11 +5,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/config"
-	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/term"
 )
