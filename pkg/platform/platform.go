@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/go-ci-env/v3/cienv"
 )
 

@@ -7,9 +7,9 @@ import (
 	"io"
 
 	"github.com/sirupsen/logrus"
-	"github.com/suzuki-shunsuke/github-comment/pkg/config"
-	"github.com/suzuki-shunsuke/github-comment/pkg/github"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 )
 
 type HideController struct {

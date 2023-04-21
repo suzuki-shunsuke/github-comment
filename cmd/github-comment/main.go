@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/cmd"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/cmd"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
