@@ -5,10 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
+	"time"
 
 	"github.com/mattn/go-colorable"
-	"github.com/suzuki-shunsuke/go-timeout/timeout"
 )
 
 type Executor struct {
@@ -31,8 +32,17 @@ type Params struct {
 	Stdin io.Reader
 }
 
+const waitDelay = 1000 * time.Hour
+
+func setCancel(cmd *exec.Cmd) {
+	cmd.Cancel = func() error {
+		return cmd.Process.Signal(os.Interrupt) //nolint:wrapcheck
+	}
+	cmd.WaitDelay = waitDelay
+}
+
 func (executor *Executor) Run(ctx context.Context, params *Params) (*Result, error) {
-	cmd := exec.Command(params.Cmd, params.Args...) //nolint:gosec
+	cmd := exec.CommandContext(ctx, params.Cmd, params.Args...) //nolint:gosec
 	cmd.Stdin = params.Stdin
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -44,8 +54,9 @@ func (executor *Executor) Run(ctx context.Context, params *Params) (*Result, err
 	cmd.Stderr = io.MultiWriter(executor.Stderr, uncolorizedStderr, uncolorizedCombinedOutput)
 	cmd.Env = executor.Env
 
-	runner := timeout.NewRunner(0)
-	err := runner.Run(ctx, cmd)
+	setCancel(cmd)
+	err := cmd.Run()
+
 	ec := cmd.ProcessState.ExitCode()
 	result := &Result{
 		ExitCode:       ec,
