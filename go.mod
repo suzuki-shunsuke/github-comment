@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/antonmedv/expr v1.13.0
+	github.com/antonmedv/expr v1.14.0
 	github.com/google/go-github/v49 v49.1.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/shurcooL/githubv4 v0.0.0-20201206200315-234843c633fa
