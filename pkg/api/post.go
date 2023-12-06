@@ -47,7 +47,7 @@ func (ctrl *PostController) Post(ctx context.Context, opts *option.PostOptions) 
 		Expr:   ctrl.Expr,
 		Getenv: ctrl.Getenv,
 	}
-	return cmtCtrl.Post(ctx, cmt, nil)
+	return cmtCtrl.Post(ctx, cmt)
 }
 
 func (ctrl *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Comment, updateCondition string) error { //nolint:funlen

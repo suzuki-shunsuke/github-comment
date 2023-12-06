@@ -293,14 +293,5 @@ func (ctrl *ExecController) post(
 		Expr:   ctrl.Expr,
 		Getenv: ctrl.Getenv,
 	}
-	return cmtCtrl.Post(ctx, cmt, map[string]interface{}{
-		"Command": map[string]interface{}{
-			"ExitCode":       cmtParams.ExitCode,
-			"JoinCommand":    cmtParams.JoinCommand,
-			"Command":        cmtParams.Command,
-			"Stdout":         cmtParams.Stdout,
-			"Stderr":         cmtParams.Stderr,
-			"CombinedOutput": cmtParams.CombinedOutput,
-		},
-	})
+	return cmtCtrl.Post(ctx, cmt)
 }

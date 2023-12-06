@@ -67,10 +67,10 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 			t.Parallel()
 			execConfig, f, err := d.ctrl.getExecConfig(d.execConfigs, d.cmtParams)
 			if d.isErr {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				return
 			}
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, d.exp, execConfig)
 			require.Equal(t, d.f, f)
 		})

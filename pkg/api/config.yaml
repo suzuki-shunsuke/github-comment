@@ -1,0 +1,58 @@
+---
+# skip_no_token: true
+# base:
+#   org:
+#   repo:
+# vars:
+#   foo: bar
+#   zoo:
+#     foo: hello
+# templates:
+#   header: "# {{.Org}}/{{.Repo}}"
+# post:
+#   default:
+#     template: |
+#       {{template "header" .}}
+#       {{.Vars.foo}} {{.Vars.zoo.foo}}
+#       {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+#   hello:
+#     template: hello
+# exec:
+#   hello:
+#     - when: true
+#       template: |
+#         {{template "header" .}}
+#         {{.Vars.foo}} {{.Vars.zoo.foo}}
+#         {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+#         exit code: {{.ExitCode}}
+#
+#         ```console
+#         $ {{.Command}}
+#         ```
+#
+#         Stdout:
+#
+#         ```
+#         {{.Stdout}}
+#         ```
+#
+#         Stderr:
+#
+#         ```
+#         {{.Stderr}}
+#         ```
+#
+#         CombinedOutput:
+#
+#         ```
+#         {{.CombinedOutput}}
+#         ```
+#       template_for_too_long: |
+#         {{template "header" .}}
+#         {{.Vars.foo}} {{.Vars.zoo.foo}}
+#         {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+#         exit code: {{.ExitCode}}
+#
+#         ```console
+#         $ {{.Command}}
+#         ```
