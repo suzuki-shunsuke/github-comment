@@ -24,7 +24,7 @@ type CommentController struct {
 	Platform Platform
 }
 
-func (ctrl *CommentController) Post(ctx context.Context, cmt *github.Comment, hiddenParam map[string]interface{}) error {
+func (ctrl *CommentController) Post(ctx context.Context, cmt *github.Comment) error {
 	if err := ctrl.GitHub.CreateComment(ctx, cmt); err != nil {
 		return fmt.Errorf("send a comment: %w", err)
 	}
