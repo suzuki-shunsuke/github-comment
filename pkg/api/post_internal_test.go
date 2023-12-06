@@ -193,10 +193,10 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 			t.Parallel()
 			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
 			if d.isErr {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				return
 			}
-			require.Nil(t, err)
+			require.NoError(t, err)
 			cmt.Body = ""
 			cmt.BodyForTooLong = ""
 			require.Equal(t, d.exp, cmt)
@@ -237,10 +237,10 @@ func TestPostController_readTemplateFromStdin(t *testing.T) {
 			t.Parallel()
 			tpl, err := d.ctrl.readTemplateFromStdin()
 			if d.isErr {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				return
 			}
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, d.exp, tpl)
 		})
 	}
