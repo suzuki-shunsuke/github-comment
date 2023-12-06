@@ -46,7 +46,7 @@ jobs:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@66610a63dfe5160d97e1b68bc53949ceed18e0db # v0.5.0
     with:
       aqua_version: v2.21.0
-      go-version: 1.21.4
+      go-version: 1.21.5
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.21.4
+          go-version: 1.21.5
 
       - uses: aquaproj/aqua-installer@928a2ee4243a9ee8312d80dc8cbaca88fb602a91 # v2.2.0
         with:
