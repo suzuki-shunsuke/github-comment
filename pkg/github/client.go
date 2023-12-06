@@ -35,7 +35,7 @@ func New(ctx context.Context, param *ParamNew) (*Client, error) {
 		client.user = gh.Users
 		client.pr = gh.PullRequests
 	} else {
-		gh, err := github.NewEnterpriseClient(param.GHEBaseURL, param.GHEBaseURL, httpClient)
+		gh, err := github.NewClient(httpClient).WithEnterpriseURLs(param.GHEBaseURL, param.GHEBaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("initialize GitHub Enterprise API Client: %w", err)
 		}
