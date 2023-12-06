@@ -1,4 +1,8 @@
 ---
+run:
+  skip-files:
+    - "mock\\.go$"
+    - "mock_[^/]*\\.go$"
 linters:
   enable-all: true
   disable:
@@ -17,3 +21,4 @@ linters:
     - godox
     - varnamelen
     - ireturn
+    - depguard
