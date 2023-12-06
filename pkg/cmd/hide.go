@@ -5,11 +5,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/config"
-	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/term"
 )
@@ -29,16 +29,9 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 	opts.Condition = c.String("condition")
 	opts.SHA1 = c.String("sha1")
 
-	vars, err := parseVarsFlag(c.StringSlice("var"))
+	vars, err := parseVars(c)
 	if err != nil {
 		return err
-	}
-	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
-	if err != nil {
-		return err
-	}
-	for k, v := range varFiles {
-		vars[k] = v
 	}
 	opts.Vars = vars
 

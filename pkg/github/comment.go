@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v57/github"
+	"github.com/sirupsen/logrus"
 )
 
 type Comment struct {
@@ -69,8 +70,14 @@ func (client *Client) sendCommitComment(ctx context.Context, cmt *Comment, body 
 }
 
 func (client *Client) createComment(ctx context.Context, cmt *Comment, tooLong bool) error {
+	logE := logrus.WithFields(logrus.Fields{
+		"program": "github-comment",
+	})
 	body := cmt.Body
 	if tooLong {
+		logE.WithFields(logrus.Fields{
+			"body_length": len(body),
+		}).Warn("body is too long so it is replaced with `BodyForTooLong`")
 		body = cmt.BodyForTooLong
 	}
 	if cmt.PRNumber != 0 {

@@ -36,12 +36,14 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 				Action: runner.postAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
+						Name:    "org",
+						Usage:   "GitHub organization name",
+						EnvVars: []string{"GH_COMMENT_REPO_ORG"},
 					},
 					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
+						Name:    "repo",
+						Usage:   "GitHub repository name",
+						EnvVars: []string{"GH_COMMENT_REPO_NAME"},
 					},
 					&cli.StringFlag{
 						Name:    "token",
@@ -49,8 +51,9 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
 					},
 					&cli.StringFlag{
-						Name:  "sha1",
-						Usage: "commit sha1",
+						Name:    "sha1",
+						Usage:   "commit sha1",
+						EnvVars: []string{"GH_COMMENT_SHA1"},
 					},
 					&cli.StringFlag{
 						Name:  "template",
@@ -63,12 +66,14 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Value:   "default",
 					},
 					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
+						Name:    "config",
+						Usage:   "configuration file path",
+						EnvVars: []string{"GH_COMMENT_CONFIG"},
 					},
 					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
+						Name:    "pr",
+						Usage:   "GitHub pull request number",
+						EnvVars: []string{"GH_COMMENT_PR_NUMBER"},
 					},
 					&cli.StringSliceFlag{
 						Name:  "var",
@@ -86,7 +91,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:    "skip-no-token",
 						Aliases: []string{"n"},
 						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+						EnvVars: []string{"GH_COMMENT_SKIP_NO_TOKEN", "GITHUB_COMMENT_SKIP_NO_TOKEN"},
 					},
 					&cli.BoolFlag{
 						Name:    "silent",
@@ -110,12 +115,14 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 				Action: runner.execAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
+						Name:    "org",
+						Usage:   "GitHub organization name",
+						EnvVars: []string{"GH_COMMENT_REPO_ORG"},
 					},
 					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
+						Name:    "repo",
+						Usage:   "GitHub repository name",
+						EnvVars: []string{"GH_COMMENT_REPO_NAME"},
 					},
 					&cli.StringFlag{
 						Name:    "token",
@@ -123,8 +130,9 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
 					},
 					&cli.StringFlag{
-						Name:  "sha1",
-						Usage: "commit sha1",
+						Name:    "sha1",
+						Usage:   "commit sha1",
+						EnvVars: []string{"GH_COMMENT_SHA1"},
 					},
 					&cli.StringFlag{
 						Name:  "template",
@@ -137,12 +145,14 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Value:   "default",
 					},
 					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
+						Name:    "config",
+						Usage:   "configuration file path",
+						EnvVars: []string{"GH_COMMENT_CONFIG"},
 					},
 					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
+						Name:    "pr",
+						Usage:   "GitHub pull request number",
+						EnvVars: []string{"GH_COMMENT_PR_NUMBER"},
 					},
 					&cli.StringSliceFlag{
 						Name:  "var",
@@ -160,7 +170,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:    "skip-no-token",
 						Aliases: []string{"n"},
 						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+						EnvVars: []string{"GH_COMMENT_SKIP_NO_TOKEN", "GITHUB_COMMENT_SKIP_NO_TOKEN"},
 					},
 					&cli.BoolFlag{
 						Name:    "silent",
@@ -180,12 +190,14 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 				Action: runner.hideAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "org",
-						Usage: "GitHub organization name",
+						Name:    "org",
+						Usage:   "GitHub organization name",
+						EnvVars: []string{"GH_COMMENT_REPO_ORG"},
 					},
 					&cli.StringFlag{
-						Name:  "repo",
-						Usage: "GitHub repository name",
+						Name:    "repo",
+						Usage:   "GitHub repository name",
+						EnvVars: []string{"GH_COMMENT_REPO_NAME"},
 					},
 					&cli.StringFlag{
 						Name:    "token",
@@ -193,8 +205,9 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						EnvVars: []string{"GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"},
 					},
 					&cli.StringFlag{
-						Name:  "config",
-						Usage: "configuration file path",
+						Name:    "config",
+						Usage:   "configuration file path",
+						EnvVars: []string{"GH_COMMENT_CONFIG"},
 					},
 					&cli.StringFlag{
 						Name:  "condition",
@@ -207,8 +220,9 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Value:   "default",
 					},
 					&cli.IntFlag{
-						Name:  "pr",
-						Usage: "GitHub pull request number",
+						Name:    "pr",
+						Usage:   "GitHub pull request number",
+						EnvVars: []string{"GH_COMMENT_PR_NUMBER"},
 					},
 					&cli.StringFlag{
 						Name:  "sha1",
@@ -230,7 +244,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 						Name:    "skip-no-token",
 						Aliases: []string{"n"},
 						Usage:   "works like dry-run if the GitHub Access Token isn't set",
-						EnvVars: []string{"GITHUB_COMMENT_SKIP_NO_TOKEN"},
+						EnvVars: []string{"GH_COMMENT_SKIP_NO_TOKEN", "GITHUB_COMMENT_SKIP_NO_TOKEN"},
 					},
 					&cli.BoolFlag{
 						Name:    "silent",
@@ -244,7 +258,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 			&cli.StringFlag{
 				Name:    "log-level",
 				Usage:   "log level",
-				EnvVars: []string{"GITHUB_COMMENT_LOG_LEVEL"},
+				EnvVars: []string{"GH_COMMENT_LOG_LEVEL"},
 			},
 		},
 	}

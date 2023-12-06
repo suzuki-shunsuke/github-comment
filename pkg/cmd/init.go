@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/fsys"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/fsys"
 	"github.com/urfave/cli/v2"
 )
 

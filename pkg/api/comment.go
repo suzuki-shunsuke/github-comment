@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/suzuki-shunsuke/github-comment-metadata/metadata"
-	"github.com/suzuki-shunsuke/github-comment/pkg/github"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
 )
 
 // GitHub is API to post a comment to GitHub

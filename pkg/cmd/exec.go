@@ -5,13 +5,13 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/config"
-	"github.com/suzuki-shunsuke/github-comment/pkg/execute"
-	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
-	"github.com/suzuki-shunsuke/github-comment/pkg/template"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/urfave/cli/v2"
 )
 
@@ -30,16 +30,9 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Silent = c.Bool("silent")
 	opts.LogLevel = c.String("log-level")
 
-	vars, err := parseVarsFlag(c.StringSlice("var"))
+	vars, err := parseVars(c)
 	if err != nil {
 		return err
-	}
-	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
-	if err != nil {
-		return err
-	}
-	for k, v := range varFiles {
-		vars[k] = v
 	}
 	opts.Vars = vars
 

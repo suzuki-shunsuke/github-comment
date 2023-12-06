@@ -52,15 +52,13 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 	}
 
 	builtinTemplates := map[string]string{
-		"status":                 `:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:`,
-		"join_command":           "```\n$ {{.JoinCommand | AvoidHTMLEscape}}\n```",
-		"hidden_combined_output": "<details>\n\n```\n{{.CombinedOutput | AvoidHTMLEscape}}\n```\n\n</details>",
-	}
-	if strings.Contains(param.JoinCommand, "```") {
-		builtinTemplates["join_command"] = "<pre><code>$ {{.JoinCommand | AvoidHTMLEscape}}</pre></code>"
-	}
-	if strings.Contains(param.CombinedOutput, "```") {
-		builtinTemplates["hidden_combined_output"] = "<details><pre><code>{{.CombinedOutput | AvoidHTMLEscape}}</code></pre></details>"
+		"status":       `:{{if eq .ExitCode 0}}white_check_mark{{else}}x{{end}}:`,
+		"join_command": "```\n$ {{.JoinCommand | AvoidHTMLEscape}}\n```",
+		"hidden_combined_output": `<details>
+
+{{WrapCode .CombinedOutput}}
+
+</details>`,
 	}
 
 	ret := map[string]string{
@@ -95,6 +93,22 @@ func avoidHTMLEscape(text string) template.HTML {
 	return template.HTML(text) //nolint:gosec
 }
 
+func wrapCode(text string) interface{} {
+	if len(text) > 60000 { //nolint:gomnd
+		text = text[:20000] + `
+
+# ...
+# ... The maximum length of GitHub Comment is 65536, so the content is omitted by github-comment.
+# ...
+
+` + text[len(text)-20000:]
+	}
+	if strings.Contains(text, "```") {
+		return template.HTML("<pre><code>" + template.HTMLEscapeString(text) + "</code></pre>") //nolint:gosec
+	}
+	return template.HTML("\n```\n" + text + "\n```\n") //nolint:gosec
+}
+
 func (renderer *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
 
@@ -104,8 +118,8 @@ func (renderer *Renderer) Render(tpl string, templates map[string]string, params
 	delete(funcs, "expandenv")
 	delete(funcs, "getHostByName")
 	tmpl, err := template.New("comment").Funcs(template.FuncMap{
-		"Env":             renderer.Getenv,
 		"AvoidHTMLEscape": avoidHTMLEscape,
+		"WrapCode":        wrapCode,
 	}).Funcs(funcs).Parse(tpl)
 	if err != nil {
 		return "", fmt.Errorf("parse a template: %w", err)

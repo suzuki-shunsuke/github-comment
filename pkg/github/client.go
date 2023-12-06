@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v57/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -35,7 +35,7 @@ func New(ctx context.Context, param *ParamNew) (*Client, error) {
 		client.user = gh.Users
 		client.pr = gh.PullRequests
 	} else {
-		gh, err := github.NewEnterpriseClient(param.GHEBaseURL, param.GHEBaseURL, httpClient)
+		gh, err := github.NewClient(httpClient).WithEnterpriseURLs(param.GHEBaseURL, param.GHEBaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("initialize GitHub Enterprise API Client: %w", err)
 		}
@@ -73,5 +73,5 @@ type UsersService interface {
 }
 
 type PullRequestsService interface {
-	ListPullRequestsWithCommit(ctx context.Context, owner, repo, sha string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
+	ListPullRequestsWithCommit(ctx context.Context, owner, repo, sha string, opts *github.ListOptions) ([]*github.PullRequest, *github.Response, error)
 }

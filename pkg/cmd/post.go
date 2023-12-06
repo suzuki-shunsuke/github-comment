@@ -2,53 +2,21 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/suzuki-shunsuke/github-comment/pkg/api"
-	"github.com/suzuki-shunsuke/github-comment/pkg/config"
-	"github.com/suzuki-shunsuke/github-comment/pkg/expr"
-	"github.com/suzuki-shunsuke/github-comment/pkg/github"
-	"github.com/suzuki-shunsuke/github-comment/pkg/option"
-	"github.com/suzuki-shunsuke/github-comment/pkg/platform"
-	"github.com/suzuki-shunsuke/github-comment/pkg/template"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/term"
 )
-
-func parseVarsFlag(varsSlice []string) (map[string]string, error) {
-	vars := make(map[string]string, len(varsSlice))
-	for _, v := range varsSlice {
-		a := strings.SplitN(v, ":", 2) //nolint:gomnd
-		if len(a) < 2 {                //nolint:gomnd
-			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
-		}
-		vars[a[0]] = a[1]
-	}
-	return vars, nil
-}
-
-func parseVarFilesFlag(varsSlice []string) (map[string]string, error) {
-	vars := make(map[string]string, len(varsSlice))
-	for _, v := range varsSlice {
-		a := strings.SplitN(v, ":", 2) //nolint:gomnd
-		if len(a) < 2 {                //nolint:gomnd
-			return nil, errors.New("invalid var flag. The format should be '--var <key>:<value>")
-		}
-		name := a[0]
-		filePath := a[1]
-		b, err := os.ReadFile(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("read the value of the variable %s from the file %s: %w", name, filePath, err)
-		}
-		vars[name] = string(b)
-	}
-	return vars, nil
-}
 
 // parsePostOptions parses the command line arguments of the subcommand "post".
 func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
@@ -66,18 +34,13 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.StdinTemplate = c.Bool("stdin-template")
 	opts.LogLevel = c.String("log-level")
 	opts.UpdateCondition = c.String("update-condition")
-	vars, err := parseVarsFlag(c.StringSlice("var"))
+
+	vars, err := parseVars(c)
 	if err != nil {
 		return err
-	}
-	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
-	if err != nil {
-		return err
-	}
-	for k, v := range varFiles {
-		vars[k] = v
 	}
 	opts.Vars = vars
+
 	return nil
 }
 

@@ -3,9 +3,6 @@ name: test
 permissions: {}
 on: pull_request
 
-env:
-  AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua/policy.yaml
-
 jobs:
   path-filter:
     # Get changed files to filter jobs
@@ -16,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         id: changes
         with:
           filters: |
@@ -35,23 +32,21 @@ jobs:
     # Update aqua-checksums.json and push a commit
     needs: path-filter
     if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@0ff0064b95b335a8ed93a36664e491d514c75df0 # v0.1.2
+    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@3598c506108a2e0e9e31a0c6ef9c202c77049420 # v0.1.9
     permissions:
       contents: read
     with:
-      aqua_policy_config: aqua/policy.yaml
-      aqua_version: v1.33.0
+      aqua_version: v2.21.0
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@d066660eecb8f8a005d498a561d1938e3a843571 # v0.4.1
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@66610a63dfe5160d97e1b68bc53949ceed18e0db # v0.5.0
     with:
-      aqua_policy_config: aqua/policy.yaml
-      aqua_version: v1.33.0
-      go-version: 1.20.1
+      aqua_version: v2.21.0
+      go-version: 1.21.4
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
@@ -61,21 +56,21 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.20.1
+          go-version: 1.21.4
 
-      - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
+      - uses: aquaproj/aqua-installer@928a2ee4243a9ee8312d80dc8cbaca88fb602a91 # v2.2.0
         with:
-          aqua_version: v1.33.0
+          aqua_version: v2.21.0
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
 
   renovate-config-validator:
     # Validate Renovate Configuration by renovate-config-validator.
-    uses: suzuki-shunsuke/renovate-config-validator-workflow/.github/workflows/validate.yaml@1a2fd7b15d99b1c434124b0bd2d8bd55b54ed869 # v0.2.0
+    uses: suzuki-shunsuke/renovate-config-validator-workflow/.github/workflows/validate.yaml@4a378742d05b4e67aae34039d7c779ac913cd79d # v0.2.3
     needs: path-filter
     if: needs.path-filter.outputs.renovate-config-validator == 'true'
     permissions:
@@ -89,35 +84,26 @@ jobs:
     permissions: {}
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
-      - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
+      - uses: aquaproj/aqua-installer@928a2ee4243a9ee8312d80dc8cbaca88fb602a91 # v2.2.0
         with:
-          aqua_version: v1.33.0
+          aqua_version: v2.21.0
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
         env:
           GHALINT_LOG_COLOR: always
 
-  enable-automerge:
+  enable-auto-merge:
+    uses: ./.github/workflows/wc-enable-auto-merge.yaml
     needs:
       - status-check
-    if: |
-      ! failure() && ! cancelled() && github.event.pull_request.user.login == 'renovate[bot]' && contains(github.event.pull_request.body, ' **Automerge**: Enabled.')
-    # Enable automerge to merge pull requests from Renovate automatically.
-    runs-on: ubuntu-latest
+    secrets:
+      gh_app_id: ${{secrets.APP_ID}}
+      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
     # "! failure() && ! cancelled()" is required. success() returns false if dependent jobs are skipped. https://github.com/community/community/discussions/45058
     # By default success() is used so we have to override success() by "! failure() && ! cancelled()"
-    steps:
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@021a2405c7f990db57f5eae5397423dcc554159c # v1
-        with:
-          app_id: ${{secrets.APP_ID}}
-          private_key: ${{secrets.APP_PRIVATE_KEY}}
-      - run: gh -R "$GITHUB_REPOSITORY" pr merge --merge --auto --delete-branch "$PR_NUMBER"
-        env:
-          GITHUB_TOKEN: ${{steps.generate_token.outputs.token}} # Use GitHub App to trigger GitHub Actions Workflow by merge commit.
-          PR_NUMBER: ${{github.event.pull_request.number}}
+    if: |
+      ! failure() && ! cancelled() && github.event.pull_request.user.login == 'renovate[bot]' && contains(github.event.pull_request.body, ' **Automerge**: Enabled.')
 
   status-check:
     # This job is used for main branch's branch protection rule's status check.
@@ -133,4 +119,3 @@ jobs:
     if: failure()
     steps:
       - run: exit 1
-
