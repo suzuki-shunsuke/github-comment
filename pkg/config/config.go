@@ -101,12 +101,12 @@ type Reader struct {
 	ExistFile ExistFile
 }
 
-func (reader *Reader) find(wd string) (string, bool) {
+func (r *Reader) find(wd string) (string, bool) {
 	names := []string{"github-comment.yaml", "github-comment.yml", ".github-comment.yml", ".github-comment.yaml"}
 	for {
 		for _, name := range names {
 			p := filepath.Join(wd, name)
-			if reader.ExistFile(p) {
+			if r.ExistFile(p) {
 				return p, true
 			}
 		}
@@ -117,7 +117,7 @@ func (reader *Reader) find(wd string) (string, bool) {
 	}
 }
 
-func (reader *Reader) read(p string) (*Config, error) {
+func (r *Reader) read(p string) (*Config, error) {
 	f, err := os.Open(p)
 	if err != nil {
 		return nil, fmt.Errorf("open a configuration file "+p+": %w", err)
@@ -132,20 +132,20 @@ func (reader *Reader) read(p string) (*Config, error) {
 
 const defaultHideCondition = "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1"
 
-func (reader *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
+func (r *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
 	cfg := &Config{
 		Hide: map[string]string{
 			"default": defaultHideCondition,
 		},
 	}
 	if cfgPath == "" {
-		p, b := reader.find(wd)
+		p, b := r.find(wd)
 		if !b {
 			return cfg, nil
 		}
 		cfgPath = p
 	}
-	cfg, err := reader.read(cfgPath) //nolint:ifshort
+	cfg, err := r.read(cfgPath) //nolint:ifshort
 	if err != nil {
 		return nil, err
 	}

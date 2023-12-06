@@ -109,7 +109,7 @@ func wrapCode(text string) interface{} {
 	return template.HTML("\n```\n" + text + "\n```\n") //nolint:gosec
 }
 
-func (renderer *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
+func (r *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
 	tpl = addTemplates(tpl, templates)
 
 	// delete some functions for security reason

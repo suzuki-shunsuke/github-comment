@@ -27,16 +27,16 @@ type HideController struct {
 	Expr     Expr
 }
 
-func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) error {
+func (c *HideController) Hide(ctx context.Context, opts *option.HideOptions) error {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
-	param, err := ctrl.getParamListHiddenComments(ctx, opts)
+	param, err := c.getParamListHiddenComments(ctx, opts)
 	if err != nil {
 		return err
 	}
 	nodeIDs, err := listHiddenComments(
-		ctx, ctrl.GitHub, ctrl.Expr, param, nil)
+		ctx, c.GitHub, c.Expr, param, nil)
 	if err != nil {
 		return err
 	}
@@ -44,14 +44,14 @@ func (ctrl *HideController) Hide(ctx context.Context, opts *option.HideOptions) 
 		"count":    len(nodeIDs),
 		"node_ids": nodeIDs,
 	}).Debug("comments which would be hidden")
-	hideComments(ctx, ctrl.GitHub, nodeIDs)
+	hideComments(ctx, c.GitHub, nodeIDs)
 	return nil
 }
 
-func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
+func (c *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
 	param := &ParamListHiddenComments{}
 
-	cfg := ctrl.Config
+	cfg := c.Config
 
 	if cfg.Base != nil {
 		if opts.Org == "" {
@@ -62,14 +62,14 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 		}
 	}
 
-	if ctrl.Platform != nil {
-		if err := ctrl.Platform.ComplementHide(opts); err != nil {
+	if c.Platform != nil {
+		if err := c.Platform.ComplementHide(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
 
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
-		prNum, err := ctrl.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
+		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
 				"org":  opts.Org,
@@ -88,7 +88,7 @@ func (ctrl *HideController) getParamListHiddenComments(ctx context.Context, opts
 
 	hideCondition := opts.Condition
 	if hideCondition == "" {
-		a, ok := ctrl.Config.Hide[opts.HideKey]
+		a, ok := c.Config.Hide[opts.HideKey]
 		if !ok {
 			return param, errors.New("invalid hide-key: " + opts.HideKey)
 		}

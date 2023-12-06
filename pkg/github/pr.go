@@ -8,8 +8,8 @@ import (
 	"github.com/google/go-github/v57/github"
 )
 
-func (client *Client) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
-	prs, _, err := client.pr.ListPullRequestsWithCommit(ctx, owner, repo, sha, &github.ListOptions{
+func (c *Client) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
+	prs, _, err := c.pr.ListPullRequestsWithCommit(ctx, owner, repo, sha, &github.ListOptions{
 		PerPage: 1,
 	})
 	if err != nil {

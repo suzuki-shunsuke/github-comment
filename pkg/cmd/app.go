@@ -20,20 +20,20 @@ type LDFlags struct {
 	Date    string
 }
 
-func (flags *LDFlags) AppVersion() string {
-	return flags.Version + " (" + flags.Commit + ")"
+func (f *LDFlags) AppVersion() string {
+	return f.Version + " (" + f.Commit + ")"
 }
 
-func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
+func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 	app := cli.App{
 		Name:    "github-comment",
 		Usage:   "post a comment to GitHub",
-		Version: runner.LDFlags.AppVersion(),
+		Version: r.LDFlags.AppVersion(),
 		Commands: []*cli.Command{
 			{
 				Name:   "post",
 				Usage:  "post a comment",
-				Action: runner.postAction,
+				Action: r.postAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",
@@ -112,7 +112,7 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 			{
 				Name:   "exec",
 				Usage:  "execute a command and post the result as a comment",
-				Action: runner.execAction,
+				Action: r.execAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",
@@ -182,12 +182,12 @@ func (runner *Runner) Run(ctx context.Context, args []string) error { //nolint:f
 			{
 				Name:   "init",
 				Usage:  "scaffold a configuration file if it doesn't exist",
-				Action: runner.initAction,
+				Action: r.initAction,
 			},
 			{
 				Name:   "hide",
 				Usage:  "hide issue or pull request comments",
-				Action: runner.hideAction,
+				Action: r.hideAction,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",

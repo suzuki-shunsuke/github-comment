@@ -24,8 +24,8 @@ type CommentController struct {
 	Platform Platform
 }
 
-func (ctrl *CommentController) Post(ctx context.Context, cmt *github.Comment) error {
-	if err := ctrl.GitHub.CreateComment(ctx, cmt); err != nil {
+func (c *CommentController) Post(ctx context.Context, cmt *github.Comment) error {
+	if err := c.GitHub.CreateComment(ctx, cmt); err != nil {
 		return fmt.Errorf("send a comment: %w", err)
 	}
 	return nil
@@ -36,17 +36,17 @@ func extractMetaFromComment(body string, data *map[string]interface{}) bool {
 	return f
 }
 
-func (ctrl *CommentController) complementMetaData(data map[string]interface{}) {
+func (c *CommentController) complementMetaData(data map[string]interface{}) {
 	if data == nil {
 		return
 	}
-	if ctrl.Platform == nil {
+	if c.Platform == nil {
 		return
 	}
-	_ = metadata.SetCIEnv(ctrl.Platform.CI(), ctrl.Getenv, data)
+	_ = metadata.SetCIEnv(c.Platform.CI(), c.Getenv, data)
 }
 
-func (ctrl *CommentController) getEmbeddedComment(data map[string]interface{}) (string, error) {
-	ctrl.complementMetaData(data)
+func (c *CommentController) getEmbeddedComment(data map[string]interface{}) (string, error) {
+	c.complementMetaData(data)
 	return metadata.Convert(data) //nolint:wrapcheck
 }

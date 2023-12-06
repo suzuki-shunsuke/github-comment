@@ -44,7 +44,7 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func (runner *Runner) execAction(c *cli.Context) error {
+func (r *Runner) execAction(c *cli.Context) error {
 	opts := &option.ExecOptions{}
 	if err := parseExecOptions(opts, c); err != nil {
 		return err
@@ -82,16 +82,16 @@ func (runner *Runner) execAction(c *cli.Context) error {
 	ctrl := api.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
-		Stdin:  runner.Stdin,
-		Stdout: runner.Stdout,
-		Stderr: runner.Stderr,
+		Stdin:  r.Stdin,
+		Stdout: r.Stdout,
+		Stderr: r.Stderr,
 		GitHub: gh,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,
 		},
 		Executor: &execute.Executor{
-			Stdout: runner.Stdout,
-			Stderr: runner.Stderr,
+			Stdout: r.Stdout,
+			Stderr: r.Stderr,
 			Env:    os.Environ(),
 		},
 		Expr:     &expr.Expr{},

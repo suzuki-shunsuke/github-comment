@@ -18,10 +18,10 @@ type InitController struct {
 	Fsys Fsys
 }
 
-func (ctrl InitController) Run(_ context.Context) error {
+func (c InitController) Run(_ context.Context) error {
 	dst := "github-comment.yaml"
-	if ctrl.Fsys.Exist(dst) {
+	if c.Fsys.Exist(dst) {
 		return nil
 	}
-	return ctrl.Fsys.Write(dst, []byte(strings.TrimSpace(string(cfgTemplate))+"\n")) //nolint:wrapcheck
+	return c.Fsys.Write(dst, []byte(strings.TrimSpace(string(cfgTemplate))+"\n")) //nolint:wrapcheck
 }

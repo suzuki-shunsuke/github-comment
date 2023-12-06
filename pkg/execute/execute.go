@@ -41,7 +41,7 @@ func setCancel(cmd *exec.Cmd) {
 	cmd.WaitDelay = waitDelay
 }
 
-func (executor *Executor) Run(ctx context.Context, params *Params) (*Result, error) {
+func (e *Executor) Run(ctx context.Context, params *Params) (*Result, error) {
 	cmd := exec.CommandContext(ctx, params.Cmd, params.Args...) //nolint:gosec
 	cmd.Stdin = params.Stdin
 	stdout := &bytes.Buffer{}
@@ -50,9 +50,9 @@ func (executor *Executor) Run(ctx context.Context, params *Params) (*Result, err
 	uncolorizedStdout := colorable.NewNonColorable(stdout)
 	uncolorizedStderr := colorable.NewNonColorable(stderr)
 	uncolorizedCombinedOutput := colorable.NewNonColorable(combinedOutput)
-	cmd.Stdout = io.MultiWriter(executor.Stdout, uncolorizedStdout, uncolorizedCombinedOutput)
-	cmd.Stderr = io.MultiWriter(executor.Stderr, uncolorizedStderr, uncolorizedCombinedOutput)
-	cmd.Env = executor.Env
+	cmd.Stdout = io.MultiWriter(e.Stdout, uncolorizedStdout, uncolorizedCombinedOutput)
+	cmd.Stderr = io.MultiWriter(e.Stderr, uncolorizedStderr, uncolorizedCombinedOutput)
+	cmd.Env = e.Env
 
 	setCancel(cmd)
 	err := cmd.Run()
