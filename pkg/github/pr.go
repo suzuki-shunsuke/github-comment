@@ -5,16 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v57/github"
 )
 
 func (client *Client) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
-	prs, _, err := client.pr.ListPullRequestsWithCommit(ctx, owner, repo, sha, &github.PullRequestListOptions{
-		State: "all",
-		Sort:  "updated",
-		ListOptions: github.ListOptions{
-			PerPage: 1,
-		},
+	prs, _, err := client.pr.ListPullRequestsWithCommit(ctx, owner, repo, sha, &github.ListOptions{
+		PerPage: 1,
 	})
 	if err != nil {
 		return 0, fmt.Errorf("list associated pull requests: %w", err)
