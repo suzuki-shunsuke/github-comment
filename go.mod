@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/antonmedv/expr v1.15.5
+	github.com/expr-lang/expr v1.15.6
 	github.com/google/go-github/v57 v57.0.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/shurcooL/githubv4 v0.0.0-20201206200315-234843c633fa
@@ -13,7 +13,7 @@ require (
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.0.1
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
-	github.com/urfave/cli/v2 v2.25.7
+	github.com/urfave/cli/v2 v2.26.0
 	golang.org/x/oauth2 v0.15.0
 	golang.org/x/term v0.15.0
 	gopkg.in/yaml.v2 v2.4.0
