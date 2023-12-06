@@ -39,7 +39,7 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Context) error {
 }
 
 // hideAction is an entrypoint of the subcommand "hide".
-func (runner *Runner) hideAction(c *cli.Context) error {
+func (r *Runner) hideAction(c *cli.Context) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -83,7 +83,7 @@ func (runner *Runner) hideAction(c *cli.Context) error {
 		HasStdin: func() bool {
 			return !term.IsTerminal(0)
 		},
-		Stderr:   runner.Stderr,
+		Stderr:   r.Stderr,
 		GitHub:   gh,
 		Platform: pt,
 		Config:   cfg,

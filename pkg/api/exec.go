@@ -32,8 +32,8 @@ type ExecController struct {
 	Config   *config.Config
 }
 
-func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
-	cfg := ctrl.Config
+func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
+	cfg := c.Config
 
 	if cfg.Base != nil {
 		if opts.Org == "" {
@@ -44,14 +44,14 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		}
 	}
 
-	if ctrl.Platform != nil {
-		if err := ctrl.Platform.ComplementExec(opts); err != nil {
+	if c.Platform != nil {
+		if err := c.Platform.ComplementExec(opts); err != nil {
 			return fmt.Errorf("complement opts with CI built in environment variables: %w", err)
 		}
 	}
 
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
-		prNum, err := ctrl.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
+		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
 				"org":  opts.Org,
@@ -64,10 +64,10 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		}
 	}
 
-	result, execErr := ctrl.Executor.Run(ctx, &execute.Params{
+	result, execErr := c.Executor.Run(ctx, &execute.Params{
 		Cmd:   opts.Args[0],
 		Args:  opts.Args[1:],
-		Stdin: ctrl.Stdin,
+		Stdin: c.Stdin,
 	})
 
 	if opts.SkipComment {
@@ -77,7 +77,7 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		return nil
 	}
 
-	execConfigs, err := ctrl.getExecConfigs(cfg, opts)
+	execConfigs, err := c.getExecConfigs(cfg, opts)
 	if err != nil {
 		return fmt.Errorf("get config: %w", err)
 	}
@@ -94,8 +94,8 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 	}
 
 	ci := ""
-	if ctrl.Platform != nil {
-		ci = ctrl.Platform.CI()
+	if c.Platform != nil {
+		ci = c.Platform.CI()
 	}
 	joinCommand := strings.Join(opts.Args, " ")
 	templates := template.GetTemplates(&template.ParamGetTemplates{
@@ -104,7 +104,7 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		JoinCommand:    joinCommand,
 		CombinedOutput: result.CombinedOutput,
 	})
-	if err := ctrl.post(ctx, execConfigs, &ExecCommentParams{
+	if err := c.post(ctx, execConfigs, &ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    joinCommand,
@@ -120,7 +120,7 @@ func (ctrl *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) 
 		Vars:           cfg.Vars,
 	}, templates); err != nil {
 		if !opts.Silent {
-			fmt.Fprintf(ctrl.Stderr, "github-comment error: %+v\n", err)
+			fmt.Fprintf(c.Stderr, "github-comment error: %+v\n", err)
 		}
 	}
 	if execErr != nil {
@@ -158,7 +158,7 @@ type Expr interface {
 	Compile(expression string) (expr.Program, error)
 }
 
-func (ctrl *ExecController) getExecConfigs(cfg *config.Config, opts *option.ExecOptions) ([]*config.ExecConfig, error) {
+func (c *ExecController) getExecConfigs(cfg *config.Config, opts *option.ExecOptions) ([]*config.ExecConfig, error) {
 	var execConfigs []*config.ExecConfig
 	if opts.Template == "" && opts.TemplateKey != "" {
 		a, ok := cfg.Exec[opts.TemplateKey]
@@ -185,11 +185,11 @@ func (ctrl *ExecController) getExecConfigs(cfg *config.Config, opts *option.Exec
 
 // getExecConfig returns matched ExecConfig.
 // If no ExecConfig matches, the second returned value is false.
-func (ctrl *ExecController) getExecConfig(
+func (c *ExecController) getExecConfig(
 	execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
 ) (*config.ExecConfig, bool, error) {
 	for _, execConfig := range execConfigs {
-		f, err := ctrl.Expr.Match(execConfig.When, cmtParams)
+		f, err := c.Expr.Match(execConfig.When, cmtParams)
 		if err != nil {
 			return nil, false, fmt.Errorf("test a condition is matched: %w", err)
 		}
@@ -203,12 +203,12 @@ func (ctrl *ExecController) getExecConfig(
 
 // getComment returns Comment.
 // If the second returned value is false, no comment is posted.
-func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*github.Comment, bool, error) { //nolint:funlen
+func (c *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams, templates map[string]string) (*github.Comment, bool, error) { //nolint:funlen
 	tpl := cmtParams.Template
 	tplForTooLong := ""
 	var embeddedVarNames []string
 	if tpl == "" {
-		execConfig, f, err := ctrl.getExecConfig(execConfigs, cmtParams)
+		execConfig, f, err := c.getExecConfig(execConfigs, cmtParams)
 		if err != nil {
 			return nil, false, err
 		}
@@ -223,20 +223,20 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 		embeddedVarNames = execConfig.EmbeddedVarNames
 	}
 
-	body, err := ctrl.Renderer.Render(tpl, templates, cmtParams)
+	body, err := c.Renderer.Render(tpl, templates, cmtParams)
 	if err != nil {
 		return nil, false, fmt.Errorf("render a comment template: %w", err)
 	}
-	bodyForTooLong, err := ctrl.Renderer.Render(tplForTooLong, templates, cmtParams)
+	bodyForTooLong, err := c.Renderer.Render(tplForTooLong, templates, cmtParams)
 	if err != nil {
 		return nil, false, fmt.Errorf("render a comment template_for_too_long: %w", err)
 	}
 
 	cmtCtrl := CommentController{
-		GitHub:   ctrl.GitHub,
-		Expr:     ctrl.Expr,
-		Getenv:   ctrl.Getenv,
-		Platform: ctrl.Platform,
+		GitHub:   c.GitHub,
+		Expr:     c.Expr,
+		Getenv:   c.Getenv,
+		Platform: c.Platform,
 	}
 
 	embeddedMetadata := make(map[string]interface{}, len(embeddedVarNames))
@@ -270,11 +270,11 @@ func (ctrl *ExecController) getComment(execConfigs []*config.ExecConfig, cmtPara
 	}, true, nil
 }
 
-func (ctrl *ExecController) post(
+func (c *ExecController) post(
 	ctx context.Context, execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
 	templates map[string]string,
 ) error {
-	cmt, f, err := ctrl.getComment(execConfigs, cmtParams, templates)
+	cmt, f, err := c.getComment(execConfigs, cmtParams, templates)
 	if err != nil {
 		return err
 	}
@@ -289,9 +289,9 @@ func (ctrl *ExecController) post(
 	}).Debug("comment meta data")
 
 	cmtCtrl := CommentController{
-		GitHub: ctrl.GitHub,
-		Expr:   ctrl.Expr,
-		Getenv: ctrl.Getenv,
+		GitHub: c.GitHub,
+		Expr:   c.Expr,
+		Getenv: c.Getenv,
 	}
 	return cmtCtrl.Post(ctx, cmt)
 }

@@ -14,30 +14,30 @@ type Mock struct {
 	PRNumber int
 }
 
-func (mock *Mock) CreateComment(ctx context.Context, cmt *Comment) error {
-	if mock.Silent {
+func (m *Mock) CreateComment(ctx context.Context, cmt *Comment) error {
+	if m.Silent {
 		return nil
 	}
 	msg := "[github-comment][DRYRUN] Comment to " + cmt.Org + "/" + cmt.Repo + " sha1:" + cmt.SHA1
 	if cmt.PRNumber != 0 {
 		msg += " issue:" + strconv.Itoa(cmt.PRNumber)
 	}
-	fmt.Fprintln(mock.Stderr, msg+"\n[github-comment][DRYRUN] "+cmt.Body)
+	fmt.Fprintln(m.Stderr, msg+"\n[github-comment][DRYRUN] "+cmt.Body)
 	return nil
 }
 
-func (mock *Mock) HideComment(ctx context.Context, nodeID string) error {
+func (m *Mock) HideComment(ctx context.Context, nodeID string) error {
 	return nil
 }
 
-func (mock *Mock) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
+func (m *Mock) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
 	return nil, nil
 }
 
-func (mock *Mock) GetAuthenticatedUser(ctx context.Context) (string, error) {
-	return mock.Login, nil
+func (m *Mock) GetAuthenticatedUser(ctx context.Context) (string, error) {
+	return m.Login, nil
 }
 
-func (mock *Mock) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
-	return mock.PRNumber, nil
+func (m *Mock) PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error) {
+	return m.PRNumber, nil
 }

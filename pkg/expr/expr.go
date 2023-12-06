@@ -42,8 +42,8 @@ type Prog struct {
 	prg *vm.Program
 }
 
-func (prog *Prog) Run(params interface{}) (bool, error) {
-	output, err := expr.Run(prog.prg, params)
+func (p *Prog) Run(params interface{}) (bool, error) {
+	output, err := expr.Run(p.prg, params)
 	if err != nil {
 		return false, fmt.Errorf("evaluate an expression with params: %w", err)
 	}

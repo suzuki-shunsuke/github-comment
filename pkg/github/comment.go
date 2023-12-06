@@ -35,16 +35,16 @@ type IssueComment struct {
 	ViewerCanMinimize bool
 }
 
-func (client *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string) error {
+func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
-		if _, _, err := client.issue.EditComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.IssueComment{
+		if _, _, err := c.issue.EditComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.IssueComment{
 			Body: github.String(body),
 		}); err != nil {
 			return fmt.Errorf("edit a issue or pull request comment by GitHub API: %w", err)
 		}
 		return nil
 	}
-	if _, _, err := client.issue.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
+	if _, _, err := c.issue.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
 		Body: github.String(body),
 	}); err != nil {
 		return fmt.Errorf("create a comment to issue or pull request by GitHub API: %w", err)
@@ -52,16 +52,16 @@ func (client *Client) sendIssueComment(ctx context.Context, cmt *Comment, body s
 	return nil
 }
 
-func (client *Client) sendCommitComment(ctx context.Context, cmt *Comment, body string) error {
+func (c *Client) sendCommitComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
-		if _, _, err := client.repo.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
+		if _, _, err := c.repo.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
 			Body: github.String(body),
 		}); err != nil {
 			return fmt.Errorf("update a commit comment by GitHub API: %w", err)
 		}
 		return nil
 	}
-	if _, _, err := client.repo.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
+	if _, _, err := c.repo.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
 		Body: github.String(body),
 	}); err != nil {
 		return fmt.Errorf("create a commit comment by GitHub API: %w", err)
@@ -69,7 +69,7 @@ func (client *Client) sendCommitComment(ctx context.Context, cmt *Comment, body 
 	return nil
 }
 
-func (client *Client) createComment(ctx context.Context, cmt *Comment, tooLong bool) error {
+func (c *Client) createComment(ctx context.Context, cmt *Comment, tooLong bool) error {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
 	})
@@ -81,11 +81,11 @@ func (client *Client) createComment(ctx context.Context, cmt *Comment, tooLong b
 		body = cmt.BodyForTooLong
 	}
 	if cmt.PRNumber != 0 {
-		return client.sendIssueComment(ctx, cmt, body)
+		return c.sendIssueComment(ctx, cmt, body)
 	}
-	return client.sendCommitComment(ctx, cmt, body)
+	return c.sendCommitComment(ctx, cmt, body)
 }
 
-func (client *Client) CreateComment(ctx context.Context, cmt *Comment) error {
-	return client.createComment(ctx, cmt, len(cmt.Body) > 65536) //nolint:gomnd
+func (c *Client) CreateComment(ctx context.Context, cmt *Comment) error {
+	return c.createComment(ctx, cmt, len(cmt.Body) > 65536) //nolint:gomnd
 }

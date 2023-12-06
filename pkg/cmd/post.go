@@ -79,7 +79,7 @@ func setLogLevel(logLevel string) {
 }
 
 // postAction is an entrypoint of the subcommand "post".
-func (runner *Runner) postAction(c *cli.Context) error {
+func (r *Runner) postAction(c *cli.Context) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -123,8 +123,8 @@ func (runner *Runner) postAction(c *cli.Context) error {
 		HasStdin: func() bool {
 			return !term.IsTerminal(0)
 		},
-		Stdin:  runner.Stdin,
-		Stderr: runner.Stderr,
+		Stdin:  r.Stdin,
+		Stderr: r.Stderr,
 		GitHub: gh,
 		Renderer: &template.Renderer{
 			Getenv: os.Getenv,

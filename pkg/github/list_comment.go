@@ -13,7 +13,7 @@ type PullRequest struct {
 	Repo     string
 }
 
-func (client *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
+func (c *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
 	// https://github.com/shurcooL/githubv4#pagination
 	var q struct {
 		Repository struct {
@@ -37,7 +37,7 @@ func (client *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]
 
 	var allComments []*IssueComment
 	for {
-		if err := client.ghV4.Query(ctx, &q, variables); err != nil {
+		if err := c.ghV4.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("list issue comments by GitHub API: %w", err)
 		}
 		allComments = append(allComments, q.Repository.Issue.Comments.Nodes...)
@@ -49,7 +49,7 @@ func (client *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]
 	return allComments, nil
 }
 
-func (client *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
+func (c *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) { //nolint:dupl
 	// https://github.com/shurcooL/githubv4#pagination
 	var q struct {
 		Repository struct {
@@ -73,7 +73,7 @@ func (client *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*Is
 
 	var allComments []*IssueComment
 	for {
-		if err := client.ghV4.Query(ctx, &q, variables); err != nil {
+		if err := c.ghV4.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("list issue comments by GitHub API: %w", err)
 		}
 		allComments = append(allComments, q.Repository.PullRequest.Comments.Nodes...)
@@ -85,12 +85,12 @@ func (client *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*Is
 	return allComments, nil
 }
 
-func (client *Client) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
-	cmts, prErr := client.listPRComment(ctx, pr)
+func (c *Client) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
+	cmts, prErr := c.listPRComment(ctx, pr)
 	if prErr == nil {
 		return cmts, nil
 	}
-	cmts, err := client.listIssueComment(ctx, pr)
+	cmts, err := c.listIssueComment(ctx, pr)
 	if err == nil {
 		return cmts, nil
 	}
