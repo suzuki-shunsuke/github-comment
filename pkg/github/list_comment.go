@@ -94,5 +94,5 @@ func (client *Client) ListComments(ctx context.Context, pr *PullRequest) ([]*Iss
 	if err == nil {
 		return cmts, nil
 	}
-	return nil, fmt.Errorf("get pull request or issue comments: %w, %v", prErr, err)
+	return nil, fmt.Errorf("get pull request or issue comments: %w, %w", prErr, err)
 }
