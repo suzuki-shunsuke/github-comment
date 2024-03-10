@@ -12,5 +12,5 @@ func (*Fsys) Exist(path string) bool {
 }
 
 func (*Fsys) Write(path string, content []byte) error {
-	return os.WriteFile(path, content, 0o755) //nolint:gosec,gomnd,wrapcheck
+	return os.WriteFile(path, content, 0o644) //nolint:gosec,gomnd,wrapcheck
 }
