@@ -28,7 +28,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return true
 				},
 				Stdin: strings.NewReader("hello"),
-				Getenv: func(k string) string {
+				Getenv: func(_ string) string {
 					return ""
 				},
 				Renderer: &template.Renderer{},
@@ -57,7 +57,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return true
 				},
 				Stdin: strings.NewReader("hello"),
-				Getenv: func(k string) string {
+				Getenv: func(_ string) string {
 					return ""
 				},
 				Renderer: &template.Renderer{},
@@ -85,7 +85,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				HasStdin: func() bool {
 					return false
 				},
-				Getenv: func(k string) string {
+				Getenv: func(_ string) string {
 					return ""
 				},
 				Config: &config.Config{
@@ -96,7 +96,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					},
 				},
 				Renderer: &template.Renderer{
-					Getenv: func(k string) string {
+					Getenv: func(_ string) string {
 						return ""
 					},
 				},
@@ -124,7 +124,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				HasStdin: func() bool {
 					return false
 				},
-				Getenv: func(k string) string {
+				Getenv: func(_ string) string {
 					return ""
 				},
 				Renderer: &template.Renderer{
@@ -160,7 +160,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 					return true
 				},
 				Stdin: strings.NewReader("hello"),
-				Getenv: func(k string) string {
+				Getenv: func(_ string) string {
 					return ""
 				},
 				Config: &config.Config{
