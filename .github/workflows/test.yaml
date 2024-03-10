@@ -10,6 +10,7 @@ jobs:
       update-aqua-checksums: ${{steps.changes.outputs.update-aqua-checksums}}
       renovate-config-validator: ${{steps.changes.outputs.renovate-config-validator}}
       ghalint: ${{steps.changes.outputs.ghalint}}
+      go-mod-tidy: ${{steps.changes.outputs.go-mod-tidy}}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -27,6 +28,10 @@ jobs:
             ghalint:
               - .github/workflows/*.yaml
               - aqua/imports/ghalint.yaml
+            go-mod-tidy:
+              - go.mod
+              - go.sum
+              - "**.go"
 
   update-aqua-checksums:
     # Update aqua-checksums.json and push a commit
@@ -50,6 +55,19 @@ jobs:
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
+      contents: read
+
+  go-mod-tidy:
+    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@8facac38f5b2008648c14e31c632c3a709439b9c # v0.1.1
+    needs: path-filter
+    if: needs.path-filter.outputs.go-mod-tidy == 'true'
+    with:
+      go-version: 1.22.0
+      aqua_version: v2.23.1
+    secrets:
+      gh_app_id: ${{secrets.APP_ID}}
+      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
+    permissions:
       contents: read
 
   build:
@@ -115,6 +133,7 @@ jobs:
       - build
       - renovate-config-validator
       - ghalint
+      - go-mod-tidy
     permissions: {}
     if: failure()
     steps:
