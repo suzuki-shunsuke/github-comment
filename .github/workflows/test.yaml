@@ -41,7 +41,7 @@ jobs:
     permissions:
       contents: read
     with:
-      aqua_version: v2.24.1
+      aqua_version: v2.25.0
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
@@ -50,7 +50,7 @@ jobs:
   test:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@66610a63dfe5160d97e1b68bc53949ceed18e0db # v0.5.0
     with:
-      aqua_version: v2.24.1
+      aqua_version: v2.25.0
       go-version: 1.22.1
       golangci-lint-timeout: 120s
     permissions:
@@ -63,7 +63,7 @@ jobs:
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
       go-version: 1.22.1
-      aqua_version: v2.24.1
+      aqua_version: v2.25.0
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -81,7 +81,7 @@ jobs:
 
       - uses: aquaproj/aqua-installer@7c7338067bdb97d5bea2acc82b5870afca470d18 # v2.3.0
         with:
-          aqua_version: v2.24.1
+          aqua_version: v2.25.0
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -104,7 +104,7 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - uses: aquaproj/aqua-installer@7c7338067bdb97d5bea2acc82b5870afca470d18 # v2.3.0
         with:
-          aqua_version: v2.24.1
+          aqua_version: v2.25.0
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
