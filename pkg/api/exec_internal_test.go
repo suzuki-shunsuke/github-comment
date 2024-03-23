@@ -62,7 +62,6 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 		},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(d.title, func(t *testing.T) {
 			t.Parallel()
 			execConfig, f, err := d.ctrl.getExecConfig(d.execConfigs, d.cmtParams)
