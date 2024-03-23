@@ -188,7 +188,6 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 	}
 	ctx := context.Background()
 	for _, d := range data {
-		d := d
 		t.Run(d.title, func(t *testing.T) {
 			t.Parallel()
 			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
@@ -232,7 +231,6 @@ func TestPostController_readTemplateFromStdin(t *testing.T) {
 		},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(d.title, func(t *testing.T) {
 			t.Parallel()
 			tpl, err := d.ctrl.readTemplateFromStdin()
