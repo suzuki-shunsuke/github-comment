@@ -37,20 +37,20 @@ jobs:
     # Update aqua-checksums.json and push a commit
     needs: path-filter
     if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@3598c506108a2e0e9e31a0c6ef9c202c77049420 # v0.1.9
+    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@f367004e7f17e99d30297cd9e89afad30ee1f251 # v1.0.0
     permissions:
       contents: read
     with:
-      aqua_version: v2.23.2
+      aqua_version: v2.25.1
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@66610a63dfe5160d97e1b68bc53949ceed18e0db # v0.5.0
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@fd6e66427230606a7d71e686d01e3eed92ae5012 # v1.0.0
     with:
-      aqua_version: v2.23.2
+      aqua_version: v2.25.1
       go-version: 1.22.1
       golangci-lint-timeout: 120s
     permissions:
@@ -58,12 +58,12 @@ jobs:
       contents: read
 
   go-mod-tidy:
-    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@8facac38f5b2008648c14e31c632c3a709439b9c # v0.1.1
+    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@4e5de3de1038a745df94f46e7a3f433ce8652a7f # v1.0.0
     needs: path-filter
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
       go-version: 1.22.1
-      aqua_version: v2.23.2
+      aqua_version: v2.25.1
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -79,9 +79,9 @@ jobs:
         with:
           go-version: 1.22.1
 
-      - uses: aquaproj/aqua-installer@7c7338067bdb97d5bea2acc82b5870afca470d18 # v2.3.0
+      - uses: aquaproj/aqua-installer@4551ec64e21bf0f557c2525135ff0bd2cba40ec7 # v3.0.0
         with:
-          aqua_version: v2.23.2
+          aqua_version: v2.25.1
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -101,10 +101,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
-      - uses: aquaproj/aqua-installer@7c7338067bdb97d5bea2acc82b5870afca470d18 # v2.3.0
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: aquaproj/aqua-installer@4551ec64e21bf0f557c2525135ff0bd2cba40ec7 # v3.0.0
         with:
-          aqua_version: v2.23.2
+          aqua_version: v2.25.1
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
