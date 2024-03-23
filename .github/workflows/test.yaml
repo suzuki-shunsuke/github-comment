@@ -58,7 +58,7 @@ jobs:
       contents: read
 
   go-mod-tidy:
-    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@8facac38f5b2008648c14e31c632c3a709439b9c # v0.1.1
+    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@4e5de3de1038a745df94f46e7a3f433ce8652a7f # v1.0.0
     needs: path-filter
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
