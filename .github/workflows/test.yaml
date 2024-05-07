@@ -51,7 +51,7 @@ jobs:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@fd6e66427230606a7d71e686d01e3eed92ae5012 # v1.0.0
     with:
       aqua_version: v2.27.3
-      go-version: 1.22.2
+      go-version: 1.22.3
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
@@ -62,7 +62,7 @@ jobs:
     needs: path-filter
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
-      go-version: 1.22.2
+      go-version: 1.22.3
       aqua_version: v2.27.3
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
@@ -77,7 +77,7 @@ jobs:
       - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
         with:
-          go-version: 1.22.2
+          go-version: 1.22.3
 
       - uses: aquaproj/aqua-installer@4551ec64e21bf0f557c2525135ff0bd2cba40ec7 # v3.0.0
         with:
