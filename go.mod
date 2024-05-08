@@ -6,7 +6,7 @@ toolchain go1.22.3
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/expr-lang/expr v1.16.6
+	github.com/expr-lang/expr v1.16.7
 	github.com/google/go-github/v60 v60.0.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/shurcooL/githubv4 v0.0.0-20240429030203-be2daab69064
