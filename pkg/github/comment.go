@@ -87,5 +87,5 @@ func (c *Client) createComment(ctx context.Context, cmt *Comment, tooLong bool) 
 }
 
 func (c *Client) CreateComment(ctx context.Context, cmt *Comment) error {
-	return c.createComment(ctx, cmt, len(cmt.Body) > 65536) //nolint:gomnd
+	return c.createComment(ctx, cmt, len(cmt.Body) > 65536) //nolint:mnd
 }
