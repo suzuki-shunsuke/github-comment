@@ -2,11 +2,11 @@ module github.com/suzuki-shunsuke/github-comment/v6
 
 go 1.22
 
-toolchain go1.22.2
+toolchain go1.22.5
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/expr-lang/expr v1.16.5
+	github.com/expr-lang/expr v1.16.9
 	github.com/google/go-github/v60 v60.0.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/shurcooL/githubv4 v0.0.0-20240429030203-be2daab69064
@@ -16,8 +16,8 @@ require (
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.0.1
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/urfave/cli/v2 v2.27.2
-	golang.org/x/oauth2 v0.19.0
-	golang.org/x/term v0.19.0
+	golang.org/x/oauth2 v0.21.0
+	golang.org/x/term v0.20.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -41,6 +41,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

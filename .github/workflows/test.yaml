@@ -6,6 +6,7 @@ on: pull_request
 jobs:
   path-filter:
     # Get changed files to filter jobs
+    timeout-minutes: 30
     outputs:
       update-aqua-checksums: ${{steps.changes.outputs.update-aqua-checksums}}
       renovate-config-validator: ${{steps.changes.outputs.renovate-config-validator}}
@@ -37,33 +38,33 @@ jobs:
     # Update aqua-checksums.json and push a commit
     needs: path-filter
     if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@f367004e7f17e99d30297cd9e89afad30ee1f251 # v1.0.0
+    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@75c72cdc372a43dd1b1ad0458748f5d6bfeac7b9 # v1.0.1
     permissions:
       contents: read
     with:
-      aqua_version: v2.27.3
+      aqua_version: v2.29.0
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@fd6e66427230606a7d71e686d01e3eed92ae5012 # v1.0.0
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@3191fc67e2aa6426e4bccd25be69b9d80b47a007 # v1.0.1
     with:
-      aqua_version: v2.27.3
-      go-version: 1.22.2
+      aqua_version: v2.29.0
+      go-version: 1.22.5
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
       contents: read
 
   go-mod-tidy:
-    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@4e5de3de1038a745df94f46e7a3f433ce8652a7f # v1.0.0
+    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@6795635605311526bdd23dbe7f96e6f4a33f7fd7 # v1.0.1
     needs: path-filter
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
-      go-version: 1.22.2
-      aqua_version: v2.27.3
+      go-version: 1.22.5
+      aqua_version: v2.29.0
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -71,17 +72,18 @@ jobs:
       contents: read
 
   build:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: 1.22.2
+          go-version: 1.22.5
 
-      - uses: aquaproj/aqua-installer@4551ec64e21bf0f557c2525135ff0bd2cba40ec7 # v3.0.0
+      - uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
         with:
-          aqua_version: v2.27.3
+          aqua_version: v2.29.0
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -96,15 +98,16 @@ jobs:
 
   ghalint:
     # Validate GitHub Actions Workflows by ghalint.
+    timeout-minutes: 30
     needs: path-filter
     if: needs.path-filter.outputs.ghalint == 'true'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      - uses: aquaproj/aqua-installer@4551ec64e21bf0f557c2525135ff0bd2cba40ec7 # v3.0.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
         with:
-          aqua_version: v2.27.3
+          aqua_version: v2.29.0
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
@@ -126,6 +129,7 @@ jobs:
   status-check:
     # This job is used for main branch's branch protection rule's status check.
     # If all dependent jobs succeed or are skipped this job succeeds.
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     needs:
       - update-aqua-checksums
