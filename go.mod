@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
-	github.com/suzuki-shunsuke/go-ci-env/v3 v3.0.1
+	github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/oauth2 v0.21.0
