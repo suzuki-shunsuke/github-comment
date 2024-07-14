@@ -20,3 +20,4 @@ linters:
     - varnamelen
     - ireturn
     - depguard
+    - gomoddirectives # TODO https://github.com/suzuki-shunsuke/github-comment/pull/1472
