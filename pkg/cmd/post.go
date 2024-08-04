@@ -58,6 +58,14 @@ func getGitHub(ctx context.Context, opts *option.Options, cfg *config.Config) (a
 		}, nil
 	}
 
+	// https://github.com/suzuki-shunsuke/github-comment/issues/1489
+	if cfg.GHEBaseURL == "" {
+		cfg.GHEBaseURL = os.Getenv("GITHUB_API_URL")
+	}
+	if cfg.GHEGraphQLEndpoint == "" {
+		cfg.GHEGraphQLEndpoint = os.Getenv("GITHUB_GRAPHQL_URL")
+	}
+
 	return github.New(ctx, &github.ParamNew{ //nolint:wrapcheck
 		Token:              opts.Token,
 		GHEBaseURL:         cfg.GHEBaseURL,
