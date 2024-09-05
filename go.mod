@@ -2,7 +2,7 @@ module github.com/suzuki-shunsuke/github-comment/v6
 
 go 1.22
 
-toolchain go1.23.0
+toolchain go1.23.1
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
