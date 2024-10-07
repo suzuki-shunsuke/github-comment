@@ -1,10 +1,10 @@
 ---
 tasks:
-  - name: init
+  - name: install
     short: i
-    script: bash scripts/githook.sh
-    description: setup git hooks
-    usage: setup git hooks
+    script: go install ./cmd/github-comment
+    description: go install
+    usage: go install
   - name: coverage
     short: c
     description: test a package (fzf is required)
@@ -43,12 +43,6 @@ tasks:
         required: true
         validate:
           - regexp: "^v\\d+\\.\\d+.\\d+(-\\d+)?$"
-  - name: ci-local
-    description: run the Drone pipeline at localhost (drone-cli is required)
-    usage: run the Drone pipeline at localhost (drone-cli is required)
-    script: time drone exec --pipeline build --event pull_request
-    environment:
-      LOCAL: "true"
   - name: shellcheck
     description: shellcheck
     usage: shellcheck
