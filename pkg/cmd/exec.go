@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
+	"github.com/spf13/afero"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
@@ -29,6 +32,24 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
 	opts.LogLevel = c.String("log-level")
+
+	outputs := c.StringSlice("out")
+	outs := make([]*option.Output, len(outputs))
+	for i, o := range outputs {
+		if o == "github" {
+			outs[i] = &option.Output{GitHub: true}
+			continue
+		}
+		if f := strings.TrimPrefix(o, "file:"); f != o {
+			outs[i] = &option.Output{File: f}
+			continue
+		}
+		return errors.New("invalid the value of -out. -out must be either github or file:<file path>")
+	}
+	if len(outputs) == 0 {
+		outs = []*option.Output{{GitHub: true}}
+	}
+	opts.Outputs = outs
 
 	vars, err := parseVars(c)
 	if err != nil {
@@ -97,6 +118,7 @@ func (r *Runner) execAction(c *cli.Context) error {
 		Expr:     &expr.Expr{},
 		Platform: pt,
 		Config:   cfg,
+		Fs:       afero.NewOsFs(),
 	}
 	return ctrl.Exec(c.Context, opts) //nolint:wrapcheck
 }

@@ -8,6 +8,12 @@ type ExecOptions struct {
 	Options
 	Args        []string
 	SkipComment bool
+	Outputs     []*Output
+}
+
+type Output struct {
+	File   string
+	GitHub bool
 }
 
 func ValidateExec(opts *ExecOptions) error {
