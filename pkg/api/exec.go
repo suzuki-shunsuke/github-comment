@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
@@ -30,6 +32,7 @@ type ExecController struct {
 	Expr     Expr
 	Platform Platform
 	Config   *config.Config
+	Fs       afero.Fs
 }
 
 func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
@@ -118,6 +121,7 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 		TemplateKey:    opts.TemplateKey,
 		Template:       opts.Template,
 		Vars:           cfg.Vars,
+		Outputs:        opts.Outputs,
 	}, templates); err != nil {
 		if !opts.Silent {
 			fmt.Fprintf(c.Stderr, "github-comment error: %+v\n", err)
@@ -147,6 +151,7 @@ type ExecCommentParams struct {
 	TemplateKey string
 	Template    string
 	Vars        map[string]interface{}
+	Outputs     []*option.Output
 }
 
 type Executor interface {
@@ -288,10 +293,51 @@ func (c *ExecController) post(
 		"sha":       cmt.SHA1,
 	}).Debug("comment meta data")
 
-	cmtCtrl := CommentController{
-		GitHub: c.GitHub,
-		Expr:   c.Expr,
-		Getenv: c.Getenv,
+	for _, out := range cmtParams.Outputs {
+		if err := c.handleOutput(ctx, cmt, out); err != nil {
+			return err
+		}
 	}
-	return cmtCtrl.Post(ctx, cmt)
+	return nil
+}
+
+func (c *ExecController) handleOutput(ctx context.Context, cmt *github.Comment, out *option.Output) error {
+	if out.GitHub {
+		cmtCtrl := CommentController{
+			GitHub: c.GitHub,
+			Expr:   c.Expr,
+			Getenv: c.Getenv,
+		}
+		if err := cmtCtrl.Post(ctx, cmt); err != nil {
+			return fmt.Errorf("post a comment to GitHub: %w", err)
+		}
+		return nil
+	}
+	if out.File == "" {
+		return nil
+	}
+	f, err := c.Fs.Stat(out.File)
+	if err != nil {
+		if !errors.Is(err, afero.ErrFileNotFound) {
+			return fmt.Errorf("check if the output file exists: %w", err)
+		}
+		f, err := c.Fs.Create(out.File)
+		if err != nil {
+			return fmt.Errorf("create a file: %w", err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString(cmt.Body); err != nil {
+			return fmt.Errorf("write a comment to a file: %w", err)
+		}
+		return nil
+	}
+	file, err := c.Fs.OpenFile(out.File, os.O_RDWR|os.O_CREATE|os.O_APPEND, f.Mode())
+	if err != nil {
+		return fmt.Errorf("open a file to write a comment: %w", err)
+	}
+	defer file.Close()
+	if _, err := file.WriteString(cmt.Body); err != nil {
+		return fmt.Errorf("write a comment to a file: %w", err)
+	}
+	return nil
 }

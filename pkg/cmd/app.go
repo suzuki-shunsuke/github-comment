@@ -155,6 +155,10 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 						EnvVars: []string{"GH_COMMENT_PR_NUMBER"},
 					},
 					&cli.StringSliceFlag{
+						Name:  "out",
+						Usage: "output destination",
+					},
+					&cli.StringSliceFlag{
 						Name:  "var",
 						Usage: "template variable",
 					},
