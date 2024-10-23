@@ -67,6 +67,10 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 		}
 	}
 
+	if len(opts.Args) == 0 {
+		return errors.New("command is required")
+	}
+
 	result, execErr := c.Executor.Run(ctx, &execute.Params{
 		Cmd:   opts.Args[0],
 		Args:  opts.Args[1:],
