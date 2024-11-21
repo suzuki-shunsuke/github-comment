@@ -38,11 +38,11 @@ jobs:
     # Update aqua-checksums.json and push a commit
     needs: path-filter
     if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@437067ad2fba9ba8ed8454cf207f2532432d4e28 # v1.0.2
+    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@8bce60cc4475128360bc32f00707abb874ca4a91 # v1.0.3
     permissions:
       contents: read
     with:
-      aqua_version: v2.37.2
+      aqua_version: v2.38.0
       prune: true
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
@@ -51,7 +51,7 @@ jobs:
   test:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@6861ea245ad10752afcba66cb71f28cf5c46ce49 # v1.1.0
     with:
-      aqua_version: v2.37.2
+      aqua_version: v2.38.0
       go-version-file: go.mod
       golangci-lint-timeout: 120s
     permissions:
@@ -64,7 +64,7 @@ jobs:
     if: needs.path-filter.outputs.go-mod-tidy == 'true'
     with:
       go-version-file: go.mod
-      aqua_version: v2.37.2
+      aqua_version: v2.38.0
     secrets:
       gh_app_id: ${{secrets.APP_ID}}
       gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -81,9 +81,9 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
+      - uses: aquaproj/aqua-installer@e6160e5a751bbcbd337a834eb75c15ba9ca206ae # v3.0.2
         with:
-          aqua_version: v2.37.2
+          aqua_version: v2.38.0
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -105,9 +105,9 @@ jobs:
     permissions: {}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
+      - uses: aquaproj/aqua-installer@e6160e5a751bbcbd337a834eb75c15ba9ca206ae # v3.0.2
         with:
-          aqua_version: v2.37.2
+          aqua_version: v2.38.0
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
