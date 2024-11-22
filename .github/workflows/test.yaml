@@ -6,7 +6,7 @@ on: pull_request
 jobs:
   path-filter:
     # Get changed files to filter jobs
-    timeout-minutes: 30
+    timeout-minutes: 10
     outputs:
       update-aqua-checksums: ${{steps.changes.outputs.update-aqua-checksums}}
       renovate-config-validator: ${{steps.changes.outputs.renovate-config-validator}}
@@ -98,7 +98,7 @@ jobs:
 
   ghalint:
     # Validate GitHub Actions Workflows by ghalint.
-    timeout-minutes: 30
+    timeout-minutes: 10
     needs: path-filter
     if: needs.path-filter.outputs.ghalint == 'true'
     runs-on: ubuntu-latest
@@ -114,22 +114,10 @@ jobs:
         env:
           GHALINT_LOG_COLOR: always
 
-  enable-auto-merge:
-    uses: ./.github/workflows/wc-enable-auto-merge.yaml
-    needs:
-      - status-check
-    secrets:
-      gh_app_id: ${{secrets.APP_ID}}
-      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
-    # "! failure() && ! cancelled()" is required. success() returns false if dependent jobs are skipped. https://github.com/community/community/discussions/45058
-    # By default success() is used so we have to override success() by "! failure() && ! cancelled()"
-    if: |
-      ! failure() && ! cancelled() && github.event.pull_request.user.login == 'renovate[bot]' && contains(github.event.pull_request.body, ' **Automerge**: Enabled.')
-
   status-check:
     # This job is used for main branch's branch protection rule's status check.
     # If all dependent jobs succeed or are skipped this job succeeds.
-    timeout-minutes: 30
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs:
       - update-aqua-checksums
