@@ -1,4 +1,4 @@
-title: Deprecated (General)
+title: Deprecated (Proposal)
 body:
   - type: markdown
     attributes:
@@ -15,3 +15,5 @@ body:
       label: .
       options:
         - label: ..
+
+
