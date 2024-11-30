@@ -1,4 +1,4 @@
-title: Deprecated (Bug Report)
+title: Deprecated (Question And Answer)
 body:
   - type: markdown
     attributes:
@@ -8,7 +8,7 @@ body:
         We don't accept new discussions anymore.
         We keep this discussion category only for existing discussions.
 
-        [Please create an issue](https://github.com/suzuki-shunsuke/github-comment/issues/new?assignees=&labels=bug&projects=&template=bug-report.yml).
+        [Please create an issue](https://github.com/suzuki-shunsuke/github-comment/issues/new).
   # At least one input item is required, so we add a dummy checkbox.
   - type: checkboxes
     attributes:
