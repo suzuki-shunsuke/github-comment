@@ -1,9 +1,10 @@
-name: Bug Report
+name: Support Request
 description: |
-  Please report the bug of github-comment.
-  If you're not sure if it's a bug or not, please use the template `support-request` instead.
+  Please use this template when you face any problem while using github-comment.
+  If it's definitely a bug, please use the bug report template.
+  If you're not sure if it's a bug or not, please use this template.
 labels:
-  - bug
+  - support-request
 body:
   - type: textarea
     id: github-comment-version
@@ -63,17 +64,6 @@ body:
         ```
     validations:
       required: true
-  - type: textarea
-    id: debug-output
-    attributes:
-      label: Debug output
-      description: Please set the command line option `-log-level debug` and run github-comment and tell us the debug output.
-      value: |
-        ```console
-        $ 
-        ```
-    validations:
-      required: false
   - type: textarea
     id: expected-behaviour
     attributes:
