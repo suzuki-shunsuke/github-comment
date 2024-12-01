@@ -1,10 +1,10 @@
 ---
-name: test
+name: Close a new Discussion
 on:
   discussion:
     types: [created]
 jobs:
-  test:
+  close-new-discussion:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
