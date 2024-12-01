@@ -9,6 +9,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       issues: write
+    # Pleaes update `if` when you edit, delete, or add labels of issue templates.
     if: |
       !contains(github.event.issue.labels.*.name, 'bug') &&
       !contains(github.event.issue.labels.*.name, 'enhancement') &&
