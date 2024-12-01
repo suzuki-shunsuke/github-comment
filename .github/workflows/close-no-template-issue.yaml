@@ -20,6 +20,7 @@ jobs:
       - uses: suzuki-shunsuke/issue-close-lock-action@231aefd9a92cddfd2eb51e60965e9468f3d592bd # v0.1.0
         with:
           issue_number: ${{github.event.issue.number}}
+          is_lock: "false"
           message: |
             This issue is closed because it was created without an issue template probably.
             Please use an issue template.
