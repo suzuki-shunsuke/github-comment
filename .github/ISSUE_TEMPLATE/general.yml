@@ -15,11 +15,11 @@ body:
       label: Why
       description: Please explain the background and the reason of this issue
     validations:
-      required: true
+      required: false
   - type: textarea
     id: note
     attributes:
       label: Note
       description: Please write any additional information
     validations:
-      required: true
+      required: false
