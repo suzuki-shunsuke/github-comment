@@ -1,7 +1,6 @@
 name: Support Request
 description: |
-  Please use this template when you face any problem while using github-comment.
-  If it's definitely a bug, please use the bug report template.
+  Please use this template when you face any problem (not bug) and need our help.
   If you're not sure if it's a bug or not, please use this template.
 labels:
   - support-request
