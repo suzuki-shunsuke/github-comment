@@ -38,14 +38,14 @@ type IssueComment struct {
 func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
 		if _, _, err := c.issue.EditComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.IssueComment{
-			Body: github.String(body),
+			Body: github.Ptr(body),
 		}); err != nil {
 			return fmt.Errorf("edit a issue or pull request comment by GitHub API: %w", err)
 		}
 		return nil
 	}
 	if _, _, err := c.issue.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
-		Body: github.String(body),
+		Body: github.Ptr(body),
 	}); err != nil {
 		return fmt.Errorf("create a comment to issue or pull request by GitHub API: %w", err)
 	}
@@ -55,14 +55,14 @@ func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string
 func (c *Client) sendCommitComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
 		if _, _, err := c.repo.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
-			Body: github.String(body),
+			Body: github.Ptr(body),
 		}); err != nil {
 			return fmt.Errorf("update a commit comment by GitHub API: %w", err)
 		}
 		return nil
 	}
 	if _, _, err := c.repo.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
-		Body: github.String(body),
+		Body: github.Ptr(body),
 	}); err != nil {
 		return fmt.Errorf("create a commit comment by GitHub API: %w", err)
 	}
