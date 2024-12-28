@@ -37,16 +37,18 @@ type PostConfig struct { //nolint:recvcheck
 	UpdateCondition string `json:"update,omitempty"`
 }
 
-type PostConfigForJS PostConfig
+type postConfig PostConfig
 
 func (PostConfig) JSONSchema() *jsonschema.Schema {
+	a := jsonschema.Reflect(&postConfig{})
+	a.Ref = ""
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
 				Type:       "string",
 				Deprecated: true,
 			},
-			jsonschema.Reflect(&PostConfigForJS{}),
+			a,
 		},
 	}
 }
