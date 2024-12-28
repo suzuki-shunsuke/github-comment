@@ -5,35 +5,50 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/invopop/jsonschema"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	Base               *Base
-	GHEBaseURL         string `yaml:"ghe_base_url"`
-	GHEGraphQLEndpoint string `yaml:"ghe_graphql_endpoint"`
-	Vars               map[string]interface{}
-	Templates          map[string]string
-	Post               map[string]*PostConfig
-	Exec               map[string][]*ExecConfig
-	Hide               map[string]string
-	SkipNoToken        bool `yaml:"skip_no_token"`
-	Silent             bool
+	Base               *Base                    `json:"base,omitempty"`
+	GHEBaseURL         string                   `json:"ghe_base_url,omitempty" yaml:"ghe_base_url"`
+	GHEGraphQLEndpoint string                   `json:"ghe_graphql_endpoint,omitempty" yaml:"ghe_graphql_endpoint"`
+	Vars               map[string]interface{}   `json:"vars,omitempty"`
+	Templates          map[string]string        `json:"templates,omitempty"`
+	Post               map[string]*PostConfig   `json:"post,omitempty"`
+	Exec               map[string][]*ExecConfig `json:"exec,omitempty"`
+	Hide               map[string]string        `json:"hide,omitempty"`
+	SkipNoToken        bool                     `json:"skip_no_token,omitempty" yaml:"skip_no_token"`
+	Silent             bool                     `json:"silent,omitempty"`
 }
 
 type Base struct {
-	Org  string
-	Repo string
+	Org  string `json:"org,omitempty"`
+	Repo string `json:"repo,omitempty"`
 }
 
-type PostConfig struct {
-	Template           string
-	TemplateForTooLong string
-	EmbeddedVarNames   []string
+type PostConfig struct { //nolint:recvcheck
+	Template           string   `json:"template,omitempty"`
+	TemplateForTooLong string   `json:"template_for_too_long,omitempty"`
+	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty"`
 	// UpdateCondition Update the comment that matches with the condition.
-	// If multiple comments match, the latest comment is updated
-	// If no comment matches, aa new comment is created
-	UpdateCondition string
+	// If multiple comments match, the latest comment is updated.
+	// If no comment matches, a new comment is created.
+	UpdateCondition string `json:"update,omitempty"`
+}
+
+type postConfig PostConfig
+
+func (PostConfig) JSONSchema() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
+			{
+				Type:       "string",
+				Deprecated: true,
+			},
+			jsonschema.Reflect(&postConfig{}),
+		},
+	}
 }
 
 func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { //nolint:cyclop
@@ -88,11 +103,11 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { /
 }
 
 type ExecConfig struct {
-	When               string
-	Template           string
-	TemplateForTooLong string   `yaml:"template_for_too_long"`
-	DontComment        bool     `yaml:"dont_comment"`
-	EmbeddedVarNames   []string `yaml:"embedded_var_names"`
+	When               string   `json:"when"`
+	Template           string   `json:"template,omitempty"`
+	TemplateForTooLong string   `json:"template_for_too_long,omitempty" yaml:"template_for_too_long"`
+	DontComment        bool     `json:"dont_comment,omitempty" yaml:"dont_comment"`
+	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty" yaml:"embedded_var_names"`
 }
 
 type ExistFile func(string) bool

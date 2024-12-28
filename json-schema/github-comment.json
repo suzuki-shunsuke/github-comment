@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/suzuki-shunsuke/github-comment/v6/pkg/config/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Base": {
+      "properties": {
+        "org": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Config": {
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/Base"
+        },
+        "ghe_base_url": {
+          "type": "string"
+        },
+        "ghe_graphql_endpoint": {
+          "type": "string"
+        },
+        "vars": {
+          "type": "object"
+        },
+        "templates": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "post": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PostConfig"
+          },
+          "type": "object"
+        },
+        "exec": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/ExecConfig"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "hide": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "skip_no_token": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ExecConfig": {
+      "properties": {
+        "when": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "template_for_too_long": {
+          "type": "string"
+        },
+        "dont_comment": {
+          "type": "boolean"
+        },
+        "embedded_var_names": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "when"
+      ]
+    },
+    "PostConfig": {
+      "oneOf": [
+        {
+          "type": "string",
+          "deprecated": true
+        },
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "https://github.com/suzuki-shunsuke/github-comment/v6/pkg/config/post-config",
+          "$ref": "#/$defs/postConfig",
+          "$defs": {
+            "postConfig": {
+              "properties": {
+                "template": {
+                  "type": "string"
+                },
+                "template_for_too_long": {
+                  "type": "string"
+                },
+                "embedded_var_names": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "update": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

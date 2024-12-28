@@ -18,3 +18,4 @@ linters:
     - varnamelen
     - ireturn
     - depguard
+    - tagalign
