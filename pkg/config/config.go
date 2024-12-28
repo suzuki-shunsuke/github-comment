@@ -112,6 +112,19 @@ type ExecConfig struct {
 	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty" yaml:"embedded_var_names"`
 }
 
+func (ec ExecConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
+	schema.Properties.Set("when", &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
+			{
+				Type: "string",
+			},
+			{
+				Type: "boolean",
+			},
+		},
+	})
+}
+
 type ExistFile func(string) bool
 
 type Reader struct {

@@ -55,3 +55,7 @@ tasks:
     description: yamllint
     usage: yamllint
     script: 'find . \( -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 yamllint -c .yamllint.yml'
+  - name: js
+    description: Generate JSON Schema
+    usage: Generate JSON Schema
+    script: "go run ./cmd/gen-jsonschema"

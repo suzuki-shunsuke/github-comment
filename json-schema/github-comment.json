@@ -69,7 +69,14 @@
     "ExecConfig": {
       "properties": {
         "when": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         },
         "template": {
           "type": "string"
