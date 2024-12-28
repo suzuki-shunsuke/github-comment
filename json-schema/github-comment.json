@@ -101,10 +101,10 @@
         },
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://github.com/suzuki-shunsuke/github-comment/v6/pkg/config/post-config",
-          "$ref": "#/$defs/postConfig",
+          "$id": "https://github.com/suzuki-shunsuke/github-comment/v6/pkg/config/post-config-for-js",
+          "$ref": "#/$defs/PostConfigForJS",
           "$defs": {
-            "postConfig": {
+            "PostConfigForJS": {
               "properties": {
                 "template": {
                   "type": "string"
