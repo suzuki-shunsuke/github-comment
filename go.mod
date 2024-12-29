@@ -1,6 +1,6 @@
 module github.com/suzuki-shunsuke/github-comment/v6
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.11.0
 	github.com/stretchr/testify v1.10.0
+	github.com/suzuki-shunsuke/gen-go-jsonschema v0.1.0
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
