@@ -6,10 +6,12 @@
     "Base": {
       "properties": {
         "org": {
-          "type": "string"
+          "type": "string",
+          "description": "GitHub organization name"
         },
         "repo": {
-          "type": "string"
+          "type": "string",
+          "description": "GitHub repository name"
         }
       },
       "additionalProperties": false,
@@ -18,28 +20,34 @@
     "Config": {
       "properties": {
         "base": {
-          "$ref": "#/$defs/Base"
+          "$ref": "#/$defs/Base",
+          "description": "Repository where to post comments"
         },
         "ghe_base_url": {
-          "type": "string"
+          "type": "string",
+          "description": "GitHub Enterprise Base URL"
         },
         "ghe_graphql_endpoint": {
-          "type": "string"
+          "type": "string",
+          "description": "GitHub Enterprise GraphQL Endpoint"
         },
         "vars": {
-          "type": "object"
+          "type": "object",
+          "description": "variables to pass to templates"
         },
         "templates": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "templates"
         },
         "post": {
           "additionalProperties": {
             "$ref": "#/$defs/PostConfig"
           },
-          "type": "object"
+          "type": "object",
+          "description": "configuration for github-comment post command"
         },
         "exec": {
           "additionalProperties": {
@@ -48,16 +56,19 @@
             },
             "type": "array"
           },
-          "type": "object"
+          "type": "object",
+          "description": "configuration for github-comment exec command"
         },
         "hide": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "configuration for github-comment hide command"
         },
         "skip_no_token": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Skip to post comments if no GitHub access token is passed"
         },
         "silent": {
           "type": "boolean"
@@ -79,19 +90,22 @@
           ]
         },
         "template": {
-          "type": "string"
+          "type": "string",
+          "description": "Comment template"
         },
         "template_for_too_long": {
           "type": "string"
         },
         "dont_comment": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Don't post a comment"
         },
         "embedded_var_names": {
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Embedded variable names"
         }
       },
       "additionalProperties": false,
@@ -109,7 +123,8 @@
         {
           "properties": {
             "template": {
-              "type": "string"
+              "type": "string",
+              "description": "Comment template"
             },
             "template_for_too_long": {
               "type": "string"
@@ -118,10 +133,12 @@
               "items": {
                 "type": "string"
               },
-              "type": "array"
+              "type": "array",
+              "description": "Embedded variable names"
             },
             "update": {
-              "type": "string"
+              "type": "string",
+              "description": "Update comments that matches with the condition"
             }
           },
           "additionalProperties": false,
