@@ -1,58 +1,64 @@
 ---
-# skip_no_token: true
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-shunsuke/github-comment/main/json-schema/github-comment.json
+# https://suzuki-shunsuke.github.io/github-comment/
+# github-comment works without configuration file. All settings are optional.
+skip_no_token: false
 # base:
 #   org:
 #   repo:
-# vars:
-#   foo: bar
-#   zoo:
-#     foo: hello
-# templates:
-#   header: "# {{.Org}}/{{.Repo}}"
-# post:
-#   default:
-#     template: |
-#       {{template "header" .}}
-#       {{.Vars.foo}} {{.Vars.zoo.foo}}
-#       {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
-#   hello:
-#     template: hello
-# exec:
-#   hello:
-#     - when: true
-#       template: |
-#         {{template "header" .}}
-#         {{.Vars.foo}} {{.Vars.zoo.foo}}
-#         {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
-#         exit code: {{.ExitCode}}
-#
-#         ```console
-#         $ {{.Command}}
-#         ```
-#
-#         Stdout:
-#
-#         ```
-#         {{.Stdout}}
-#         ```
-#
-#         Stderr:
-#
-#         ```
-#         {{.Stderr}}
-#         ```
-#
-#         CombinedOutput:
-#
-#         ```
-#         {{.CombinedOutput}}
-#         ```
-#       template_for_too_long: |
-#         {{template "header" .}}
-#         {{.Vars.foo}} {{.Vars.zoo.foo}}
-#         {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
-#         exit code: {{.ExitCode}}
-#
-#         ```console
-#         $ {{.Command}}
-#         ```
+vars:
+  # hello is just an example. Please remove this freely.
+  hello: bar
+templates:
+  # hello is just an example. Please remove this freely.
+  hello: "# {{.Org}}/{{.Repo}}"
+post:
+  # hello is just an example. Please remove this freely.
+  hello:
+    template: |
+      {{template "header" .}}
+      {{.Vars.foo}} {{.Vars.zoo.foo}}
+      {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+hide:
+  # hello is just an example. Please remove this freely.
+  hello: 'Comment.HasMeta && (Comment.Meta.SHA1 != Commit.SHA1 && Comment.Meta.Vars.target == "hello")'
+exec:
+  # hello is just an example. Please remove this freely.
+  hello:
+    - when: true
+      template: |
+        {{template "header" .}}
+        {{.Vars.foo}} {{.Vars.zoo.foo}}
+        {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+        exit code: {{.ExitCode}}
+
+        ```console
+        $ {{.Command}}
+        ```
+
+        Stdout:
+
+        ```
+        {{.Stdout}}
+        ```
+
+        Stderr:
+
+        ```
+        {{.Stderr}}
+        ```
+
+        CombinedOutput:
+
+        ```
+        {{.CombinedOutput}}
+        ```
+      template_for_too_long: |
+        {{template "header" .}}
+        {{.Vars.foo}} {{.Vars.zoo.foo}}
+        {{.Org}} {{.Repo}} {{.PRNumber}} {{.SHA1}} {{.TemplateKey}}
+        exit code: {{.ExitCode}}
+
+        ```console
+        $ {{.Command}}
+        ```
