@@ -107,31 +107,24 @@
           "deprecated": true
         },
         {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://github.com/suzuki-shunsuke/github-comment/v6/pkg/config/post-config",
-          "$defs": {
-            "postConfig": {
-              "properties": {
-                "template": {
-                  "type": "string"
-                },
-                "template_for_too_long": {
-                  "type": "string"
-                },
-                "embedded_var_names": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "update": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+          "properties": {
+            "template": {
+              "type": "string"
+            },
+            "template_for_too_long": {
+              "type": "string"
+            },
+            "embedded_var_names": {
+              "type": "string"
+            },
+            "update": {
+              "type": "string"
             }
-          }
+          },
+          "type": "object",
+          "required": [
+            "template"
+          ]
         }
       ]
     }

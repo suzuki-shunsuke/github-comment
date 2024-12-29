@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/invopop/jsonschema"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,18 +38,43 @@ type PostConfig struct { //nolint:recvcheck
 	UpdateCondition string `json:"update,omitempty"`
 }
 
-type postConfig PostConfig
-
 func (PostConfig) JSONSchema() *jsonschema.Schema {
-	a := jsonschema.Reflect(&postConfig{})
-	a.Ref = ""
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
 				Type:       "string",
 				Deprecated: true,
 			},
-			a,
+			{
+				Type: "object",
+				Properties: orderedmap.New[string, *jsonschema.Schema](orderedmap.WithInitialData[string, *jsonschema.Schema](
+					orderedmap.Pair[string, *jsonschema.Schema]{
+						Key: "template",
+						Value: &jsonschema.Schema{
+							Type: "string",
+						},
+					},
+					orderedmap.Pair[string, *jsonschema.Schema]{
+						Key: "template_for_too_long",
+						Value: &jsonschema.Schema{
+							Type: "string",
+						},
+					},
+					orderedmap.Pair[string, *jsonschema.Schema]{
+						Key: "embedded_var_names",
+						Value: &jsonschema.Schema{
+							Type: "string",
+						},
+					},
+					orderedmap.Pair[string, *jsonschema.Schema]{
+						Key: "update",
+						Value: &jsonschema.Schema{
+							Type: "string",
+						},
+					},
+				)),
+				Required: []string{"template"},
+			},
 		},
 	}
 }
