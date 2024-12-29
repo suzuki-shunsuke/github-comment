@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/invopop/jsonschema"
-	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -29,7 +28,7 @@ type Base struct {
 }
 
 type PostConfig struct { //nolint:recvcheck
-	Template           string   `json:"template,omitempty"`
+	Template           string   `json:"template"`
 	TemplateForTooLong string   `json:"template_for_too_long,omitempty"`
 	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty"`
 	// UpdateCondition Update the comment that matches with the condition.
@@ -38,43 +37,17 @@ type PostConfig struct { //nolint:recvcheck
 	UpdateCondition string `json:"update,omitempty"`
 }
 
+type postConfigForJS PostConfig
+
 func (PostConfig) JSONSchema() *jsonschema.Schema {
+	a := jsonschema.Reflect(&postConfigForJS{}).Definitions["postConfigForJS"]
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
 				Type:       "string",
 				Deprecated: true,
 			},
-			{
-				Type: "object",
-				Properties: orderedmap.New[string, *jsonschema.Schema](orderedmap.WithInitialData[string, *jsonschema.Schema](
-					orderedmap.Pair[string, *jsonschema.Schema]{
-						Key: "template",
-						Value: &jsonschema.Schema{
-							Type: "string",
-						},
-					},
-					orderedmap.Pair[string, *jsonschema.Schema]{
-						Key: "template_for_too_long",
-						Value: &jsonschema.Schema{
-							Type: "string",
-						},
-					},
-					orderedmap.Pair[string, *jsonschema.Schema]{
-						Key: "embedded_var_names",
-						Value: &jsonschema.Schema{
-							Type: "string",
-						},
-					},
-					orderedmap.Pair[string, *jsonschema.Schema]{
-						Key: "update",
-						Value: &jsonschema.Schema{
-							Type: "string",
-						},
-					},
-				)),
-				Required: []string{"template"},
-			},
+			a,
 		},
 	}
 }

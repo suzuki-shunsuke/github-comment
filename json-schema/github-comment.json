@@ -115,12 +115,16 @@
               "type": "string"
             },
             "embedded_var_names": {
-              "type": "string"
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             },
             "update": {
               "type": "string"
             }
           },
+          "additionalProperties": false,
           "type": "object",
           "required": [
             "template"

@@ -16,7 +16,6 @@ require (
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/urfave/cli/v2 v2.27.5
-	github.com/wk8/go-ordered-map/v2 v2.1.8
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/term v0.27.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -42,6 +41,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a // indirect
 	github.com/spf13/cast v1.7.0 // indirect
+	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
