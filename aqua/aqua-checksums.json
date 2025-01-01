@@ -166,6 +166,36 @@
       "algorithm": "sha256"
     },
     {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_darwin_amd64.tar.gz",
+      "checksum": "0F01644B915013073B6EF26D3FA55A746F3829FA36C595EC04DF3F115D6281A0",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_darwin_arm64.tar.gz",
+      "checksum": "32F5F9943D4D65BBF6DF5BC843FC63E32D7972DF1F4D087D8FAE0D25FC8E29FA",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_linux_amd64.tar.gz",
+      "checksum": "4A01CE5D58FAFDBA1CE7BDDEB1F16F47681E31CD1C4E70252D45A037FF4B50B9",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_linux_arm64.tar.gz",
+      "checksum": "D318204B9445A12DF0FE5A066733DCB28E5D8C9F3DBDFB43DC33AB4A516987B9",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_windows_amd64.tar.gz",
+      "checksum": "6D883165DA47D05651F157EDFB7E68603F21D8B56AEA80869890A8F19C938DFC",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/suzuki-shunsuke/cmdx/v1.7.6/cmdx_windows_arm64.tar.gz",
+      "checksum": "CED384B59B2B84CC681581026483511E1551D7BF808090366779255CC056E020",
+      "algorithm": "sha256"
+    },
+    {
       "id": "github_release/github.com/suzuki-shunsuke/ghalint/v1.2.1/ghalint_1.2.1_darwin_amd64.tar.gz",
       "checksum": "94DC94403071C90E13F2F6EDD45A5EF39AB47FFCD9F1D048AC17FE81E35496F9",
       "algorithm": "sha256"
