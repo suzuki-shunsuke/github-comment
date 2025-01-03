@@ -276,7 +276,6 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 		Body:           tpl,
 		BodyForTooLong: tplForTooLong,
 		SHA1:           opts.SHA1,
-		HideOldComment: opts.HideOldComment,
 		Vars:           cfg.Vars,
 		TemplateKey:    opts.TemplateKey,
 	}
