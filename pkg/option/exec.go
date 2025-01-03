@@ -6,9 +6,10 @@ import (
 
 type ExecOptions struct {
 	Options
-	Args        []string
-	SkipComment bool
-	Outputs     []*Output
+	Args            []string
+	SkipComment     bool
+	Outputs         []*Output
+	UpdateCondition string
 }
 
 type Output struct {
