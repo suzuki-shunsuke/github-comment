@@ -14,7 +14,6 @@ type Options struct {
 	TemplateForTooLong string
 	TemplateKey        string
 	ConfigPath         string
-	HideOldComment     string
 	LogLevel           string
 	Vars               map[string]string
 	EmbeddedVarNames   []string
