@@ -85,15 +85,15 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 			continue
 		}
 
-		metadata := map[string]interface{}{}
+		metadata := map[string]any{}
 		hasMeta := extractMetaFromComment(comnt.Body, &metadata)
-		paramMap := map[string]interface{}{
-			"Comment": map[string]interface{}{
+		paramMap := map[string]any{
+			"Comment": map[string]any{
 				"Body":    comnt.Body,
 				"Meta":    metadata,
 				"HasMeta": hasMeta,
 			},
-			"Commit": map[string]interface{}{
+			"Commit": map[string]any{
 				"Org":      cmt.Org,
 				"Repo":     cmt.Repo,
 				"PRNumber": cmt.PRNumber,
@@ -128,7 +128,7 @@ type Reader interface {
 }
 
 type Renderer interface {
-	Render(tpl string, templates map[string]string, params interface{}) (string, error)
+	Render(tpl string, templates map[string]string, params any) (string, error)
 }
 
 type PostTemplateParams struct {
@@ -141,7 +141,7 @@ type PostTemplateParams struct {
 	// SHA1 is the commit SHA1
 	SHA1        string
 	TemplateKey string
-	Vars        map[string]interface{}
+	Vars        map[string]any
 }
 
 type Platform interface {
@@ -208,7 +208,7 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 	}
 
 	if cfg.Vars == nil {
-		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+		cfg.Vars = make(map[string]any, len(opts.Vars))
 	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
@@ -251,13 +251,13 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 		Getenv:   c.Getenv,
 		Platform: c.Platform,
 	}
-	embeddedMetadata := make(map[string]interface{}, len(opts.EmbeddedVarNames))
+	embeddedMetadata := make(map[string]any, len(opts.EmbeddedVarNames))
 	for _, name := range opts.EmbeddedVarNames {
 		if v, ok := cfg.Vars[name]; ok {
 			embeddedMetadata[name] = v
 		}
 	}
-	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]any{
 		"SHA1":        opts.SHA1,
 		"TemplateKey": opts.TemplateKey,
 		"Vars":        embeddedMetadata,

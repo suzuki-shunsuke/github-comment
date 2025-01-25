@@ -17,7 +17,7 @@ type Comment struct {
 	BodyForTooLong string
 	SHA1           string
 	TemplateKey    string
-	Vars           map[string]interface{}
+	Vars           map[string]any
 }
 
 // `graphql:"IssueComment(isMinimized: false, viewerCanMinimize: true)"`
