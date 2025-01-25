@@ -47,7 +47,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Vars:     map[string]interface{}{},
+				Vars:     map[string]any{},
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Vars:     map[string]interface{}{},
+				Vars:     map[string]any{},
 			},
 		},
 		{
@@ -115,7 +115,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Repo:        "github-comment",
 				PRNumber:    1,
 				TemplateKey: "default",
-				Vars:        map[string]interface{}{},
+				Vars:        map[string]any{},
 			},
 		},
 		{
@@ -150,7 +150,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Vars:     map[string]interface{}{},
+				Vars:     map[string]any{},
 			},
 		},
 		{
@@ -182,7 +182,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Org:      "suzuki-shunsuke",
 				Repo:     "github-comment",
 				PRNumber: 1,
-				Vars:     map[string]interface{}{},
+				Vars:     map[string]any{},
 			},
 		},
 	}

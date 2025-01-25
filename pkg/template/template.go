@@ -93,7 +93,7 @@ func avoidHTMLEscape(text string) template.HTML {
 	return template.HTML(text) //nolint:gosec
 }
 
-func wrapCode(text string) interface{} {
+func wrapCode(text string) any {
 	if len(text) > 60000 { //nolint:mnd
 		text = text[:20000] + `
 
@@ -109,7 +109,7 @@ func wrapCode(text string) interface{} {
 	return template.HTML("\n```\n" + text + "\n```\n") //nolint:gosec
 }
 
-func (r *Renderer) Render(tpl string, templates map[string]string, params interface{}) (string, error) {
+func (r *Renderer) Render(tpl string, templates map[string]string, params any) (string, error) {
 	tpl = addTemplates(tpl, templates)
 
 	// delete some functions for security reason

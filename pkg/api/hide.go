@@ -96,7 +96,7 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, opts *o
 	}
 
 	if cfg.Vars == nil {
-		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+		cfg.Vars = make(map[string]any, len(opts.Vars))
 	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
@@ -142,14 +142,14 @@ type ParamListHiddenComments struct {
 	Repo      string
 	SHA1      string
 	PRNumber  int
-	Vars      map[string]interface{}
+	Vars      map[string]any
 }
 
 func listHiddenComments( //nolint:funlen
 	ctx context.Context,
 	gh GitHub, exp Expr,
 	param *ParamListHiddenComments,
-	paramExpr map[string]interface{},
+	paramExpr map[string]any,
 ) ([]string, error) {
 	logE := logrus.WithFields(logrus.Fields{
 		"program": "github-comment",
@@ -194,16 +194,16 @@ func listHiddenComments( //nolint:funlen
 			continue
 		}
 
-		metadata := map[string]interface{}{}
+		metadata := map[string]any{}
 		hasMeta := extractMetaFromComment(comment.Body, &metadata)
-		paramMap := map[string]interface{}{
-			"Comment": map[string]interface{}{
+		paramMap := map[string]any{
+			"Comment": map[string]any{
 				"Body": comment.Body,
 				// "CreatedAt": comment.CreatedAt,
 				"Meta":    metadata,
 				"HasMeta": hasMeta,
 			},
-			"Commit": map[string]interface{}{
+			"Commit": map[string]any{
 				"Org":      param.Org,
 				"Repo":     param.Repo,
 				"PRNumber": param.PRNumber,
