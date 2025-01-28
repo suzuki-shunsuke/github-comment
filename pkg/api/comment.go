@@ -31,12 +31,12 @@ func (c *CommentController) Post(ctx context.Context, cmt *github.Comment) error
 	return nil
 }
 
-func extractMetaFromComment(body string, data *map[string]interface{}) bool {
+func extractMetaFromComment(body string, data *map[string]any) bool {
 	f, _ := metadata.Extract(body, data)
 	return f
 }
 
-func (c *CommentController) complementMetaData(data map[string]interface{}) {
+func (c *CommentController) complementMetaData(data map[string]any) {
 	if data == nil {
 		return
 	}
@@ -46,7 +46,7 @@ func (c *CommentController) complementMetaData(data map[string]interface{}) {
 	_ = metadata.SetCIEnv(c.Platform.CI(), c.Getenv, data)
 }
 
-func (c *CommentController) getEmbeddedComment(data map[string]interface{}) (string, error) {
+func (c *CommentController) getEmbeddedComment(data map[string]any) (string, error) {
 	c.complementMetaData(data)
 	return metadata.Convert(data) //nolint:wrapcheck
 }

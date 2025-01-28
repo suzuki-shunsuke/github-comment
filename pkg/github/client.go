@@ -54,8 +54,8 @@ func New(ctx context.Context, param *ParamNew) (*Client, error) {
 }
 
 type V4Client interface {
-	Mutate(ctx context.Context, m interface{}, input githubv4.Input, variables map[string]interface{}) error
-	Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
+	Mutate(ctx context.Context, m any, input githubv4.Input, variables map[string]any) error
+	Query(ctx context.Context, q any, variables map[string]any) error
 }
 
 type IssuesService interface {

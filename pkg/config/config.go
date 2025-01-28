@@ -52,8 +52,8 @@ func (PostConfig) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { //nolint:cyclop
-	var val interface{}
+func (pc *PostConfig) UnmarshalYAML(unmarshal func(any) error) error { //nolint:cyclop
+	var val any
 	if err := unmarshal(&val); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { /
 		pc.Template = s
 		return nil
 	}
-	if m, ok := val.(map[interface{}]interface{}); ok { //nolint:nestif
+	if m, ok := val.(map[any]any); ok { //nolint:nestif
 		if tpl, ok := m["template"]; ok {
 			t, ok := tpl.(string)
 			if !ok {
@@ -77,9 +77,9 @@ func (pc *PostConfig) UnmarshalYAML(unmarshal func(interface{}) error) error { /
 			pc.TemplateForTooLong = t
 		}
 		if tpl, ok := m["embedded_var_names"]; ok {
-			t, ok := tpl.([]interface{})
+			t, ok := tpl.([]any)
 			if !ok {
-				return fmt.Errorf("invalid config. embedded_var_names should be []interface{}: %+v", tpl)
+				return fmt.Errorf("invalid config. embedded_var_names should be []any: %+v", tpl)
 			}
 			names := make([]string, len(t))
 			for i, name := range t {

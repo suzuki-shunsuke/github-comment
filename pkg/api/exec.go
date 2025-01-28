@@ -94,7 +94,7 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 	}
 
 	if cfg.Vars == nil {
-		cfg.Vars = make(map[string]interface{}, len(opts.Vars))
+		cfg.Vars = make(map[string]any, len(opts.Vars))
 	}
 	for k, v := range opts.Vars {
 		cfg.Vars[k] = v
@@ -155,7 +155,7 @@ type ExecCommentParams struct {
 	SHA1            string
 	TemplateKey     string
 	Template        string
-	Vars            map[string]interface{}
+	Vars            map[string]any
 	Outputs         []*option.Output
 	UpdateCondition string
 }
@@ -165,7 +165,7 @@ type Executor interface {
 }
 
 type Expr interface {
-	Match(expression string, params interface{}) (bool, error)
+	Match(expression string, params any) (bool, error)
 	Compile(expression string) (expr.Program, error)
 }
 
@@ -253,14 +253,14 @@ func (c *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams 
 		Platform: c.Platform,
 	}
 
-	embeddedMetadata := make(map[string]interface{}, len(embeddedVarNames))
+	embeddedMetadata := make(map[string]any, len(embeddedVarNames))
 	for _, name := range embeddedVarNames {
 		if v, ok := cmtParams.Vars[name]; ok {
 			embeddedMetadata[name] = v
 		}
 	}
 
-	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]interface{}{
+	embeddedComment, err := cmtCtrl.getEmbeddedComment(map[string]any{
 		"SHA1":        cmtParams.SHA1,
 		"TemplateKey": cmtParams.TemplateKey,
 		"Vars":        embeddedMetadata,

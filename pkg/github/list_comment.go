@@ -28,7 +28,7 @@ func (c *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*Issu
 			} `graphql:"issue(number: $issueNumber)"`
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
 		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec
@@ -64,7 +64,7 @@ func (c *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueCo
 			} `graphql:"pullRequest(number: $issueNumber)"`
 		} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
 		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec
