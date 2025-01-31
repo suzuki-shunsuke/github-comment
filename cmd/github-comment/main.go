@@ -37,4 +37,5 @@ func core() error {
 		},
 	}
 	return runner.Run(ctx, os.Args) //nolint:wrapcheck
+
 }
