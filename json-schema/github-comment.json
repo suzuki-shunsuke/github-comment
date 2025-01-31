@@ -4,6 +4,16 @@
   "$ref": "#/$defs/Config",
   "$defs": {
     "Base": {
+      "properties": {
+        "org": {
+          "type": "string",
+          "description": "GitHub organization name"
+        },
+        "repo": {
+          "type": "string",
+          "description": "GitHub repository name"
+        }
+      },
       "additionalProperties": false,
       "type": "object"
     },
