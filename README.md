@@ -14,4 +14,3 @@ https://suzuki-shunsuke.github.io/github-comment/
 ## License
 
 [MIT](LICENSE)
-
