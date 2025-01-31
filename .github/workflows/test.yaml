@@ -8,10 +8,8 @@ jobs:
     # Get changed files to filter jobs
     timeout-minutes: 10
     outputs:
-      update-aqua-checksums: ${{steps.changes.outputs.update-aqua-checksums}}
       renovate-config-validator: ${{steps.changes.outputs.renovate-config-validator}}
       ghalint: ${{steps.changes.outputs.ghalint}}
-      go-mod-tidy: ${{steps.changes.outputs.go-mod-tidy}}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -19,11 +17,6 @@ jobs:
         id: changes
         with:
           filters: |
-            update-aqua-checksums:
-              - aqua/aqua.yaml
-              - aqua/imports/*.yaml
-              - aqua/aqua-checksums.json
-              - .github/workflows/test.yaml
             renovate-config-validator:
               - renovate.json5
             ghalint:
@@ -34,20 +27,6 @@ jobs:
               - go.sum
               - "**.go"
 
-  update-aqua-checksums:
-    # Update aqua-checksums.json and push a commit
-    needs: path-filter
-    if: needs.path-filter.outputs.update-aqua-checksums == 'true'
-    uses: aquaproj/update-checksum-workflow/.github/workflows/update-checksum.yaml@8bce60cc4475128360bc32f00707abb874ca4a91 # v1.0.3
-    permissions:
-      contents: read
-    with:
-      aqua_version: v2.43.0
-      prune: true
-    secrets:
-      gh_app_id: ${{secrets.APP_ID}}
-      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
-
   test:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@6861ea245ad10752afcba66cb71f28cf5c46ce49 # v1.1.0
     with:
@@ -56,19 +35,6 @@ jobs:
       golangci-lint-timeout: 120s
     permissions:
       pull-requests: write
-      contents: read
-
-  go-mod-tidy:
-    uses: suzuki-shunsuke/go-mod-tidy-workflow/.github/workflows/go-mod-tidy.yaml@79af8ebcd2dea45c27303b09192be80f7a35a37a # v1.1.0
-    needs: path-filter
-    if: needs.path-filter.outputs.go-mod-tidy == 'true'
-    with:
-      go-version-file: go.mod
-      aqua_version: v2.43.0
-    secrets:
-      gh_app_id: ${{secrets.APP_ID}}
-      gh_app_private_key: ${{secrets.APP_PRIVATE_KEY}}
-    permissions:
       contents: read
 
   build:
@@ -124,12 +90,10 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     needs:
-      - update-aqua-checksums
       - test
       - build
       - renovate-config-validator
       - ghalint
-      - go-mod-tidy
     permissions: {}
     if: failure()
     steps:
