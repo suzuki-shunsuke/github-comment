@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/suzuki-shunsuke/urfave-cli-help-all/helpall"
 	"github.com/urfave/cli/v2"
 )
 
@@ -257,6 +258,7 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 					},
 				},
 			},
+			helpall.New(nil),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
