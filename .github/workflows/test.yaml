@@ -30,7 +30,7 @@ jobs:
   test:
     uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@6861ea245ad10752afcba66cb71f28cf5c46ce49 # v1.1.0
     with:
-      aqua_version: v2.43.1
+      aqua_version: v2.43.2
       go-version-file: go.mod
       golangci-lint-timeout: 120s
     permissions:
@@ -51,7 +51,7 @@ jobs:
 
       - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
         with:
-          aqua_version: v2.43.1
+          aqua_version: v2.43.2
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
@@ -77,7 +77,7 @@ jobs:
           persist-credentials: false
       - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
         with:
-          aqua_version: v2.43.1
+          aqua_version: v2.43.2
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
       - run: ghalint run
