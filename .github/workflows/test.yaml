@@ -2,7 +2,6 @@
 name: test
 permissions: {}
 on: pull_request
-
 jobs:
   path-filter:
     # Get changed files to filter jobs
@@ -83,18 +82,3 @@ jobs:
       - run: ghalint run
         env:
           GHALINT_LOG_COLOR: always
-
-  status-check:
-    # This job is used for main branch's branch protection rule's status check.
-    # If all dependent jobs succeed or are skipped this job succeeds.
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    needs:
-      - test
-      - build
-      - renovate-config-validator
-      - ghalint
-    permissions: {}
-    if: failure()
-    steps:
-      - run: exit 1
