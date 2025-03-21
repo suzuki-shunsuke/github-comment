@@ -30,6 +30,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 			ctrl: &ExecController{
 				Expr: &expr.Expr{},
 			},
+			cmtParams: &ExecCommentParams{},
 			execConfigs: []*config.ExecConfig{
 				{
 					When: "false",
@@ -42,6 +43,7 @@ func TestExecController_getExecConfig(t *testing.T) { //nolint:funlen
 			ctrl: &ExecController{
 				Expr: &expr.Expr{},
 			},
+			cmtParams: &ExecCommentParams{},
 			execConfigs: []*config.ExecConfig{
 				{
 					When:        "true",
