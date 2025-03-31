@@ -27,7 +27,7 @@ jobs:
               - "**.go"
 
   test:
-    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@b948a1c505beb3e18a57e6b82ae20ed63fcec5f9 # v1.2.0
+    uses: suzuki-shunsuke/go-test-workflow/.github/workflows/test.yaml@feat-goreleaser-check
     with:
       aqua_version: v2.46.0
       go-version-file: go.mod
