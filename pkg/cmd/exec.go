@@ -15,7 +15,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
