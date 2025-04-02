@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func parseVarEnvs() map[string]string {
@@ -50,7 +50,7 @@ func parseVarFilesFlag(varsSlice []string) (map[string]string, error) {
 	return vars, nil
 }
 
-func parseVars(c *cli.Context) (map[string]string, error) {
+func parseVars(c *cli.Command) (map[string]string, error) {
 	vars := parseVarEnvs()
 	flagVars, err := parseVarsFlag(c.StringSlice("var"))
 	if err != nil {
