@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -15,10 +16,10 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
+func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
@@ -26,7 +27,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Context) error {
 	opts.Template = c.String("template")
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
-	opts.PRNumber = c.Int("pr")
+	opts.PRNumber = int(c.Int("pr"))
 	opts.Args = c.Args().Slice()
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
@@ -65,7 +66,7 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func (r *Runner) execAction(c *cli.Context) error {
+func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 	opts := &option.ExecOptions{}
 	if err := parseExecOptions(opts, c); err != nil {
 		return err
@@ -95,7 +96,7 @@ func (r *Runner) execAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(c.Context, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -120,5 +121,5 @@ func (r *Runner) execAction(c *cli.Context) error {
 		Config:   cfg,
 		Fs:       afero.NewOsFs(),
 	}
-	return ctrl.Exec(c.Context, opts) //nolint:wrapcheck
+	return ctrl.Exec(ctx, opts) //nolint:wrapcheck
 }

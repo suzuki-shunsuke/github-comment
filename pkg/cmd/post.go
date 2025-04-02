@@ -14,12 +14,12 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
 )
 
 // parsePostOptions parses the command line arguments of the subcommand "post".
-func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
+func parsePostOptions(opts *option.PostOptions, c *cli.Command) error {
 	opts.Org = c.String("org")
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
@@ -27,7 +27,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Context) error {
 	opts.Template = c.String("template")
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
-	opts.PRNumber = c.Int("pr")
+	opts.PRNumber = int(c.Int("pr"))
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
@@ -87,7 +87,7 @@ func setLogLevel(logLevel string) {
 }
 
 // postAction is an entrypoint of the subcommand "post".
-func (r *Runner) postAction(c *cli.Context) error {
+func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -120,7 +120,7 @@ func (r *Runner) postAction(c *cli.Context) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(c.Context, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -141,5 +141,5 @@ func (r *Runner) postAction(c *cli.Context) error {
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Post(c.Context, opts) //nolint:wrapcheck
+	return ctrl.Post(ctx, opts) //nolint:wrapcheck
 }
