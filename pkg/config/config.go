@@ -174,7 +174,7 @@ func (r *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
 		}
 		cfgPath = p
 	}
-	cfg, err := r.read(cfgPath) //nolint:ifshort
+	cfg, err := r.read(cfgPath)
 	if err != nil {
 		return nil, err
 	}

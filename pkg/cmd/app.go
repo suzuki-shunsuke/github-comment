@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/suzuki-shunsuke/urfave-cli-v3-help-all/helpall"
+	"github.com/suzuki-shunsuke/urfave-cli-v3-util/helpall"
 	"github.com/urfave/cli/v3"
 )
 
@@ -26,7 +26,7 @@ func (f *LDFlags) AppVersion() string {
 }
 
 func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
-	cmd := helpall.With(&cli.Command{
+	return helpall.With(&cli.Command{ //nolint:wrapcheck
 		Name:    "github-comment",
 		Usage:   "post a comment to GitHub",
 		Version: r.LDFlags.AppVersion(),
@@ -266,6 +266,5 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 				Sources: cli.EnvVars("GH_COMMENT_LOG_LEVEL"),
 			},
 		},
-	}, nil)
-	return cmd.Run(ctx, args) //nolint:wrapcheck
+	}, nil).Run(ctx, args)
 }
