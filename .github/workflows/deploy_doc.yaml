@@ -2,8 +2,8 @@
 name: Deploy GitHub Pages
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "*/10 * * * *"
+  schedule:
+    - cron: "*/10 * * * *"
 permissions: {}
 jobs:
   deploy-doc:
