@@ -13,6 +13,34 @@ type Platform struct {
 	platform cienv.Platform
 }
 
+func Get() *Platform {
+	cienv.Add(func(param *cienv.Param) cienv.Platform {
+		return NewGoogleCloudBuild(param)
+	})
+	return &Platform{
+		platform: cienv.Get(nil),
+	}
+}
+
+func (pt *Platform) ComplementPost(opts *option.PostOptions) error {
+	return pt.complement(&opts.Options)
+}
+
+func (pt *Platform) ComplementHide(opts *option.HideOptions) error {
+	return pt.complement(&opts.Options)
+}
+
+func (pt *Platform) CI() string {
+	if pt.platform == nil {
+		return ""
+	}
+	return pt.platform.ID()
+}
+
+func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
+	return pt.complement(&opts.Options)
+}
+
 func (pt *Platform) getRepoOrg() (string, error) { //nolint:unparam
 	if pt.platform != nil {
 		if org := pt.platform.RepoOwner(); org != "" {
@@ -95,32 +123,4 @@ func (pt *Platform) complement(opts *option.Options) error {
 	opts.PRNumber = pr
 
 	return nil
-}
-
-func (pt *Platform) ComplementPost(opts *option.PostOptions) error {
-	return pt.complement(&opts.Options)
-}
-
-func (pt *Platform) ComplementHide(opts *option.HideOptions) error {
-	return pt.complement(&opts.Options)
-}
-
-func (pt *Platform) CI() string {
-	if pt.platform == nil {
-		return ""
-	}
-	return pt.platform.ID()
-}
-
-func (pt *Platform) ComplementExec(opts *option.ExecOptions) error {
-	return pt.complement(&opts.Options)
-}
-
-func Get() *Platform {
-	cienv.Add(func(param *cienv.Param) cienv.Platform {
-		return NewGoogleCloudBuild(param)
-	})
-	return &Platform{
-		platform: cienv.Get(nil),
-	}
 }
