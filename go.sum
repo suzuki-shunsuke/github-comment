@@ -73,8 +73,8 @@ github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0 h1:WHVT7TZTVITrKiIvW7i5+4vr8ebxD6
 github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0/go.mod h1:qnHYP5fJLLNKqOwxCfix7XVzQGfbF72vbGgLhl8X2vA=
 github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0 h1:oVXrrYNGBq4POyITQNWKzwsYz7B2nUcqtDbeX4BfeEc=
 github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0/go.mod h1:kDFtLeftDiIUUHXGI3xq5eJ+uAOi50FPrxPENTHktJ0=
-github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.2 h1:sgCdlcfyY/EE7K6bbL5fw1nhxnOv3ETEAQRJsBp1hq8=
-github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.2/go.mod h1:hnKvR1IZskaS3isZPuO1Ndw9++o+W66pL2kzBAGsglE=
+github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.3 h1:WlB8FC2BH3uVsDoPug7wIFdkb+aAlaKpp07H6x/GjFg=
+github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.3/go.mod h1:B/O/TfFHRZoSeFqZHgwIRf4aWhZiIU46A+UK4ThS2sQ=
 github.com/urfave/cli/v3 v3.1.1 h1:bNnl8pFI5dxPOjeONvFCDFoECLQsceDG4ejahs4Jtxk=
 github.com/urfave/cli/v3 v3.1.1/go.mod h1:FJSKtM/9AiiTOJL4fJ6TbMUkxBXn7GO9guZqoZtpYpo=
 github.com/wk8/go-ordered-map/v2 v2.1.8 h1:5h/BUHu93oj4gIdvHHHGsScSTMijfx5PeYkE/fJgbpc=
