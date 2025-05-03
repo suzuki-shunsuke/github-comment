@@ -21,7 +21,7 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Command) error {
 	opts.Repo = c.String("repo")
 	opts.Token = c.String("token")
 	opts.ConfigPath = c.String("config")
-	opts.PRNumber = int(c.Int("pr"))
+	opts.PRNumber = c.Int("pr")
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
