@@ -27,7 +27,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
 	opts.Template = c.String("template")
 	opts.TemplateKey = c.String("template-key")
 	opts.ConfigPath = c.String("config")
-	opts.PRNumber = int(c.Int("pr"))
+	opts.PRNumber = c.Int("pr")
 	opts.Args = c.Args().Slice()
 	opts.DryRun = c.Bool("dry-run")
 	opts.SkipNoToken = c.Bool("skip-no-token")
