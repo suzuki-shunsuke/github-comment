@@ -17,7 +17,7 @@ require (
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.4
-	github.com/urfave/cli/v3 v3.3.2
+	github.com/urfave/cli/v3 v3.3.3
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/term v0.32.0
 	gopkg.in/yaml.v2 v2.4.0
