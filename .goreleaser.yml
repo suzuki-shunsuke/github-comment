@@ -13,7 +13,7 @@ builds:
       - amd64
       - arm64
 release:
-  prerelease: true
+  prerelease: "true"
   header: |
     [Pull Requests](https://github.com/suzuki-shunsuke/github-comment/pulls?q=is%3Apr+milestone%3A{{.Tag}}) | [Issues](https://github.com/suzuki-shunsuke/github-comment/issues?q=is%3Aissue+milestone%3A{{.Tag}}) | https://github.com/suzuki-shunsuke/github-comment/compare/{{.PreviousTag}}...{{.Tag}}
 signs:
@@ -32,7 +32,7 @@ signs:
       - --oidc-provider
       - github
       - ${artifact}
-brews:
+homebrew_casks:
   -
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
@@ -60,8 +60,3 @@ brews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     # Default is false.
     skip_upload: true
-
-    # So you can `brew test` your formula.
-    # Default is empty.
-    test: |
-      system "#{bin}/github-comment --version"
