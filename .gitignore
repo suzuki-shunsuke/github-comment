@@ -6,3 +6,4 @@ dist
 .envrc
 bin
 .code-climate
+third_party_licenses

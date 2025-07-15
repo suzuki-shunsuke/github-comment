@@ -16,6 +16,14 @@ release:
   prerelease: "true"
   header: |
     [Pull Requests](https://github.com/suzuki-shunsuke/github-comment/pulls?q=is%3Apr+milestone%3A{{.Tag}}) | [Issues](https://github.com/suzuki-shunsuke/github-comment/issues?q=is%3Aissue+milestone%3A{{.Tag}}) | https://github.com/suzuki-shunsuke/github-comment/compare/{{.PreviousTag}}...{{.Tag}}
+
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    files:
+      - LICENSE
+      - README.md
+      - third_party_licenses/**/*
+
 signs:
   - cmd: cosign
     artifacts: checksum
