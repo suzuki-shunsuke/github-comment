@@ -34,11 +34,11 @@ tasks:
   - name: shellcheck
     description: shellcheck
     usage: shellcheck
-    script: shellcheck scripts/* githooks/*
+    script: shellcheck scripts/*
   - name: shfmt
     description: shfmt
     usage: shfmt
-    script: shfmt -l -w scripts/* githooks/*
+    script: shfmt -l -w scripts/*
   - name: yamllint
     description: yamllint
     usage: yamllint
