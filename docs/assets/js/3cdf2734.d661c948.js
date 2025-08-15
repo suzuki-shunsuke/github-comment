@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkgithub_comment=self.webpackChunkgithub_comment||[]).push([[887],{1966:e=>{e.exports=JSON.parse('{"name":"docusaurus-plugin-content-docs","id":"default"}')}}]);
