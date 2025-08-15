@@ -5,5 +5,4 @@ dist
 .git-rm-branch.yml
 .envrc
 bin
-.code-climate
 third_party_licenses
