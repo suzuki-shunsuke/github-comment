@@ -9,7 +9,8 @@ CLI to create and hide GitHub comments by GitHub REST API
 
 ## Document
 
-https://suzuki-shunsuke.github.io/github-comment/
+- https://suzuki-shunsuke.github.io/github-comment/
+- [code](website)
 
 ## License
 

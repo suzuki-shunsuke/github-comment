@@ -30,3 +30,9 @@ jobs:
 
       - name: dry run
         run: bash scripts/test-dry-run.sh
+
+  test_deploy_doc:
+    uses: ./.github/workflows/workflow_call_deploy_doc.yaml
+    permissions:
+      contents: write
+      issues: write
