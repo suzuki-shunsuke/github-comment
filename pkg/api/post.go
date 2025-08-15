@@ -19,7 +19,7 @@ type PostController struct {
 	// Getenv returns the environment variable. os.Getenv
 	Getenv func(string) string
 	// HasStdin returns true if there is the standard input
-	// If thre is the standard input, it is treated as the comment template
+	// If there is the standard input, it is treated as the comment template
 	HasStdin func() bool
 	Stdin    io.Reader
 	Stderr   io.Writer
