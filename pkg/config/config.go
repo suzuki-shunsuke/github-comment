@@ -106,6 +106,10 @@ type ExecConfig struct {
 	TemplateForTooLong string   `json:"template_for_too_long,omitempty" yaml:"template_for_too_long"`
 	DontComment        bool     `json:"dont_comment,omitempty" yaml:"dont_comment" jsonschema:"description=Don't post a comment"`
 	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty" yaml:"embedded_var_names" jsonschema:"description=Embedded variable names"`
+	// UpdateCondition Update the comment that matches with the condition.
+	// If multiple comments match, the latest comment is updated.
+	// If no comment matches, a new comment is created.
+	UpdateCondition string `json:"update,omitempty" yaml:"update" jsonschema:"description=Update comments that matches with the condition"`
 }
 
 func (ec ExecConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
