@@ -16,7 +16,7 @@ require (
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.1.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
-	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.7
+	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.1.0
 	github.com/urfave/cli/v3 v3.4.1
 	golang.org/x/oauth2 v0.31.0
 	golang.org/x/term v0.35.0
