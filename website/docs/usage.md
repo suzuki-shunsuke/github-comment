@@ -15,7 +15,7 @@ USAGE:
    github-comment [global options] [command [command options]]
 
 VERSION:
-   6.3.4 (6b8a9e9f99bd861e2be5f1490ce2c3be7afa300c)
+   6.3.5 (1320cca6a175f5c4b7ac3322aaab26a6cabcd017)
 
 COMMANDS:
    post     post a comment
