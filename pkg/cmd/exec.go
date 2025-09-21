@@ -33,6 +33,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
 	opts.SkipNoToken = c.Bool("skip-no-token")
 	opts.Silent = c.Bool("silent")
 	opts.LogLevel = c.String("log-level")
+	opts.UpdateCondition = c.String("update-condition")
 
 	outputs := c.StringSlice("out")
 	outs := make([]*option.Output, len(outputs))
