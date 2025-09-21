@@ -89,3 +89,22 @@ $ github-comment post -template test # Do nothing
 $ github-comment exec -- echo hello # a command is run but a comment isn't sent
 hello
 ```
+
+## Post a plain text without template
+
+github-comment renders comment templates with [Go's template engine](https://pkg.go.dev/html/template).
+There is no way to disable the template engine, but you can pass a plain text through `-var` option.
+Texts passed through `-var` option aren't rendered by the template engine.
+
+e.g.
+
+```sh
+github-comment post -k test -var-file content:test.md
+```
+
+```yaml
+post:
+  test:
+    template: |
+      {{.Vars.content}}
+```
