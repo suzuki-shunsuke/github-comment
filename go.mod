@@ -1,6 +1,6 @@
 module github.com/suzuki-shunsuke/github-comment/v6
 
-go 1.25.1
+go 1.25.2
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
