@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/expr-lang/expr v1.17.6
-	github.com/google/go-github/v76 v76.0.0
+	github.com/google/go-github/v79 v79.0.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/mattn/go-colorable v0.1.14
 	github.com/shurcooL/githubv4 v0.0.0-20240429030203-be2daab69064
