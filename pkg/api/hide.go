@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 
 	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
@@ -212,9 +213,7 @@ func listHiddenComments( //nolint:funlen
 			"HideKey": param.HideKey,
 			"Vars":    param.Vars,
 		}
-		for k, v := range paramExpr {
-			paramMap[k] = v
-		}
+		maps.Copy(paramMap, paramExpr)
 
 		logE.WithFields(logrus.Fields{
 			"node_id":   nodeID,

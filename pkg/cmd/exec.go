@@ -41,7 +41,7 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
 			outs[i] = &option.Output{GitHub: true}
 			continue
 		}
-		if f := strings.TrimPrefix(o, "file:"); f != o {
+		if f, ok := strings.CutPrefix(o, "file:"); ok {
 			outs[i] = &option.Output{File: f}
 			continue
 		}

@@ -20,7 +20,6 @@ type Comment struct {
 	Vars           map[string]any
 }
 
-// `graphql:"IssueComment(isMinimized: false, viewerCanMinimize: true)"`
 type IssueComment struct {
 	ID         string
 	DatabaseID int64

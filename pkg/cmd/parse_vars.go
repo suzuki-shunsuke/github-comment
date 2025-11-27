@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"strings"
 
@@ -13,7 +14,7 @@ func parseVarEnvs() map[string]string {
 	m := map[string]string{}
 	for _, kv := range os.Environ() {
 		k, v, _ := strings.Cut(kv, "=")
-		if a := strings.TrimPrefix(k, "GH_COMMENT_VAR_"); k != a {
+		if a, ok := strings.CutPrefix(k, "GH_COMMENT_VAR_"); ok {
 			m[a] = v
 		}
 	}
@@ -56,15 +57,11 @@ func parseVars(c *cli.Command) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for k, v := range flagVars {
-		vars[k] = v
-	}
+	maps.Copy(vars, flagVars)
 	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
 	if err != nil {
 		return nil, err
 	}
-	for k, v := range varFiles {
-		vars[k] = v
-	}
+	maps.Copy(vars, varFiles)
 	return vars, nil
 }
