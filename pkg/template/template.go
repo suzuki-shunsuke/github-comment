@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"maps"
 	"os"
 	"strings"
 
@@ -69,12 +70,8 @@ func GetTemplates(param *ParamGetTemplates) map[string]string {
 			ret["link"] = link
 		}
 	}
-	for k, v := range builtinTemplates {
-		ret[k] = v
-	}
-	for k, v := range param.Templates {
-		ret[k] = v
-	}
+	maps.Copy(ret, builtinTemplates)
+	maps.Copy(ret, param.Templates)
 	return ret
 }
 
@@ -83,9 +80,11 @@ type Renderer struct {
 }
 
 func addTemplates(tpl string, templates map[string]string) string {
+	var tplSb86 strings.Builder
 	for k, v := range templates {
-		tpl += `{{define "` + k + `"}}` + v + "{{end}}"
+		tplSb86.WriteString(`{{define "` + k + `"}}` + v + "{{end}}")
 	}
+	tpl += tplSb86.String()
 	return tpl
 }
 
