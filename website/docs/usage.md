@@ -15,7 +15,7 @@ USAGE:
    github-comment [global options] [command [command options]]
 
 VERSION:
-   6.3.5 (1320cca6a175f5c4b7ac3322aaab26a6cabcd017)
+   6.4.0 (13c9489bb08373ed12787facb8b2444701fa928d)
 
 COMMANDS:
    post     post a comment
@@ -51,10 +51,10 @@ OPTIONS:
    --pr int                                 GitHub pull request number (default: 0) [$GH_COMMENT_PR_NUMBER]
    --var string [ --var string ]            template variable
    --var-file string [ --var-file string ]  template variable name and file path
-   --dry-run                                output a comment to standard error output instead of posting to GitHub (default: false)
-   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set (default: false) [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
-   --silent, -s                             suppress the output of dry-run and skip-no-token (default: false)
-   --stdin-template                         read standard input as the template (default: false)
+   --dry-run                                output a comment to standard error output instead of posting to GitHub
+   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                             suppress the output of dry-run and skip-no-token
+   --stdin-template                         read standard input as the template
    --update-condition string, -u string     update the comment that matches with the condition
    --help, -h                               show help
 ```
@@ -81,9 +81,9 @@ OPTIONS:
    --out string [ --out string ]            output destination
    --var string [ --var string ]            template variable
    --var-file string [ --var-file string ]  template variable name and file path
-   --dry-run                                output a comment to standard error output instead of posting to GitHub (default: false)
-   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set (default: false) [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
-   --silent, -s                             suppress the output of dry-run and skip-no-token (default: false)
+   --dry-run                                output a comment to standard error output instead of posting to GitHub
+   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                             suppress the output of dry-run and skip-no-token
    --help, -h                               show help
 ```
 
@@ -122,8 +122,8 @@ OPTIONS:
    --sha1 string                            commit sha1
    --var string [ --var string ]            template variable
    --var-file string [ --var-file string ]  template variable name and file path
-   --dry-run                                output a comment to standard error output instead of posting to GitHub (default: false)
-   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set (default: false) [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
-   --silent, -s                             suppress the output of dry-run and skip-no-token (default: false)
+   --dry-run                                output a comment to standard error output instead of posting to GitHub
+   --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
+   --silent, -s                             suppress the output of dry-run and skip-no-token
    --help, -h                               show help
 ```
