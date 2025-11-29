@@ -8,11 +8,12 @@ sidebar_position: 800
 
 The following platforms are supported.
 
-* CircleCI
-* GitHub Actions
-* Drone
-* AWS CodeBuild
-* Google Cloud Build
+- CircleCI
+- GitHub Actions
+- Drone
+- AWS CodeBuild
+- Google Cloud Build
+- [Atlantis](https://github.com/runatlantis/atlantis) (github-comment >= v6.4.0 [#2221](https://github.com/suzuki-shunsuke/github-comment/pull/2221))
 
 To complement, [suzuki-shunske/go-ci-env](https://github.com/suzuki-shunsuke/go-ci-env) is used.
 
