@@ -9,13 +9,14 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/mattn/go-colorable v0.1.14
 	github.com/shurcooL/githubv4 v0.0.0-20240429030203-be2daab69064
-	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.11.1
 	github.com/suzuki-shunsuke/gen-go-jsonschema v0.1.0
 	github.com/suzuki-shunsuke/github-comment-metadata v0.1.0
 	github.com/suzuki-shunsuke/go-ci-env/v3 v3.3.0
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
+	github.com/suzuki-shunsuke/slog-error v0.2.0
+	github.com/suzuki-shunsuke/slog-util v0.2.1
 	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.1.0
 	github.com/urfave/cli/v3 v3.6.1
 	golang.org/x/oauth2 v0.33.0
@@ -33,6 +34,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
+	github.com/lmittmann/tint v1.1.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

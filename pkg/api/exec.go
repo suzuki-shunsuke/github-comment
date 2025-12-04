@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
@@ -17,6 +17,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
+	"github.com/suzuki-shunsuke/slog-error/slogerr"
 )
 
 type ExecController struct {
@@ -35,7 +36,7 @@ type ExecController struct {
 	Fs       afero.Fs
 }
 
-func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
+func (c *ExecController) Exec(ctx context.Context, logger *slog.Logger, opts *option.ExecOptions) error { //nolint:funlen,cyclop
 	cfg := c.Config
 
 	if cfg.Base != nil {
@@ -56,11 +57,11 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
 		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"org":  opts.Org,
-				"repo": opts.Repo,
-				"sha":  opts.SHA1,
-			}).Warn("list associated prs")
+			slogerr.WithError(logger, err).Warn("list associated prs",
+				"org", opts.Org,
+				"repo", opts.Repo,
+				"sha", opts.SHA1,
+			)
 		}
 		if prNum > 0 {
 			opts.PRNumber = prNum
@@ -111,7 +112,7 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 		JoinCommand:    joinCommand,
 		CombinedOutput: result.CombinedOutput,
 	})
-	if err := c.post(ctx, execConfigs, &ExecCommentParams{
+	if err := c.post(ctx, logger, execConfigs, &ExecCommentParams{
 		ExitCode:       result.ExitCode,
 		Command:        result.Cmd,
 		JoinCommand:    joinCommand,
@@ -280,7 +281,7 @@ func (c *ExecController) getComment(execConfigs []*config.ExecConfig, cmtParams 
 }
 
 func (c *ExecController) post(
-	ctx context.Context, execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
+	ctx context.Context, logger *slog.Logger, execConfigs []*config.ExecConfig, cmtParams *ExecCommentParams,
 	templates map[string]string,
 ) error {
 	cmt, f, err := c.getComment(execConfigs, cmtParams, templates)
@@ -290,12 +291,12 @@ func (c *ExecController) post(
 	if !f {
 		return nil
 	}
-	logrus.WithFields(logrus.Fields{
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
-		"sha":       cmt.SHA1,
-	}).Debug("comment meta data")
+	logger.Debug("comment meta data",
+		"org", cmt.Org,
+		"repo", cmt.Repo,
+		"pr_number", cmt.PRNumber,
+		"sha", cmt.SHA1,
+	)
 
 	for _, out := range cmtParams.Outputs {
 		if err := c.handleOutput(ctx, cmt, out); err != nil {

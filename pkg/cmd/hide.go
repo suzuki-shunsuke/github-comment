@@ -55,7 +55,9 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	setLogLevel(opts.LogLevel)
+	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
+		return err
+	}
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)
@@ -73,7 +75,7 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -90,5 +92,5 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Hide(ctx, opts) //nolint:wrapcheck
+	return ctrl.Hide(ctx, r.Logger, opts) //nolint:wrapcheck
 }

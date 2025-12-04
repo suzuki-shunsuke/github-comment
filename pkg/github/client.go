@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/go-github/v79/github"
 	"github.com/shurcooL/githubv4"
@@ -10,24 +11,28 @@ import (
 )
 
 type Client struct {
-	issue IssuesService
-	pr    PullRequestsService
-	repo  RepositoriesService
-	user  UsersService
-	ghV4  V4Client
+	issue  IssuesService
+	pr     PullRequestsService
+	repo   RepositoriesService
+	user   UsersService
+	ghV4   V4Client
+	logger *slog.Logger
 }
 
 type ParamNew struct {
 	Token              string
 	GHEBaseURL         string
 	GHEGraphQLEndpoint string
+	Logger             *slog.Logger
 }
 
 func New(ctx context.Context, param *ParamNew) (*Client, error) {
 	httpClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: param.Token},
 	))
-	client := &Client{}
+	client := &Client{
+		logger: param.Logger,
+	}
 	if param.GHEBaseURL == "" {
 		gh := github.NewClient(httpClient)
 		client.issue = gh.Issues
