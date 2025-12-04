@@ -78,7 +78,9 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 		}
 		opts.SkipComment = skipComment
 	}
-	setLogLevel(opts.LogLevel)
+	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
+		return err
+	}
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)
@@ -96,7 +98,7 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -120,6 +122,7 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 		Platform: pt,
 		Config:   cfg,
 		Fs:       afero.NewOsFs(),
+		Logger:   r.Logger,
 	}
 	return ctrl.Exec(ctx, opts) //nolint:wrapcheck
 }

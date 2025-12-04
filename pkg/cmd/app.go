@@ -3,16 +3,19 @@ package cmd
 import (
 	"context"
 	"io"
+	"log/slog"
 
 	"github.com/suzuki-shunsuke/urfave-cli-v3-util/helpall"
 	"github.com/urfave/cli/v3"
 )
 
 type Runner struct {
-	Stdin   io.Reader
-	Stdout  io.Writer
-	Stderr  io.Writer
-	LDFlags *LDFlags
+	Stdin       io.Reader
+	Stdout      io.Writer
+	Stderr      io.Writer
+	Logger      *slog.Logger
+	LogLevelVar *slog.LevelVar
+	LDFlags     *LDFlags
 }
 
 type LDFlags struct {

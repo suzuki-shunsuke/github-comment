@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 
-	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
+	"github.com/suzuki-shunsuke/slog-error/slogerr"
 )
 
 type PostController struct {
@@ -28,6 +29,7 @@ type PostController struct {
 	Platform Platform
 	Config   *config.Config
 	Expr     Expr
+	Logger   *slog.Logger
 }
 
 func (c *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
@@ -35,12 +37,12 @@ func (c *PostController) Post(ctx context.Context, opts *option.PostOptions) err
 	if err != nil {
 		return err
 	}
-	logrus.WithFields(logrus.Fields{
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
-		"sha":       cmt.SHA1,
-	}).Debug("comment meta data")
+	c.Logger.Debug("comment meta data",
+		"org", cmt.Org,
+		"repo", cmt.Repo,
+		"pr_number", cmt.PRNumber,
+		"sha", cmt.SHA1,
+	)
 
 	cmtCtrl := CommentController{
 		GitHub: c.GitHub,
@@ -58,7 +60,7 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 
 	login, err := c.GitHub.GetAuthenticatedUser(ctx)
 	if err != nil {
-		logrus.WithError(err).Warn("get an authenticated user")
+		slogerr.WithError(c.Logger, err).Warn("get an authenticated user")
 	}
 
 	comments, err := c.GitHub.ListComments(ctx, &github.PullRequest{
@@ -69,11 +71,11 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 	if err != nil {
 		return fmt.Errorf("list issue or pull request comments: %w", err)
 	}
-	logrus.WithFields(logrus.Fields{
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
-	}).Debug("get comments")
+	c.Logger.Debug("get comments",
+		"org", cmt.Org,
+		"repo", cmt.Repo,
+		"pr_number", cmt.PRNumber,
+	)
 
 	for _, comnt := range comments {
 		if comnt.IsMinimized {
@@ -102,16 +104,16 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 			"Vars": cmt.Vars,
 		}
 
-		logrus.WithFields(logrus.Fields{
-			"node_id":   comnt.ID,
-			"condition": updateCondition,
-			"param":     paramMap,
-		}).Debug("judge whether an existing comment is ready for editing")
+		c.Logger.Debug("judge whether an existing comment is ready for editing",
+			"node_id", comnt.ID,
+			"condition", updateCondition,
+			"param", paramMap,
+		)
 		f, err := prg.Run(paramMap)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"node_id": comnt.ID,
-			}).Error("judge whether an existing comment is hidden")
+			slogerr.WithError(c.Logger, err).Error("judge whether an existing comment is hidden",
+				"node_id", comnt.ID,
+			)
 			continue
 		}
 		if !f {
@@ -171,11 +173,11 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
 		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"org":  opts.Org,
-				"repo": opts.Repo,
-				"sha":  opts.SHA1,
-			}).Warn("list associated prs")
+			slogerr.WithError(c.Logger, err).Warn("list associated prs",
+				"org", opts.Org,
+				"repo", opts.Repo,
+				"sha", opts.SHA1,
+			)
 		}
 		if prNum > 0 {
 			opts.PRNumber = prNum

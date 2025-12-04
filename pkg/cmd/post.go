@@ -3,10 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
@@ -14,6 +14,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
+	"github.com/suzuki-shunsuke/slog-util/slogutil"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
 )
@@ -44,7 +45,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Command) error {
 	return nil
 }
 
-func getGitHub(ctx context.Context, opts *option.Options, cfg *config.Config) (api.GitHub, error) {
+func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, cfg *config.Config) (api.GitHub, error) {
 	if opts.DryRun {
 		return &github.Mock{
 			Stderr: os.Stderr,
@@ -70,20 +71,18 @@ func getGitHub(ctx context.Context, opts *option.Options, cfg *config.Config) (a
 		Token:              opts.Token,
 		GHEBaseURL:         cfg.GHEBaseURL,
 		GHEGraphQLEndpoint: cfg.GHEGraphQLEndpoint,
+		Logger:             logger,
 	})
 }
 
-func setLogLevel(logLevel string) {
+func setLogLevel(logLevelVar *slog.LevelVar, logLevel string) error {
 	if logLevel == "" {
-		return
+		return nil
 	}
-	lvl, err := logrus.ParseLevel(logLevel)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"log_level": logLevel,
-		}).WithError(err).Error("the log level is invalid")
+	if err := slogutil.SetLevel(logLevelVar, logLevel); err != nil {
+		return fmt.Errorf("set log level: %w", err)
 	}
-	logrus.SetLevel(lvl)
+	return nil
 }
 
 // postAction is an entrypoint of the subcommand "post".
@@ -102,7 +101,9 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	setLogLevel(opts.LogLevel)
+	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
+		return err
+	}
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get a current directory path: %w", err)
@@ -120,7 +121,7 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -140,6 +141,7 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 		Platform: pt,
 		Config:   cfg,
 		Expr:     &expr.Expr{},
+		Logger:   r.Logger,
 	}
 	return ctrl.Post(ctx, opts) //nolint:wrapcheck
 }

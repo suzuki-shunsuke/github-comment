@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
@@ -17,6 +17,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
+	"github.com/suzuki-shunsuke/slog-error/slogerr"
 )
 
 type ExecController struct {
@@ -33,6 +34,7 @@ type ExecController struct {
 	Platform Platform
 	Config   *config.Config
 	Fs       afero.Fs
+	Logger   *slog.Logger
 }
 
 func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) error { //nolint:funlen,cyclop
@@ -56,11 +58,11 @@ func (c *ExecController) Exec(ctx context.Context, opts *option.ExecOptions) err
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
 		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"org":  opts.Org,
-				"repo": opts.Repo,
-				"sha":  opts.SHA1,
-			}).Warn("list associated prs")
+			slogerr.WithError(c.Logger, err).Warn("list associated prs",
+				"org", opts.Org,
+				"repo", opts.Repo,
+				"sha", opts.SHA1,
+			)
 		}
 		if prNum > 0 {
 			opts.PRNumber = prNum
@@ -290,12 +292,12 @@ func (c *ExecController) post(
 	if !f {
 		return nil
 	}
-	logrus.WithFields(logrus.Fields{
-		"org":       cmt.Org,
-		"repo":      cmt.Repo,
-		"pr_number": cmt.PRNumber,
-		"sha":       cmt.SHA1,
-	}).Debug("comment meta data")
+	c.Logger.Debug("comment meta data",
+		"org", cmt.Org,
+		"repo", cmt.Repo,
+		"pr_number", cmt.PRNumber,
+		"sha", cmt.SHA1,
+	)
 
 	for _, out := range cmtParams.Outputs {
 		if err := c.handleOutput(ctx, cmt, out); err != nil {
