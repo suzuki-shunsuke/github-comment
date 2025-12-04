@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/cmd"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
+	"github.com/suzuki-shunsuke/slog-error/slogerr"
 	"github.com/suzuki-shunsuke/slog-util/slogutil"
 )
 
@@ -19,13 +19,10 @@ var (
 )
 
 func main() {
-	if err := core(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(ecerror.GetExitCode(err))
-	}
+	os.Exit(core())
 }
 
-func core() error {
+func core() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 	logLevelVar := &slog.LevelVar{}
@@ -47,5 +44,9 @@ func core() error {
 			Date:    date,
 		},
 	}
-	return runner.Run(ctx, os.Args) //nolint:wrapcheck
+	if err := runner.Run(ctx, os.Args); err != nil {
+		slogerr.WithError(logger, err).Error("github-comment failed")
+		return ecerror.GetExitCode(err)
+	}
+	return 0
 }
