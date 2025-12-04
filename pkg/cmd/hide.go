@@ -91,7 +91,6 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 		Platform: pt,
 		Config:   cfg,
 		Expr:     &expr.Expr{},
-		Logger:   r.Logger,
 	}
-	return ctrl.Hide(ctx, opts) //nolint:wrapcheck
+	return ctrl.Hide(ctx, r.Logger, opts) //nolint:wrapcheck
 }

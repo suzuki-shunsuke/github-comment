@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -189,7 +190,7 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 		t.Run(d.title, func(t *testing.T) {
 			t.Parallel()
 			ctx := t.Context()
-			cmt, err := d.ctrl.getCommentParams(ctx, d.opts)
+			cmt, err := d.ctrl.getCommentParams(ctx, slog.Default(), d.opts)
 			if d.isErr {
 				require.Error(t, err)
 				return

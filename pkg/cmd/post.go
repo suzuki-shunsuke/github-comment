@@ -141,7 +141,6 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 		Platform: pt,
 		Config:   cfg,
 		Expr:     &expr.Expr{},
-		Logger:   r.Logger,
 	}
-	return ctrl.Post(ctx, opts) //nolint:wrapcheck
+	return ctrl.Post(ctx, r.Logger, opts) //nolint:wrapcheck
 }

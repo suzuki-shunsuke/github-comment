@@ -29,15 +29,14 @@ type PostController struct {
 	Platform Platform
 	Config   *config.Config
 	Expr     Expr
-	Logger   *slog.Logger
 }
 
-func (c *PostController) Post(ctx context.Context, opts *option.PostOptions) error {
-	cmt, err := c.getCommentParams(ctx, opts)
+func (c *PostController) Post(ctx context.Context, logger *slog.Logger, opts *option.PostOptions) error {
+	cmt, err := c.getCommentParams(ctx, logger, opts)
 	if err != nil {
 		return err
 	}
-	c.Logger.Debug("comment meta data",
+	logger.Debug("comment meta data",
 		"org", cmt.Org,
 		"repo", cmt.Repo,
 		"pr_number", cmt.PRNumber,
@@ -52,7 +51,7 @@ func (c *PostController) Post(ctx context.Context, opts *option.PostOptions) err
 	return cmtCtrl.Post(ctx, cmt)
 }
 
-func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Comment, updateCondition string) error { //nolint:funlen
+func (c *PostController) setUpdatedCommentID(ctx context.Context, logger *slog.Logger, cmt *github.Comment, updateCondition string) error { //nolint:funlen
 	prg, err := c.Expr.Compile(updateCondition)
 	if err != nil {
 		return err //nolint:wrapcheck
@@ -60,7 +59,7 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 
 	login, err := c.GitHub.GetAuthenticatedUser(ctx)
 	if err != nil {
-		slogerr.WithError(c.Logger, err).Warn("get an authenticated user")
+		slogerr.WithError(logger, err).Warn("get an authenticated user")
 	}
 
 	comments, err := c.GitHub.ListComments(ctx, &github.PullRequest{
@@ -71,7 +70,7 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 	if err != nil {
 		return fmt.Errorf("list issue or pull request comments: %w", err)
 	}
-	c.Logger.Debug("get comments",
+	logger.Debug("get comments",
 		"org", cmt.Org,
 		"repo", cmt.Repo,
 		"pr_number", cmt.PRNumber,
@@ -104,14 +103,14 @@ func (c *PostController) setUpdatedCommentID(ctx context.Context, cmt *github.Co
 			"Vars": cmt.Vars,
 		}
 
-		c.Logger.Debug("judge whether an existing comment is ready for editing",
+		logger.Debug("judge whether an existing comment is ready for editing",
 			"node_id", comnt.ID,
 			"condition", updateCondition,
 			"param", paramMap,
 		)
 		f, err := prg.Run(paramMap)
 		if err != nil {
-			slogerr.WithError(c.Logger, err).Error("judge whether an existing comment is hidden",
+			slogerr.WithError(logger, err).Error("judge whether an existing comment is hidden",
 				"node_id", comnt.ID,
 			)
 			continue
@@ -153,7 +152,7 @@ type Platform interface {
 	CI() string
 }
 
-func (c *PostController) getCommentParams(ctx context.Context, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
+func (c *PostController) getCommentParams(ctx context.Context, logger *slog.Logger, opts *option.PostOptions) (*github.Comment, error) { //nolint:funlen,cyclop,gocognit
 	cfg := c.Config
 
 	if cfg.Base != nil {
@@ -173,7 +172,7 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
 		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
-			slogerr.WithError(c.Logger, err).Warn("list associated prs",
+			slogerr.WithError(logger, err).Warn("list associated prs",
 				"org", opts.Org,
 				"repo", opts.Repo,
 				"sha", opts.SHA1,
@@ -282,7 +281,7 @@ func (c *PostController) getCommentParams(ctx context.Context, opts *option.Post
 		TemplateKey:    opts.TemplateKey,
 	}
 	if opts.UpdateCondition != "" && opts.PRNumber != 0 {
-		if err := c.setUpdatedCommentID(ctx, cmt, opts.UpdateCondition); err != nil {
+		if err := c.setUpdatedCommentID(ctx, logger, cmt, opts.UpdateCondition); err != nil {
 			return nil, err
 		}
 	}

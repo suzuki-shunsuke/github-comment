@@ -27,27 +27,26 @@ type HideController struct {
 	Platform Platform
 	Config   *config.Config
 	Expr     Expr
-	Logger   *slog.Logger
 }
 
-func (c *HideController) Hide(ctx context.Context, opts *option.HideOptions) error {
-	param, err := c.getParamListHiddenComments(ctx, opts)
+func (c *HideController) Hide(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) error {
+	param, err := c.getParamListHiddenComments(ctx, logger, opts)
 	if err != nil {
 		return err
 	}
-	nodeIDs, err := c.listHiddenComments(ctx, param, nil)
+	nodeIDs, err := c.listHiddenComments(ctx, logger, param, nil)
 	if err != nil {
 		return err
 	}
-	c.Logger.Debug("comments which would be hidden",
+	logger.Debug("comments which would be hidden",
 		"count", len(nodeIDs),
 		"node_ids", nodeIDs,
 	)
-	c.hideComments(ctx, nodeIDs)
+	c.hideComments(ctx, logger, nodeIDs)
 	return nil
 }
 
-func (c *HideController) getParamListHiddenComments(ctx context.Context, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
+func (c *HideController) getParamListHiddenComments(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
 	param := &ParamListHiddenComments{}
 
 	cfg := c.Config
@@ -70,7 +69,7 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, opts *o
 	if opts.PRNumber == 0 && opts.SHA1 != "" {
 		prNum, err := c.GitHub.PRNumberWithSHA(ctx, opts.Org, opts.Repo, opts.SHA1)
 		if err != nil {
-			slogerr.WithError(c.Logger, err).Warn("list associated prs",
+			slogerr.WithError(logger, err).Warn("list associated prs",
 				"org", opts.Org,
 				"repo", opts.Repo,
 				"sha", opts.SHA1,
@@ -112,22 +111,22 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, opts *o
 	}, nil
 }
 
-func (c *HideController) hideComments(ctx context.Context, nodeIDs []string) {
+func (c *HideController) hideComments(ctx context.Context, logger *slog.Logger, nodeIDs []string) {
 	commentHidden := false
 	for _, nodeID := range nodeIDs {
 		if err := c.GitHub.HideComment(ctx, nodeID); err != nil {
-			slogerr.WithError(c.Logger, err).Error("hide an old comment",
+			slogerr.WithError(logger, err).Error("hide an old comment",
 				"node_id", nodeID,
 			)
 			continue
 		}
 		commentHidden = true
-		c.Logger.Info("hide an old comment",
+		logger.Info("hide an old comment",
 			"node_id", nodeID,
 		)
 	}
 	if !commentHidden {
-		c.Logger.Info("no comment is hidden")
+		logger.Info("no comment is hidden")
 	}
 }
 
@@ -143,16 +142,17 @@ type ParamListHiddenComments struct {
 
 func (c *HideController) listHiddenComments( //nolint:funlen
 	ctx context.Context,
+	logger *slog.Logger,
 	param *ParamListHiddenComments,
 	paramExpr map[string]any,
 ) ([]string, error) {
 	if param.Condition == "" {
-		c.Logger.Debug("the condition to hide comments isn't set")
+		logger.Debug("the condition to hide comments isn't set")
 		return nil, nil
 	}
 	login, err := c.GitHub.GetAuthenticatedUser(ctx)
 	if err != nil {
-		slogerr.WithError(c.Logger, err).Warn("get an authenticated user")
+		slogerr.WithError(logger, err).Warn("get an authenticated user")
 	}
 
 	comments, err := c.GitHub.ListComments(ctx, &github.PullRequest{
@@ -163,7 +163,7 @@ func (c *HideController) listHiddenComments( //nolint:funlen
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	c.Logger.Debug("get comments",
+	logger.Debug("get comments",
 		"count", len(comments),
 		"org", param.Org,
 		"repo", param.Repo,
@@ -179,7 +179,7 @@ func (c *HideController) listHiddenComments( //nolint:funlen
 		nodeID := comment.ID
 		// TODO remove these filters
 		if isExcludedComment(comment, login) {
-			c.Logger.Debug("exclude a comment",
+			logger.Debug("exclude a comment",
 				"node_id", nodeID,
 				"login", login,
 			)
@@ -206,14 +206,14 @@ func (c *HideController) listHiddenComments( //nolint:funlen
 		}
 		maps.Copy(paramMap, paramExpr)
 
-		c.Logger.Debug("judge whether an existing comment is hidden",
+		logger.Debug("judge whether an existing comment is hidden",
 			"node_id", nodeID,
 			"condition", param.Condition,
 			"param", paramMap,
 		)
 		f, err := prg.Run(paramMap)
 		if err != nil {
-			slogerr.WithError(c.Logger, err).Error("judge whether an existing comment is hidden",
+			slogerr.WithError(logger, err).Error("judge whether an existing comment is hidden",
 				"node_id", nodeID,
 			)
 			continue

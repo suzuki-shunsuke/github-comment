@@ -122,7 +122,6 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 		Platform: pt,
 		Config:   cfg,
 		Fs:       afero.NewOsFs(),
-		Logger:   r.Logger,
 	}
-	return ctrl.Exec(ctx, opts) //nolint:wrapcheck
+	return ctrl.Exec(ctx, r.Logger, opts) //nolint:wrapcheck
 }
