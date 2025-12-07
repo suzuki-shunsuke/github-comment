@@ -31,8 +31,8 @@ func (c *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*Issu
 	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
-		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec
-		"commentsCursor":  (*githubv4.String)(nil),   // Null after argument to get first page.
+		"issueNumber":     githubv4.Int(pr.PRNumber),
+		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
 	}
 
 	var allComments []*IssueComment
@@ -67,8 +67,8 @@ func (c *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueCo
 	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
-		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec
-		"commentsCursor":  (*githubv4.String)(nil),   // Null after argument to get first page.
+		"issueNumber":     githubv4.Int(pr.PRNumber),
+		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
 	}
 
 	var allComments []*IssueComment
