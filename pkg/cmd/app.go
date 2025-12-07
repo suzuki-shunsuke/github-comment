@@ -3,41 +3,22 @@ package cmd
 import (
 	"context"
 	"io"
-	"log/slog"
 
-	"github.com/suzuki-shunsuke/urfave-cli-v3-util/helpall"
+	"github.com/suzuki-shunsuke/slog-util/slogutil"
+	"github.com/suzuki-shunsuke/urfave-cli-v3-util/urfave"
 	"github.com/urfave/cli/v3"
 )
 
-type Runner struct {
-	Stdin       io.Reader
-	Stdout      io.Writer
-	Stderr      io.Writer
-	Logger      *slog.Logger
-	LogLevelVar *slog.LevelVar
-	LDFlags     *LDFlags
-}
-
-type LDFlags struct {
-	Version string
-	Commit  string
-	Date    string
-}
-
-func (f *LDFlags) AppVersion() string {
-	return f.Version + " (" + f.Commit + ")"
-}
-
-func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
-	return helpall.With(&cli.Command{ //nolint:wrapcheck
-		Name:    "github-comment",
-		Usage:   "post a comment to GitHub",
-		Version: r.LDFlags.AppVersion(),
+func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { //nolint:funlen
+	r := &Runner{}
+	return urfave.Command(env, &cli.Command{ //nolint:wrapcheck
+		Name:  "github-comment",
+		Usage: "post a comment to GitHub",
 		Commands: []*cli.Command{
 			{
 				Name:   "post",
 				Usage:  "post a comment",
-				Action: r.postAction,
+				Action: urfave.Action(r.postAction, logger),
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",
@@ -116,7 +97,7 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 			{
 				Name:   "exec",
 				Usage:  "execute a command and post the result as a comment",
-				Action: r.execAction,
+				Action: urfave.Action(r.execAction, logger),
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",
@@ -195,7 +176,7 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 			{
 				Name:   "hide",
 				Usage:  "hide issue or pull request comments",
-				Action: r.hideAction,
+				Action: urfave.Action(r.hideAction, logger),
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "org",
@@ -269,5 +250,16 @@ func (r *Runner) Run(ctx context.Context, args []string) error { //nolint:funlen
 				Sources: cli.EnvVars("GH_COMMENT_LOG_LEVEL"),
 			},
 		},
-	}, nil).Run(ctx, args)
+	}).Run(ctx, env.Args)
+}
+
+type Runner struct {
+	Stdin   io.Reader
+	Stdout  io.Writer
+	Stderr  io.Writer
+	LDFlags *LDFlags
+}
+
+type LDFlags struct {
+	Version string
 }
