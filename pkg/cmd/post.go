@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"

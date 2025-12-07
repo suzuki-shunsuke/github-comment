@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
