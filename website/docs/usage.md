@@ -15,14 +15,16 @@ USAGE:
    github-comment [global options] [command [command options]]
 
 VERSION:
-   6.4.0 (13c9489bb08373ed12787facb8b2444701fa928d)
+   6.4.1
 
 COMMANDS:
-   post     post a comment
-   exec     execute a command and post the result as a comment
-   init     scaffold a configuration file if it doesn't exist
-   hide     hide issue or pull request comments
-   help, h  Shows a list of commands or help for one command
+   post        post a comment
+   exec        execute a command and post the result as a comment
+   init        scaffold a configuration file if it doesn't exist
+   hide        hide issue or pull request comments
+   version     Show version
+   help, h     Shows a list of commands or help for one command
+   completion  Output shell completion script for bash, zsh, fish, or Powershell
 
 GLOBAL OPTIONS:
    --log-level string  log level [$GH_COMMENT_LOG_LEVEL]
@@ -126,4 +128,50 @@ OPTIONS:
    --skip-no-token, -n                      works like dry-run if the GitHub Access Token isn't set [$GH_COMMENT_SKIP_NO_TOKEN, $GITHUB_COMMENT_SKIP_NO_TOKEN]
    --silent, -s                             suppress the output of dry-run and skip-no-token
    --help, -h                               show help
+```
+
+## github-comment version
+
+```console
+$ github-comment version --help
+NAME:
+   github-comment version - Show version
+
+USAGE:
+   github-comment version
+
+OPTIONS:
+   --json, -j  Output version in JSON format
+   --help, -h  show help
+```
+
+## github-comment completion
+
+```console
+$ github-comment completion --help
+NAME:
+   github-comment completion - Output shell completion script for bash, zsh, fish, or Powershell
+
+USAGE:
+   github-comment completion
+
+DESCRIPTION:
+   Output shell completion script for bash, zsh, fish, or Powershell.
+   Source the output to enable completion.
+
+   # .bashrc
+   source <(github-comment completion bash)
+
+   # .zshrc
+   source <(github-comment completion zsh)
+
+   # fish
+   github-comment completion fish > ~/.config/fish/completions/github-comment.fish
+
+   # Powershell
+   Output the script to path/to/autocomplete/github-comment.ps1 an run it.
+
+
+OPTIONS:
+   --help, -h  show help
 ```
