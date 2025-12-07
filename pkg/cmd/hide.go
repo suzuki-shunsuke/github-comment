@@ -11,6 +11,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
+	"github.com/suzuki-shunsuke/slog-util/slogutil"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
 )
@@ -40,7 +41,7 @@ func parseHideOptions(opts *option.HideOptions, c *cli.Command) error {
 }
 
 // hideAction is an entrypoint of the subcommand "hide".
-func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
+func (r *Runner) hideAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -55,8 +56,8 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
-		return err
+	if err := logger.SetLevel(opts.LogLevel); err != nil {
+		return fmt.Errorf("set log level: %w", err)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -75,7 +76,7 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -92,5 +93,5 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command) error {
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Hide(ctx, r.Logger, opts) //nolint:wrapcheck
+	return ctrl.Hide(ctx, logger.Logger, opts) //nolint:wrapcheck
 }

@@ -75,18 +75,8 @@ func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, c
 	})
 }
 
-func setLogLevel(logLevelVar *slog.LevelVar, logLevel string) error {
-	if logLevel == "" {
-		return nil
-	}
-	if err := slogutil.SetLevel(logLevelVar, logLevel); err != nil {
-		return fmt.Errorf("set log level: %w", err)
-	}
-	return nil
-}
-
 // postAction is an entrypoint of the subcommand "post".
-func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
+func (r *Runner) postAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -101,8 +91,8 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
-		return err
+	if err := logger.SetLevel(opts.LogLevel); err != nil {
+		return fmt.Errorf("set log level: %w", err)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -121,7 +111,7 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -142,5 +132,5 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command) error {
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Post(ctx, r.Logger, opts) //nolint:wrapcheck
+	return ctrl.Post(ctx, logger.Logger, opts) //nolint:wrapcheck
 }

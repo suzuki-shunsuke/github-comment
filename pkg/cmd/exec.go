@@ -16,6 +16,7 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
+	"github.com/suzuki-shunsuke/slog-util/slogutil"
 	"github.com/urfave/cli/v3"
 )
 
@@ -66,7 +67,7 @@ func existFile(p string) bool {
 	return err == nil
 }
 
-func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
+func (r *Runner) execAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
 	opts := &option.ExecOptions{}
 	if err := parseExecOptions(opts, c); err != nil {
 		return err
@@ -78,8 +79,8 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 		}
 		opts.SkipComment = skipComment
 	}
-	if err := setLogLevel(r.LogLevelVar, opts.LogLevel); err != nil {
-		return err
+	if err := logger.SetLevel(opts.LogLevel); err != nil {
+		return fmt.Errorf("set log level: %w", err)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -98,7 +99,7 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 
 	var pt api.Platform = platform.Get()
 
-	gh, err := getGitHub(ctx, r.Logger, &opts.Options, cfg)
+	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
@@ -123,5 +124,5 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command) error {
 		Config:   cfg,
 		Fs:       afero.NewOsFs(),
 	}
-	return ctrl.Exec(ctx, r.Logger, opts) //nolint:wrapcheck
+	return ctrl.Exec(ctx, logger.Logger, opts) //nolint:wrapcheck
 }
