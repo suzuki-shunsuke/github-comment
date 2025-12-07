@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
@@ -74,14 +74,14 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command, logger *sloguti
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform = platform.Get()
+	var pt controller.Platform = platform.Get()
 
 	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
-	ctrl := api.HideController{
+	ctrl := controller.HideController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {

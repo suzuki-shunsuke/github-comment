@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/execute"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
@@ -97,14 +97,14 @@ func (r *Runner) execAction(ctx context.Context, c *cli.Command, logger *sloguti
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 	opts.Silent = opts.Silent || cfg.Silent
 
-	var pt api.Platform = platform.Get()
+	var pt controller.Platform = platform.Get()
 
 	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
-	ctrl := api.ExecController{
+	ctrl := controller.ExecController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		Stdin:  r.Stdin,
