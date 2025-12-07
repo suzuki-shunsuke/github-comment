@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/suzuki-shunsuke/github-comment/v6/pkg/api"
+	"github.com/suzuki-shunsuke/github-comment/v6/pkg/controller"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/expr"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
@@ -45,7 +45,7 @@ func parsePostOptions(opts *option.PostOptions, c *cli.Command) error {
 	return nil
 }
 
-func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, cfg *config.Config) (api.GitHub, error) {
+func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, cfg *config.Config) (controller.GitHub, error) {
 	if opts.DryRun {
 		return &github.Mock{
 			Stderr: os.Stderr,
@@ -109,14 +109,14 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command, logger *sloguti
 	}
 	opts.SkipNoToken = opts.SkipNoToken || cfg.SkipNoToken
 
-	var pt api.Platform = platform.Get()
+	var pt controller.Platform = platform.Get()
 
 	gh, err := getGitHub(ctx, logger.Logger, &opts.Options, cfg)
 	if err != nil {
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
-	ctrl := api.PostController{
+	ctrl := controller.PostController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
