@@ -10,7 +10,11 @@ import (
 )
 
 func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { //nolint:funlen
-	r := &Runner{}
+	r := &Runner{
+		Stdin:  env.Stdin,
+		Stdout: env.Stdout,
+		Stderr: env.Stderr,
+	}
 	return urfave.Command(env, &cli.Command{ //nolint:wrapcheck
 		Name:  "github-comment",
 		Usage: "post a comment to GitHub",
@@ -254,12 +258,7 @@ func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { 
 }
 
 type Runner struct {
-	Stdin   io.Reader
-	Stdout  io.Writer
-	Stderr  io.Writer
-	LDFlags *LDFlags
-}
-
-type LDFlags struct {
-	Version string
+	Stdin  io.Reader
+	Stdout io.Writer
+	Stderr io.Writer
 }
