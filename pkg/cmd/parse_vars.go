@@ -6,8 +6,6 @@ import (
 	"maps"
 	"os"
 	"strings"
-
-	"github.com/urfave/cli/v3"
 )
 
 func parseVarEnvs() map[string]string {
@@ -51,17 +49,17 @@ func parseVarFilesFlag(varsSlice []string) (map[string]string, error) {
 	return vars, nil
 }
 
-func parseVars(c *cli.Command) (map[string]string, error) {
-	vars := parseVarEnvs()
-	flagVars, err := parseVarsFlag(c.StringSlice("var"))
+func parseVars(vars, varFiles []string) (map[string]string, error) {
+	m := parseVarEnvs()
+	flagVars, err := parseVarsFlag(vars)
 	if err != nil {
 		return nil, err
 	}
-	maps.Copy(vars, flagVars)
-	varFiles, err := parseVarFilesFlag(c.StringSlice("var-file"))
+	maps.Copy(m, flagVars)
+	fileVars, err := parseVarFilesFlag(varFiles)
 	if err != nil {
 		return nil, err
 	}
-	maps.Copy(vars, varFiles)
-	return vars, nil
+	maps.Copy(m, fileVars)
+	return m, nil
 }

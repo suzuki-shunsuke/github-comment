@@ -17,25 +17,20 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/suzuki-shunsuke/slog-util/slogutil"
-	"github.com/urfave/cli/v3"
 )
 
-func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
-	opts.Org = c.String("org")
-	opts.Repo = c.String("repo")
-	opts.Token = c.String("token")
-	opts.SHA1 = c.String("sha1")
-	opts.Template = c.String("template")
-	opts.TemplateKey = c.String("template-key")
-	opts.ConfigPath = c.String("config")
-	opts.PRNumber = c.Int("pr")
-	opts.Args = c.Args().Slice()
-	opts.DryRun = c.Bool("dry-run")
-	opts.SkipNoToken = c.Bool("skip-no-token")
-	opts.Silent = c.Bool("silent")
-	opts.LogLevel = c.String("log-level")
+func existFile(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
+}
 
-	outputs := c.StringSlice("out")
+func (r *Runner) execAction(ctx context.Context, logger *slogutil.Logger, args *ExecArgs) error { //nolint:cyclop,funlen
+	vars, err := parseVars(args.Vars, args.VarFiles)
+	if err != nil {
+		return err
+	}
+
+	outputs := args.Outputs
 	outs := make([]*option.Output, len(outputs))
 	for i, o := range outputs {
 		if o == "github" {
@@ -51,27 +46,27 @@ func parseExecOptions(opts *option.ExecOptions, c *cli.Command) error {
 	if len(outputs) == 0 {
 		outs = []*option.Output{{GitHub: true}}
 	}
-	opts.Outputs = outs
 
-	vars, err := parseVars(c)
-	if err != nil {
-		return err
+	opts := &option.ExecOptions{
+		Options: option.Options{
+			PRNumber:    args.PRNumber,
+			Org:         args.Org,
+			Repo:        args.Repo,
+			Token:       args.Token,
+			SHA1:        args.SHA1,
+			Template:    args.Template,
+			TemplateKey: args.TemplateKey,
+			ConfigPath:  args.ConfigPath,
+			LogLevel:    args.LogLevel,
+			Vars:        vars,
+			DryRun:      args.DryRun,
+			SkipNoToken: args.SkipNoToken,
+			Silent:      args.Silent,
+		},
+		Args:    args.Args,
+		Outputs: outs,
 	}
-	opts.Vars = vars
 
-	return nil
-}
-
-func existFile(p string) bool {
-	_, err := os.Stat(p)
-	return err == nil
-}
-
-func (r *Runner) execAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
-	opts := &option.ExecOptions{}
-	if err := parseExecOptions(opts, c); err != nil {
-		return err
-	}
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
