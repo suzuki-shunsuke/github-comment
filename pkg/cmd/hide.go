@@ -12,36 +12,11 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/option"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/slog-util/slogutil"
-	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
 )
 
-// parseHideOptions parses the command line arguments of the subcommand "hide".
-func parseHideOptions(opts *option.HideOptions, c *cli.Command) error {
-	opts.Org = c.String("org")
-	opts.Repo = c.String("repo")
-	opts.Token = c.String("token")
-	opts.ConfigPath = c.String("config")
-	opts.PRNumber = c.Int("pr")
-	opts.DryRun = c.Bool("dry-run")
-	opts.SkipNoToken = c.Bool("skip-no-token")
-	opts.Silent = c.Bool("silent")
-	opts.LogLevel = c.String("log-level")
-	opts.HideKey = c.String("hide-key")
-	opts.Condition = c.String("condition")
-	opts.SHA1 = c.String("sha1")
-
-	vars, err := parseVars(c)
-	if err != nil {
-		return err
-	}
-	opts.Vars = vars
-
-	return nil
-}
-
 // hideAction is an entrypoint of the subcommand "hide".
-func (r *Runner) hideAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
+func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *HideArgs) error { //nolint:funlen
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -51,9 +26,28 @@ func (r *Runner) hideAction(ctx context.Context, c *cli.Command, logger *sloguti
 			return nil
 		}
 	}
-	opts := &option.HideOptions{}
-	if err := parseHideOptions(opts, c); err != nil {
+
+	vars, err := parseVars(args.Vars, args.VarFiles)
+	if err != nil {
 		return err
+	}
+
+	opts := &option.HideOptions{
+		Options: option.Options{
+			PRNumber:    args.PRNumber,
+			Org:         args.Org,
+			Repo:        args.Repo,
+			Token:       args.Token,
+			SHA1:        args.SHA1,
+			ConfigPath:  args.ConfigPath,
+			LogLevel:    args.LogLevel,
+			Vars:        vars,
+			DryRun:      args.DryRun,
+			SkipNoToken: args.SkipNoToken,
+			Silent:      args.Silent,
+		},
+		HideKey:   args.HideKey,
+		Condition: args.Condition,
 	}
 
 	if err := logger.SetLevel(opts.LogLevel); err != nil {

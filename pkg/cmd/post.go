@@ -15,35 +15,8 @@ import (
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/platform"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/template"
 	"github.com/suzuki-shunsuke/slog-util/slogutil"
-	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
 )
-
-// parsePostOptions parses the command line arguments of the subcommand "post".
-func parsePostOptions(opts *option.PostOptions, c *cli.Command) error {
-	opts.Org = c.String("org")
-	opts.Repo = c.String("repo")
-	opts.Token = c.String("token")
-	opts.SHA1 = c.String("sha1")
-	opts.Template = c.String("template")
-	opts.TemplateKey = c.String("template-key")
-	opts.ConfigPath = c.String("config")
-	opts.PRNumber = c.Int("pr")
-	opts.DryRun = c.Bool("dry-run")
-	opts.SkipNoToken = c.Bool("skip-no-token")
-	opts.Silent = c.Bool("silent")
-	opts.StdinTemplate = c.Bool("stdin-template")
-	opts.LogLevel = c.String("log-level")
-	opts.UpdateCondition = c.String("update-condition")
-
-	vars, err := parseVars(c)
-	if err != nil {
-		return err
-	}
-	opts.Vars = vars
-
-	return nil
-}
 
 func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, cfg *config.Config) (controller.GitHub, error) {
 	if opts.DryRun {
@@ -76,7 +49,7 @@ func getGitHub(ctx context.Context, logger *slog.Logger, opts *option.Options, c
 }
 
 // postAction is an entrypoint of the subcommand "post".
-func (r *Runner) postAction(ctx context.Context, c *cli.Command, logger *slogutil.Logger) error {
+func (r *Runner) postAction(ctx context.Context, logger *slogutil.Logger, args *PostArgs) error { //nolint:funlen
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -86,9 +59,30 @@ func (r *Runner) postAction(ctx context.Context, c *cli.Command, logger *sloguti
 			return nil
 		}
 	}
-	opts := &option.PostOptions{}
-	if err := parsePostOptions(opts, c); err != nil {
+
+	vars, err := parseVars(args.Vars, args.VarFiles)
+	if err != nil {
 		return err
+	}
+
+	opts := &option.PostOptions{
+		Options: option.Options{
+			PRNumber:    args.PRNumber,
+			Org:         args.Org,
+			Repo:        args.Repo,
+			Token:       args.Token,
+			SHA1:        args.SHA1,
+			Template:    args.Template,
+			TemplateKey: args.TemplateKey,
+			ConfigPath:  args.ConfigPath,
+			LogLevel:    args.LogLevel,
+			Vars:        vars,
+			DryRun:      args.DryRun,
+			SkipNoToken: args.SkipNoToken,
+			Silent:      args.Silent,
+		},
+		StdinTemplate:   args.StdinTemplate,
+		UpdateCondition: args.UpdateCondition,
 	}
 
 	if err := logger.SetLevel(opts.LogLevel); err != nil {
