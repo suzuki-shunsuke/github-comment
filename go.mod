@@ -18,7 +18,7 @@ require (
 	github.com/suzuki-shunsuke/slog-error v0.2.2
 	github.com/suzuki-shunsuke/slog-util v0.3.0
 	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.2.0
-	github.com/urfave/cli/v3 v3.6.1
+	github.com/urfave/cli/v3 v3.6.2
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/term v0.39.0
 	gopkg.in/yaml.v2 v2.4.0
