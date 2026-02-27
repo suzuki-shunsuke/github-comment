@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v80/github"
+	"github.com/google/go-github/v83/github"
 )
 
 type Comment struct {
