@@ -31,8 +31,8 @@ func (c *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*Issu
 	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
-		"issueNumber":     githubv4.Int(pr.PRNumber),
-		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
+		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec // PR number won't overflow int32
+		"commentsCursor":  (*githubv4.String)(nil),   // Null after argument to get first page.
 	}
 
 	var allComments []*IssueComment
@@ -44,7 +44,7 @@ func (c *Client) listIssueComment(ctx context.Context, pr *PullRequest) ([]*Issu
 		if !q.Repository.Issue.Comments.PageInfo.HasNextPage {
 			break
 		}
-		variables["commentsCursor"] = githubv4.NewString(q.Repository.Issue.Comments.PageInfo.EndCursor)
+		variables["commentsCursor"] = new(q.Repository.Issue.Comments.PageInfo.EndCursor)
 	}
 	return allComments, nil
 }
@@ -67,8 +67,8 @@ func (c *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueCo
 	variables := map[string]any{
 		"repositoryOwner": githubv4.String(pr.Org),
 		"repositoryName":  githubv4.String(pr.Repo),
-		"issueNumber":     githubv4.Int(pr.PRNumber),
-		"commentsCursor":  (*githubv4.String)(nil), // Null after argument to get first page.
+		"issueNumber":     githubv4.Int(pr.PRNumber), //nolint:gosec // PR number won't overflow int32
+		"commentsCursor":  (*githubv4.String)(nil),   // Null after argument to get first page.
 	}
 
 	var allComments []*IssueComment
@@ -80,7 +80,7 @@ func (c *Client) listPRComment(ctx context.Context, pr *PullRequest) ([]*IssueCo
 		if !q.Repository.PullRequest.Comments.PageInfo.HasNextPage {
 			break
 		}
-		variables["commentsCursor"] = githubv4.NewString(q.Repository.PullRequest.Comments.PageInfo.EndCursor)
+		variables["commentsCursor"] = new(q.Repository.PullRequest.Comments.PageInfo.EndCursor)
 	}
 	return allComments, nil
 }

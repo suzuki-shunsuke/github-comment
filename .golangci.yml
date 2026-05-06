@@ -5,8 +5,10 @@ linters:
     - depguard
     - err113
     - exhaustruct
+    - goconst
     - godot
     - godox
+    - gomodguard
     - ireturn
     - lll
     - nlreturn
