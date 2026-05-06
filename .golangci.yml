@@ -8,6 +8,7 @@ linters:
     - goconst
     - godot
     - godox
+    - gomodguard
     - ireturn
     - lll
     - nlreturn
