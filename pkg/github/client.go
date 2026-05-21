@@ -33,22 +33,18 @@ func New(ctx context.Context, param *ParamNew) (*Client, error) {
 	client := &Client{
 		logger: param.Logger,
 	}
-	if param.GHEBaseURL == "" {
-		gh := github.NewClient(httpClient)
-		client.issue = gh.Issues
-		client.repo = gh.Repositories
-		client.user = gh.Users
-		client.pr = gh.PullRequests
-	} else {
-		gh, err := github.NewClient(httpClient).WithEnterpriseURLs(param.GHEBaseURL, param.GHEBaseURL)
-		if err != nil {
-			return nil, fmt.Errorf("initialize GitHub Enterprise API Client: %w", err)
-		}
-		client.issue = gh.Issues
-		client.repo = gh.Repositories
-		client.user = gh.Users
-		client.pr = gh.PullRequests
+	opts := []github.ClientOptionsFunc{github.WithHTTPClient(httpClient)}
+	if param.GHEBaseURL != "" {
+		opts = append(opts, github.WithEnterpriseURLs(param.GHEBaseURL, param.GHEBaseURL))
 	}
+	gh, err := github.NewClient(opts...)
+	if err != nil {
+		return nil, fmt.Errorf("initialize GitHub API Client: %w", err)
+	}
+	client.issue = gh.Issues
+	client.repo = gh.Repositories
+	client.user = gh.Users
+	client.pr = gh.PullRequests
 	if param.GHEGraphQLEndpoint == "" {
 		client.ghV4 = githubv4.NewClient(httpClient)
 	} else {
