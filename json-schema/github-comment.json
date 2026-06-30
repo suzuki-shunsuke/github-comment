@@ -66,6 +66,13 @@
           "type": "object",
           "description": "configuration for github-comment hide command"
         },
+        "delete": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "description": "configuration for github-comment delete command"
+        },
         "skip_no_token": {
           "type": "boolean",
           "description": "Skip to post comments if no GitHub access token is passed"

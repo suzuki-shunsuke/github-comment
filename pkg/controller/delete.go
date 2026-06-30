@@ -13,7 +13,7 @@ import (
 	"github.com/suzuki-shunsuke/slog-error/slogerr"
 )
 
-type HideController struct {
+type DeleteController struct {
 	// Wd is a path to the working directory
 	Wd string
 	// Getenv returns the environment variable. os.Getenv
@@ -28,24 +28,24 @@ type HideController struct {
 	Expr     Expr
 }
 
-func (c *HideController) Hide(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) error {
-	param, err := c.getParamListHiddenComments(ctx, logger, opts)
+func (c *DeleteController) Delete(ctx context.Context, logger *slog.Logger, opts *option.DeleteOptions) error {
+	param, err := c.getParamListDeletedComments(ctx, logger, opts)
 	if err != nil {
 		return err
 	}
-	nodeIDs, err := listCommentsByCondition(ctx, logger, c.GitHub, c.Expr, param, isExcludedComment)
+	nodeIDs, err := listCommentsByCondition(ctx, logger, c.GitHub, c.Expr, param, isExcludedCommentForDelete)
 	if err != nil {
 		return err
 	}
-	logger.Debug("comments which would be hidden",
+	logger.Debug("comments which would be deleted",
 		"count", len(nodeIDs),
 		"node_ids", nodeIDs,
 	)
-	c.hideComments(ctx, logger, nodeIDs)
+	c.deleteComments(ctx, logger, nodeIDs)
 	return nil
 }
 
-func (c *HideController) getParamListHiddenComments(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) (*ParamListComments, error) { //nolint:cyclop,funlen,dupl
+func (c *DeleteController) getParamListDeletedComments(ctx context.Context, logger *slog.Logger, opts *option.DeleteOptions) (*ParamListComments, error) { //nolint:cyclop,funlen,dupl
 	param := &ParamListComments{}
 
 	cfg := c.Config
@@ -60,7 +60,7 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, logger 
 	}
 
 	if c.Platform != nil {
-		if err := c.Platform.ComplementHide(opts); err != nil {
+		if err := c.Platform.ComplementDelete(opts); err != nil {
 			return nil, fmt.Errorf("failed to complement opts with platform built in environment variables: %w", err)
 		}
 	}
@@ -79,17 +79,17 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, logger 
 		}
 	}
 
-	if err := option.ValidateHide(opts); err != nil {
+	if err := option.ValidateDelete(opts); err != nil {
 		return param, fmt.Errorf("opts is invalid: %w", err)
 	}
 
-	hideCondition := opts.Condition
-	if hideCondition == "" {
-		a, ok := c.Config.Hide[opts.HideKey]
+	deleteCondition := opts.Condition
+	if deleteCondition == "" {
+		a, ok := c.Config.Delete[opts.DeleteKey]
 		if !ok {
-			return param, errors.New("invalid hide-key: " + opts.HideKey)
+			return param, errors.New("invalid delete-key: " + opts.DeleteKey)
 		}
-		hideCondition = a
+		deleteCondition = a
 	}
 
 	if cfg.Vars == nil {
@@ -104,40 +104,38 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, logger 
 		Org:       opts.Org,
 		Repo:      opts.Repo,
 		SHA1:      opts.SHA1,
-		Condition: hideCondition,
+		Condition: deleteCondition,
 		Vars:      cfg.Vars,
 		ExprParams: map[string]any{
-			"HideKey": opts.HideKey,
+			"DeleteKey": opts.DeleteKey,
 		},
 	}, nil
 }
 
-func (c *HideController) hideComments(ctx context.Context, logger *slog.Logger, nodeIDs []string) {
-	commentHidden := false
+func (c *DeleteController) deleteComments(ctx context.Context, logger *slog.Logger, nodeIDs []string) {
+	commentDeleted := false
 	for _, nodeID := range nodeIDs {
-		if err := c.GitHub.HideComment(ctx, nodeID); err != nil {
-			slogerr.WithError(logger, err).Error("hide an old comment",
+		if err := c.GitHub.DeleteComment(ctx, nodeID); err != nil {
+			slogerr.WithError(logger, err).Error("delete a comment",
 				"node_id", nodeID,
 			)
 			continue
 		}
-		commentHidden = true
-		logger.Info("hide an old comment",
+		commentDeleted = true
+		logger.Info("delete a comment",
 			"node_id", nodeID,
 		)
 	}
-	if !commentHidden {
-		logger.Info("no comment is hidden")
+	if !commentDeleted {
+		logger.Info("no comment is deleted")
 	}
 }
 
-func isExcludedComment(cmt *github.IssueComment, login string) bool {
-	if !cmt.ViewerCanMinimize {
+func isExcludedCommentForDelete(cmt *github.IssueComment, login string) bool {
+	if !cmt.ViewerCanDelete {
 		return true
 	}
-	if cmt.IsMinimized {
-		return true
-	}
+	// Unlike hide, minimized comments are not excluded from deletion.
 	// GitHub Actions's GITHUB_TOKEN secret doesn't have a permission to get an authenticated user.
 	// So if `login` is empty, we give up filtering comments by login.
 	if login != "" && cmt.Author.Login != login {
