@@ -20,6 +20,7 @@ func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { 
 	postArgs := &PostArgs{GlobalFlags: globalFlags}
 	execArgs := &ExecArgs{GlobalFlags: globalFlags}
 	hideArgs := &HideArgs{GlobalFlags: globalFlags}
+	deleteArgs := &DeleteArgs{GlobalFlags: globalFlags}
 
 	return urfave.Command(env, &cli.Command{ //nolint:wrapcheck
 		Name:  "github-comment",
@@ -223,7 +224,7 @@ func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { 
 				Usage:  "scaffold a configuration file if it doesn't exist",
 				Action: r.initAction,
 			},
-			{
+			{ //nolint:dupl
 				Name:  "hide",
 				Usage: "hide issue or pull request comments",
 				Action: func(ctx context.Context, _ *cli.Command) error {
@@ -304,6 +305,90 @@ func Run(ctx context.Context, logger *slogutil.Logger, env *urfave.Env) error { 
 						Aliases:     []string{"s"},
 						Usage:       "suppress the output of dry-run and skip-no-token",
 						Destination: &hideArgs.Silent,
+					},
+				},
+			},
+			{ //nolint:dupl
+				Name:  "delete",
+				Usage: "delete issue or pull request comments",
+				Action: func(ctx context.Context, _ *cli.Command) error {
+					return r.deleteAction(ctx, logger, deleteArgs)
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "org",
+						Usage:       "GitHub organization name",
+						Sources:     cli.EnvVars("GH_COMMENT_REPO_ORG"),
+						Destination: &deleteArgs.Org,
+					},
+					&cli.StringFlag{
+						Name:        "repo",
+						Usage:       "GitHub repository name",
+						Sources:     cli.EnvVars("GH_COMMENT_REPO_NAME"),
+						Destination: &deleteArgs.Repo,
+					},
+					&cli.StringFlag{
+						Name:        "token",
+						Usage:       "GitHub API token",
+						Sources:     cli.EnvVars("GITHUB_TOKEN", "GITHUB_ACCESS_TOKEN"),
+						Destination: &deleteArgs.Token,
+					},
+					&cli.StringFlag{
+						Name:        "config",
+						Usage:       "configuration file path",
+						Sources:     cli.EnvVars("GH_COMMENT_CONFIG"),
+						Destination: &deleteArgs.ConfigPath,
+					},
+					&cli.StringFlag{
+						Name:        "condition",
+						Usage:       "delete condition",
+						Destination: &deleteArgs.Condition,
+					},
+					&cli.StringFlag{
+						Name:        "delete-key",
+						Aliases:     []string{"k"},
+						Usage:       "delete condition key",
+						Value:       "default",
+						Destination: &deleteArgs.DeleteKey,
+					},
+					&cli.IntFlag{
+						Name:        "pr",
+						Usage:       "GitHub pull request number",
+						Sources:     cli.EnvVars("GH_COMMENT_PR_NUMBER"),
+						Destination: &deleteArgs.PRNumber,
+					},
+					&cli.StringFlag{
+						Name:        "sha1",
+						Usage:       "commit sha1",
+						Destination: &deleteArgs.SHA1,
+					},
+					&cli.StringSliceFlag{
+						Name:        "var",
+						Usage:       "template variable",
+						Destination: &deleteArgs.Vars,
+					},
+					&cli.StringSliceFlag{
+						Name:        "var-file",
+						Usage:       "template variable name and file path",
+						Destination: &deleteArgs.VarFiles,
+					},
+					&cli.BoolFlag{
+						Name:        "dry-run",
+						Usage:       "output a comment to standard error output instead of posting to GitHub",
+						Destination: &deleteArgs.DryRun,
+					},
+					&cli.BoolFlag{
+						Name:        "skip-no-token",
+						Aliases:     []string{"n"},
+						Usage:       "works like dry-run if the GitHub Access Token isn't set",
+						Sources:     cli.EnvVars("GH_COMMENT_SKIP_NO_TOKEN", "GITHUB_COMMENT_SKIP_NO_TOKEN"),
+						Destination: &deleteArgs.SkipNoToken,
+					},
+					&cli.BoolFlag{
+						Name:        "silent",
+						Aliases:     []string{"s"},
+						Usage:       "suppress the output of dry-run and skip-no-token",
+						Destination: &deleteArgs.Silent,
 					},
 				},
 			},
