@@ -30,6 +30,10 @@ func (pt *Platform) ComplementHide(opts *option.HideOptions) error {
 	return pt.complement(&opts.Options)
 }
 
+func (pt *Platform) ComplementDelete(opts *option.DeleteOptions) error {
+	return pt.complement(&opts.Options)
+}
+
 func (pt *Platform) CI() string {
 	if pt.platform == nil {
 		return ""

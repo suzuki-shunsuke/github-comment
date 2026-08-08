@@ -65,3 +65,22 @@ type HideArgs struct {
 	SkipNoToken bool
 	Silent      bool
 }
+
+// DeleteArgs holds flags for the delete command.
+type DeleteArgs struct {
+	*GlobalFlags
+
+	Org         string
+	Repo        string
+	Token       string
+	ConfigPath  string
+	Condition   string
+	DeleteKey   string
+	PRNumber    int
+	SHA1        string
+	Vars        []string
+	VarFiles    []string
+	DryRun      bool
+	SkipNoToken bool
+	Silent      bool
+}
