@@ -57,6 +57,8 @@ github.com/spf13/cast v1.7.0 h1:ntdiHjuueXFgm5nzDRdOS4yfT43P5Fnud6DH50rz/7w=
 github.com/spf13/cast v1.7.0/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
 github.com/stretchr/testify v1.12.0 h1:K6Mr6jO9JICuend/5xzTM03ydSV3vdNRYAdPSukj8uI=
 github.com/stretchr/testify v1.12.0/go.mod h1:bOYBZb5qJ00vPzWfIqBUZPaxK8jWiXc6d3ErP4Ca9Gw=
+github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
+github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/suzuki-shunsuke/gen-go-jsonschema v0.1.0 h1:g7askc+nskCkKRWTVOdsAT8nMhwiaVT6Dmlnh6uvITM=
 github.com/suzuki-shunsuke/gen-go-jsonschema v0.1.0/go.mod h1:yFO7h5wwFejxi6jbtazqmk7b/JSBxHcit8DGwb1bhg0=
 github.com/suzuki-shunsuke/github-comment-metadata v0.1.0 h1:89uGvBINoWZ4p2dGj7S695bm/L1H175eMp/D47ltSPs=
@@ -73,6 +75,8 @@ github.com/suzuki-shunsuke/urfave-cli-v3-util v0.2.3 h1:28ZzFUyh118PFMBeHuKYPkIw
 github.com/suzuki-shunsuke/urfave-cli-v3-util v0.2.3/go.mod h1:pfMAEENW39YADk1hW/bfHfO4rMu8GKgO4Psh6YY9nyM=
 github.com/urfave/cli/v3 v3.11.0 h1:P/euJp99kb9p0tlVY+iYTLYYTAQlfl0hR2gUO1Img1Q=
 github.com/urfave/cli/v3 v3.11.0/go.mod h1:ysVLtOEmg2tOy6PknnYVhDoouyC/6N42TMeoMzskhso=
+go.yaml.in/yaml/v3 v3.0.5 h1:N6y/pJk8buWs9NY5ERU2HSMfm+IuD/OtfdAnq6kESPw=
+go.yaml.in/yaml/v3 v3.0.5/go.mod h1:HVTZu1O7/Vkt2N+BFy8Zza+lnLsABggaTM2ZpNIGuKg=
 go.yaml.in/yaml/v4 v4.0.0-rc.2 h1:/FrI8D64VSr4HtGIlUtlFMGsm7H7pWTbj6vOLVZcA6s=
 go.yaml.in/yaml/v4 v4.0.0-rc.2/go.mod h1:aZqd9kCMsGL7AuUv/m/PvWLdg5sjJsZ4oHDEnfPPfY0=
 golang.org/x/crypto v0.50.0 h1:zO47/JPrL6vsNkINmLoo/PH1gcxpls50DNogFvB5ZGI=
