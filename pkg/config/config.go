@@ -24,7 +24,7 @@ type Base struct {
 	Repo string `json:"repo,omitempty" jsonschema:"description=GitHub repository name"`
 }
 
-type PostConfig struct { //nolint:recvcheck
+type PostConfig struct {
 	Template           string   `json:"template" jsonschema:"description=Comment template"`
 	TemplateForTooLong string   `json:"template_for_too_long,omitempty"`
 	EmbeddedVarNames   []string `json:"embedded_var_names,omitempty" jsonschema:"description=Embedded variable names"`
