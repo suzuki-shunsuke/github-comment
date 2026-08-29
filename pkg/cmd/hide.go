@@ -33,21 +33,19 @@ func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *
 	}
 
 	opts := &option.HideOptions{
-		Options: option.Options{
-			PRNumber:    args.PRNumber,
-			Org:         args.Org,
-			Repo:        args.Repo,
-			Token:       args.Token,
-			SHA1:        args.SHA1,
-			ConfigPath:  args.ConfigPath,
-			LogLevel:    args.LogLevel,
-			Vars:        vars,
-			DryRun:      args.DryRun,
-			SkipNoToken: args.SkipNoToken,
-			Silent:      args.Silent,
-		},
-		HideKey:   args.HideKey,
-		Condition: args.Condition,
+		PRNumber:    args.PRNumber,
+		Org:         args.Org,
+		Repo:        args.Repo,
+		Token:       args.Token,
+		SHA1:        args.SHA1,
+		ConfigPath:  args.ConfigPath,
+		LogLevel:    args.LogLevel,
+		Vars:        vars,
+		DryRun:      args.DryRun,
+		SkipNoToken: args.SkipNoToken,
+		Silent:      args.Silent,
+		HideKey:     args.HideKey,
+		Condition:   args.Condition,
 	}
 
 	if err := logger.SetLevel(opts.LogLevel); err != nil {

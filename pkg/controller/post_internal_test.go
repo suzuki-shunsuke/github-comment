@@ -35,12 +35,10 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Config:   &config.Config{},
 			},
 			opts: &option.PostOptions{
-				Options: option.Options{
-					Org:      "suzuki-shunsuke",
-					Repo:     "github-comment",
-					Token:    "xxx",
-					PRNumber: 1,
-				},
+				Org:           "suzuki-shunsuke",
+				Repo:          "github-comment",
+				Token:         "xxx",
+				PRNumber:      1,
 				StdinTemplate: true,
 			},
 			exp: &github.Comment{
@@ -64,13 +62,11 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Config:   &config.Config{},
 			},
 			opts: &option.PostOptions{
-				Options: option.Options{
-					Org:      "suzuki-shunsuke",
-					Repo:     "github-comment",
-					Token:    "xxx",
-					PRNumber: 1,
-					Template: "foo",
-				},
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				Token:    "xxx",
+				PRNumber: 1,
+				Template: "foo",
 			},
 			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
@@ -102,13 +98,11 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				},
 			},
 			opts: &option.PostOptions{
-				Options: option.Options{
-					Org:         "suzuki-shunsuke",
-					Repo:        "github-comment",
-					Token:       "xxx",
-					TemplateKey: "default",
-					PRNumber:    1,
-				},
+				Org:         "suzuki-shunsuke",
+				Repo:        "github-comment",
+				Token:       "xxx",
+				TemplateKey: "default",
+				PRNumber:    1,
 			},
 			exp: &github.Comment{
 				Org:         "suzuki-shunsuke",
@@ -138,13 +132,11 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Config: &config.Config{},
 			},
 			opts: &option.PostOptions{
-				Options: option.Options{
-					Org:      "suzuki-shunsuke",
-					Repo:     "github-comment",
-					Token:    "xxx",
-					PRNumber: 1,
-					Template: `{{.Org}} {{.Repo}} {{.PRNumber}}`,
-				},
+				Org:      "suzuki-shunsuke",
+				Repo:     "github-comment",
+				Token:    "xxx",
+				PRNumber: 1,
+				Template: `{{.Org}} {{.Repo}} {{.PRNumber}}`,
 			},
 			exp: &github.Comment{
 				Org:      "suzuki-shunsuke",
@@ -172,10 +164,8 @@ func TestPostController_getCommentParams(t *testing.T) { //nolint:funlen
 				Renderer: &template.Renderer{},
 			},
 			opts: &option.PostOptions{
-				Options: option.Options{
-					Token:    "xxx",
-					PRNumber: 1,
-				},
+				Token:         "xxx",
+				PRNumber:      1,
 				StdinTemplate: true,
 			},
 			exp: &github.Comment{

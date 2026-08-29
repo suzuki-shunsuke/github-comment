@@ -48,23 +48,21 @@ func (r *Runner) execAction(ctx context.Context, logger *slogutil.Logger, args *
 	}
 
 	opts := &option.ExecOptions{
-		Options: option.Options{
-			PRNumber:    args.PRNumber,
-			Org:         args.Org,
-			Repo:        args.Repo,
-			Token:       args.Token,
-			SHA1:        args.SHA1,
-			Template:    args.Template,
-			TemplateKey: args.TemplateKey,
-			ConfigPath:  args.ConfigPath,
-			LogLevel:    args.LogLevel,
-			Vars:        vars,
-			DryRun:      args.DryRun,
-			SkipNoToken: args.SkipNoToken,
-			Silent:      args.Silent,
-		},
-		Args:    args.Args,
-		Outputs: outs,
+		PRNumber:    args.PRNumber,
+		Org:         args.Org,
+		Repo:        args.Repo,
+		Token:       args.Token,
+		SHA1:        args.SHA1,
+		Template:    args.Template,
+		TemplateKey: args.TemplateKey,
+		ConfigPath:  args.ConfigPath,
+		LogLevel:    args.LogLevel,
+		Vars:        vars,
+		DryRun:      args.DryRun,
+		SkipNoToken: args.SkipNoToken,
+		Silent:      args.Silent,
+		Args:        args.Args,
+		Outputs:     outs,
 	}
 
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
