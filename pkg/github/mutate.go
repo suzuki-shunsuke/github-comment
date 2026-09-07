@@ -26,3 +26,18 @@ func (c *Client) HideComment(ctx context.Context, nodeID string) error {
 	}
 	return nil
 }
+
+func (c *Client) DeleteComment(ctx context.Context, nodeID string) error {
+	var m struct {
+		DeleteIssueComment struct {
+			ClientMutationID githubv4.String
+		} `graphql:"deleteIssueComment(input:$input)"`
+	}
+	input := githubv4.DeleteIssueCommentInput{
+		ID: nodeID,
+	}
+	if err := c.ghV4.Mutate(ctx, &m, input, nil); err != nil {
+		return fmt.Errorf("delete a comment: %w", err)
+	}
+	return nil
+}

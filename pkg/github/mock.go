@@ -30,6 +30,10 @@ func (m *Mock) HideComment(ctx context.Context, nodeID string) error {
 	return nil
 }
 
+func (m *Mock) DeleteComment(ctx context.Context, nodeID string) error {
+	return nil
+}
+
 func (m *Mock) ListComments(ctx context.Context, pr *PullRequest) ([]*IssueComment, error) {
 	return nil, nil
 }

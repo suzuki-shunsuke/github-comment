@@ -15,8 +15,8 @@ import (
 	"golang.org/x/term"
 )
 
-// hideAction is an entrypoint of the subcommand "hide".
-func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *HideArgs) error { //nolint:funlen
+// deleteAction is an entrypoint of the subcommand "delete".
+func (r *Runner) deleteAction(ctx context.Context, logger *slogutil.Logger, args *DeleteArgs) error { //nolint:funlen
 	if a := os.Getenv("GITHUB_COMMENT_SKIP"); a != "" {
 		skipComment, err := strconv.ParseBool(a)
 		if err != nil {
@@ -32,20 +32,22 @@ func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *
 		return err
 	}
 
-	opts := &option.HideOptions{
-		PRNumber:    args.PRNumber,
-		Org:         args.Org,
-		Repo:        args.Repo,
-		Token:       args.Token,
-		SHA1:        args.SHA1,
-		ConfigPath:  args.ConfigPath,
-		LogLevel:    args.LogLevel,
-		Vars:        vars,
-		DryRun:      args.DryRun,
-		SkipNoToken: args.SkipNoToken,
-		Silent:      args.Silent,
-		HideKey:     args.HideKey,
-		Condition:   args.Condition,
+	opts := &option.DeleteOptions{
+		Options: option.Options{
+			PRNumber:    args.PRNumber,
+			Org:         args.Org,
+			Repo:        args.Repo,
+			Token:       args.Token,
+			SHA1:        args.SHA1,
+			ConfigPath:  args.ConfigPath,
+			LogLevel:    args.LogLevel,
+			Vars:        vars,
+			DryRun:      args.DryRun,
+			SkipNoToken: args.SkipNoToken,
+			Silent:      args.Silent,
+		},
+		DeleteKey: args.DeleteKey,
+		Condition: args.Condition,
 	}
 
 	if err := logger.SetLevel(opts.LogLevel); err != nil {
@@ -73,7 +75,7 @@ func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *
 		return fmt.Errorf("initialize commenter: %w", err)
 	}
 
-	ctrl := controller.HideController{
+	ctrl := controller.DeleteController{
 		Wd:     wd,
 		Getenv: os.Getenv,
 		HasStdin: func() bool {
@@ -85,5 +87,5 @@ func (r *Runner) hideAction(ctx context.Context, logger *slogutil.Logger, args *
 		Config:   cfg,
 		Expr:     &expr.Expr{},
 	}
-	return ctrl.Hide(ctx, logger.Logger, opts) //nolint:wrapcheck
+	return ctrl.Delete(ctx, logger.Logger, opts) //nolint:wrapcheck
 }
