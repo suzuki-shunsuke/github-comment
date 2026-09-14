@@ -60,8 +60,8 @@ type V4Client interface {
 }
 
 type IssuesService interface {
-	CreateComment(ctx context.Context, owner string, repo string, number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error)
-	EditComment(ctx context.Context, owner string, repo string, commentID int64, comment *github.IssueComment) (*github.IssueComment, *github.Response, error)
+	CreateComment(ctx context.Context, owner string, repo string, number int, comment github.IssueCommentRequest) (*github.IssueComment, *github.Response, error)
+	UpdateComment(ctx context.Context, owner string, repo string, commentID int64, comment github.IssueCommentRequest) (*github.IssueComment, *github.Response, error)
 }
 
 type RepositoriesService interface {
