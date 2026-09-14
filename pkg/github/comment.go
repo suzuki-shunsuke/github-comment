@@ -34,15 +34,15 @@ type IssueComment struct {
 
 func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
-		if _, _, err := c.issue.EditComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.IssueComment{
-			Body: new(body),
+		if _, _, err := c.issue.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, github.IssueCommentRequest{
+			Body: body,
 		}); err != nil {
 			return fmt.Errorf("edit a issue or pull request comment by GitHub API: %w", err)
 		}
 		return nil
 	}
-	if _, _, err := c.issue.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, &github.IssueComment{
-		Body: new(body),
+	if _, _, err := c.issue.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.PRNumber, github.IssueCommentRequest{
+		Body: body,
 	}); err != nil {
 		return fmt.Errorf("create a comment to issue or pull request by GitHub API: %w", err)
 	}
