@@ -65,8 +65,8 @@ type IssuesService interface {
 }
 
 type RepositoriesService interface {
-	CreateComment(ctx context.Context, owner, repo, sha string, comment *github.RepositoryComment) (*github.RepositoryComment, *github.Response, error)
-	UpdateComment(ctx context.Context, owner, repo string, id int64, comment *github.RepositoryComment) (*github.RepositoryComment, *github.Response, error)
+	CreateComment(ctx context.Context, owner, repo, sha string, comment github.CreateCommitCommentRequest) (*github.RepositoryComment, *github.Response, error)
+	UpdateComment(ctx context.Context, owner, repo string, id int64, comment github.UpdateCommitCommentRequest) (*github.RepositoryComment, *github.Response, error)
 }
 
 type UsersService interface {
