@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/google/go-github/v91/github"
+	"github.com/google/go-github/v92/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -65,8 +65,8 @@ type IssuesService interface {
 }
 
 type RepositoriesService interface {
-	CreateComment(ctx context.Context, owner, repo, sha string, comment *github.RepositoryComment) (*github.RepositoryComment, *github.Response, error)
-	UpdateComment(ctx context.Context, owner, repo string, id int64, comment *github.RepositoryComment) (*github.RepositoryComment, *github.Response, error)
+	CreateComment(ctx context.Context, owner, repo, sha string, comment github.CreateCommitCommentRequest) (*github.RepositoryComment, *github.Response, error)
+	UpdateComment(ctx context.Context, owner, repo string, id int64, comment github.UpdateCommitCommentRequest) (*github.RepositoryComment, *github.Response, error)
 }
 
 type UsersService interface {

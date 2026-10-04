@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v91/github"
+	"github.com/google/go-github/v92/github"
 )
 
 type Comment struct {
@@ -51,15 +51,15 @@ func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string
 
 func (c *Client) sendCommitComment(ctx context.Context, cmt *Comment, body string) error {
 	if cmt.CommentID != 0 {
-		if _, _, err := c.repo.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, &github.RepositoryComment{
-			Body: new(body),
+		if _, _, err := c.repo.UpdateComment(ctx, cmt.Org, cmt.Repo, cmt.CommentID, github.UpdateCommitCommentRequest{
+			Body: body,
 		}); err != nil {
 			return fmt.Errorf("update a commit comment by GitHub API: %w", err)
 		}
 		return nil
 	}
-	if _, _, err := c.repo.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, &github.RepositoryComment{
-		Body: new(body),
+	if _, _, err := c.repo.CreateComment(ctx, cmt.Org, cmt.Repo, cmt.SHA1, github.CreateCommitCommentRequest{
+		Body: body,
 	}); err != nil {
 		return fmt.Errorf("create a commit comment by GitHub API: %w", err)
 	}
