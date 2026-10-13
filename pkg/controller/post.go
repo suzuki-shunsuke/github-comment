@@ -149,6 +149,7 @@ type Platform interface {
 	ComplementPost(opts *option.PostOptions) error
 	ComplementExec(opts *option.ExecOptions) error
 	ComplementHide(opts *option.HideOptions) error
+	ComplementDelete(opts *option.DeleteOptions) error
 	CI() string
 }
 

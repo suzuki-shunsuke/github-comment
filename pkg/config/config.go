@@ -15,6 +15,7 @@ type Config struct {
 	Post               map[string]*PostConfig   `json:"post,omitempty" jsonschema:"description=configuration for github-comment post command"`
 	Exec               map[string][]*ExecConfig `json:"exec,omitempty" jsonschema:"description=configuration for github-comment exec command"`
 	Hide               map[string]string        `json:"hide,omitempty" jsonschema:"description=configuration for github-comment hide command"`
+	Delete             map[string]string        `json:"delete,omitempty" jsonschema:"description=configuration for github-comment delete command"`
 	SkipNoToken        bool                     `json:"skip_no_token,omitempty" yaml:"skip_no_token" jsonschema:"description=Skip to post comments if no GitHub access token is passed"`
 	Silent             bool                     `json:"silent,omitempty"`
 }
@@ -122,3 +123,5 @@ func (ec ExecConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
 }
 
 const defaultHideCondition = "Comment.HasMeta && Comment.Meta.SHA1 != Commit.SHA1"
+
+const defaultDeleteCondition = defaultHideCondition

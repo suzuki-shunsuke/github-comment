@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"maps"
 
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/config"
 	"github.com/suzuki-shunsuke/github-comment/v6/pkg/github"
@@ -34,7 +33,7 @@ func (c *HideController) Hide(ctx context.Context, logger *slog.Logger, opts *op
 	if err != nil {
 		return err
 	}
-	nodeIDs, err := c.listHiddenComments(ctx, logger, param, nil)
+	nodeIDs, err := listCommentsByCondition(ctx, logger, c.GitHub, c.Expr, param, isExcludedComment)
 	if err != nil {
 		return err
 	}
@@ -46,8 +45,8 @@ func (c *HideController) Hide(ctx context.Context, logger *slog.Logger, opts *op
 	return nil
 }
 
-func (c *HideController) getParamListHiddenComments(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) (*ParamListHiddenComments, error) { //nolint:cyclop,funlen
-	param := &ParamListHiddenComments{}
+func (c *HideController) getParamListHiddenComments(ctx context.Context, logger *slog.Logger, opts *option.HideOptions) (*ParamListComments, error) { //nolint:cyclop,funlen,dupl
+	param := &ParamListComments{}
 
 	cfg := c.Config
 
@@ -100,14 +99,16 @@ func (c *HideController) getParamListHiddenComments(ctx context.Context, logger 
 		cfg.Vars[k] = v
 	}
 
-	return &ParamListHiddenComments{
+	return &ParamListComments{
 		PRNumber:  opts.PRNumber,
 		Org:       opts.Org,
 		Repo:      opts.Repo,
 		SHA1:      opts.SHA1,
 		Condition: hideCondition,
-		HideKey:   opts.HideKey,
 		Vars:      cfg.Vars,
+		ExprParams: map[string]any{
+			"HideKey": opts.HideKey,
+		},
 	}, nil
 }
 
@@ -128,102 +129,6 @@ func (c *HideController) hideComments(ctx context.Context, logger *slog.Logger, 
 	if !commentHidden {
 		logger.Info("no comment is hidden")
 	}
-}
-
-type ParamListHiddenComments struct {
-	Condition string
-	HideKey   string
-	Org       string
-	Repo      string
-	SHA1      string
-	PRNumber  int
-	Vars      map[string]any
-}
-
-func (c *HideController) listHiddenComments( //nolint:funlen
-	ctx context.Context,
-	logger *slog.Logger,
-	param *ParamListHiddenComments,
-	paramExpr map[string]any,
-) ([]string, error) {
-	if param.Condition == "" {
-		logger.Debug("the condition to hide comments isn't set")
-		return nil, nil
-	}
-	login, err := c.GitHub.GetAuthenticatedUser(ctx)
-	if err != nil {
-		slogerr.WithError(logger, err).Warn("get an authenticated user")
-	}
-
-	comments, err := c.GitHub.ListComments(ctx, &github.PullRequest{
-		Org:      param.Org,
-		Repo:     param.Repo,
-		PRNumber: param.PRNumber,
-	})
-	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
-	logger.Debug("get comments",
-		"count", len(comments),
-		"org", param.Org,
-		"repo", param.Repo,
-		"pr_number", param.PRNumber,
-	)
-
-	nodeIDs := []string{}
-	prg, err := c.Expr.Compile(param.Condition)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
-	for _, comment := range comments {
-		nodeID := comment.ID
-		// TODO remove these filters
-		if isExcludedComment(comment, login) {
-			logger.Debug("exclude a comment",
-				"node_id", nodeID,
-				"login", login,
-			)
-			continue
-		}
-
-		metadata := map[string]any{}
-		hasMeta := extractMetaFromComment(comment.Body, &metadata)
-		paramMap := map[string]any{
-			"Comment": map[string]any{
-				"Body": comment.Body,
-				// "CreatedAt": comment.CreatedAt,
-				"Meta":    metadata,
-				"HasMeta": hasMeta,
-			},
-			"Commit": map[string]any{
-				"Org":      param.Org,
-				"Repo":     param.Repo,
-				"PRNumber": param.PRNumber,
-				"SHA1":     param.SHA1,
-			},
-			"HideKey": param.HideKey,
-			"Vars":    param.Vars,
-		}
-		maps.Copy(paramMap, paramExpr)
-
-		logger.Debug("judge whether an existing comment is hidden",
-			"node_id", nodeID,
-			"condition", param.Condition,
-			"param", paramMap,
-		)
-		f, err := prg.Run(paramMap)
-		if err != nil {
-			slogerr.WithError(logger, err).Error("judge whether an existing comment is hidden",
-				"node_id", nodeID,
-			)
-			continue
-		}
-		if !f {
-			continue
-		}
-		nodeIDs = append(nodeIDs, nodeID)
-	}
-	return nodeIDs, nil
 }
 
 func isExcludedComment(cmt *github.IssueComment, login string) bool {
