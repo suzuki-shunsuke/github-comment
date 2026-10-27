@@ -11,6 +11,7 @@ There are some ways to install github-comment.
 1. [Homebrew](#homebrew)
 1. [Scoop](#scoop)
 1. [aqua](#aqua)
+1. [mise](#mise)
 1. [GitHub Releases](#github-releases)
 1. [Build an executable binary from source code yourself using Go](#build-an-executable-binary-from-source-code-yourself-using-go)
 
@@ -37,6 +38,14 @@ You can install github-comment using [aqua](https://aquaproj.github.io/).
 
 ```sh
 aqua g -i suzuki-shunsuke/github-comment
+```
+
+## mise
+
+You can install github-comment v6.4.2 or later using [mise](https://mise.jdx.dev/) with the [packslip](https://packslip.dev/) backend.
+
+```sh
+mise use packslip:github.com/suzuki-shunsuke/github-comment
 ```
 
 ## Build an executable binary from source code yourself using Go
@@ -67,7 +76,7 @@ aqua g -i cli/cli
 ```
 
 ```sh
-version=v6.3.2
+version=v6.4.2
 asset=github-comment_${version#v}_darwin_arm64.tar.gz
 gh release download -R suzuki-shunsuke/github-comment "$version" -p "$asset"
 gh attestation verify "$asset" \
@@ -77,6 +86,11 @@ gh attestation verify "$asset" \
 
 ### 2. slsa-verifier
 
+:::note
+This method works only for v6.4.1 or older.
+v6.4.2 or later don't publish `multiple.intoto.jsonl`, so please use GitHub CLI or Cosign instead.
+:::
+
 You can install slsa-verifier by aqua.
 
 ```sh
@@ -84,7 +98,7 @@ aqua g -i slsa-framework/slsa-verifier
 ```
 
 ```sh
-version=v6.3.2
+version=v6.4.1
 asset=github-comment_${version#v}_darwin_arm64.tar.gz
 gh release download -R suzuki-shunsuke/github-comment "$version" -p "$asset" -p multiple.intoto.jsonl
 slsa-verifier verify-artifact "$asset" \
@@ -102,20 +116,21 @@ aqua g -i sigstore/cosign
 ```
 
 ```sh
-version=v6.3.2
+version=v6.4.2
 checksum_file="github-comment_${version#v}_checksums.txt"
 asset=github-comment_${version#v}_darwin_arm64.tar.gz
 gh release download "$version" \
   -R suzuki-shunsuke/github-comment \
   -p "$asset" \
   -p "$checksum_file" \
-  -p "${checksum_file}.pem" \
-  -p "${checksum_file}.sig"
+  -p "${checksum_file}.sigstore.json"
 cosign verify-blob \
-  --signature "${checksum_file}.sig" \
-  --certificate "${checksum_file}.pem" \
+  --bundle "${checksum_file}.sigstore.json" \
   --certificate-identity-regexp 'https://github\.com/suzuki-shunsuke/go-release-workflow/\.github/workflows/release\.yaml@.*' \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   "$checksum_file"
 cat "$checksum_file" | sha256sum --ignore-missing -c -
 ```
+
+For v6.4.1 or older, the signature and certificate are published as `${checksum_file}.sig` and `${checksum_file}.pem` instead of `${checksum_file}.sigstore.json`.
+Download them and pass `--signature "${checksum_file}.sig" --certificate "${checksum_file}.pem"` to `cosign verify-blob` instead of `--bundle`.
