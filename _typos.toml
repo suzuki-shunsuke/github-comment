@@ -1,3 +1,7 @@
+[default]
+# packslip signer fingerprints (pins) are random base32 strings
+extend-ignore-re = ["ps1_[a-z2-7]{26}"]
+
 [default.extend-words]
 intoto = "intoto"
 typ = "typ"
