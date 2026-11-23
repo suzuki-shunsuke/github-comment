@@ -1,0 +1,1 @@
+"use strict";(Array.isArray(globalThis.webpackChunkgithub_comment)?globalThis.webpackChunkgithub_comment:globalThis.webpackChunkgithub_comment=[]).push([[957],{936(a){a.exports=JSON.parse('{"name":"docusaurus-theme-search-algolia","id":"default"}')}}]);
