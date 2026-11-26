@@ -1,4 +1,4 @@
-package cmd
+package cmd //nolint:dupl
 
 import (
 	"context"

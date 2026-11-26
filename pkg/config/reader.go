@@ -15,14 +15,11 @@ type Reader struct {
 type ExistFile func(string) bool
 
 func (r *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
-	cfg := &Config{
-		Hide: map[string]string{
-			"default": defaultHideCondition,
-		},
-	}
+	cfg := &Config{}
 	if cfgPath == "" {
 		p, b := r.find(wd)
 		if !b {
+			setDefaultConditions(cfg)
 			return cfg, nil
 		}
 		cfgPath = p
@@ -31,17 +28,25 @@ func (r *Reader) FindAndRead(cfgPath, wd string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cfg.Hide == nil {
-		cfg.Hide = map[string]string{
-			"default": defaultHideCondition,
-		}
-		return cfg, nil
-	}
-	if _, ok := cfg.Hide["default"]; ok {
-		return cfg, nil
-	}
-	cfg.Hide["default"] = defaultHideCondition
+	setDefaultConditions(cfg)
 	return cfg, nil
+}
+
+// setDefaultConditions sets the default condition of the hide and delete
+// commands if they aren't set.
+func setDefaultConditions(cfg *Config) {
+	if cfg.Hide == nil {
+		cfg.Hide = map[string]string{}
+	}
+	if _, ok := cfg.Hide["default"]; !ok {
+		cfg.Hide["default"] = defaultHideCondition
+	}
+	if cfg.Delete == nil {
+		cfg.Delete = map[string]string{}
+	}
+	if _, ok := cfg.Delete["default"]; !ok {
+		cfg.Delete["default"] = defaultDeleteCondition
+	}
 }
 
 func (r *Reader) find(wd string) (string, bool) {

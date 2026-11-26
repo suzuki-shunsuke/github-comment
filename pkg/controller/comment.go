@@ -13,6 +13,7 @@ type GitHub interface {
 	CreateComment(ctx context.Context, cmt *github.Comment) error
 	ListComments(ctx context.Context, pr *github.PullRequest) ([]*github.IssueComment, error)
 	HideComment(ctx context.Context, nodeID string) error
+	DeleteComment(ctx context.Context, nodeID string) error
 	GetAuthenticatedUser(ctx context.Context) (string, error)
 	PRNumberWithSHA(ctx context.Context, owner, repo, sha string) (int, error)
 }

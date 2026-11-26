@@ -30,6 +30,7 @@ type IssueComment struct {
 	// TODO remove
 	IsMinimized       bool
 	ViewerCanMinimize bool
+	ViewerCanDelete   bool
 }
 
 func (c *Client) sendIssueComment(ctx context.Context, cmt *Comment, body string) error {
